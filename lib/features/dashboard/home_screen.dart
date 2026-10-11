@@ -8,6 +8,7 @@ import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/animated_money.dart';
+import '../../core/widgets/screen_entrance.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/staggered_entrance.dart';
 import '../../data/sample_data.dart';
@@ -72,7 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 24),
           _quickActions(context),
           const SizedBox(height: 28),
-          WeeklyBarChart(data: weekly),
+          ChartEntrance(
+            child: WeeklyBarChart(data: weekly),
+          ),
           const SizedBox(height: 28),
           SectionHeader(
             title: 'Top Categories',
@@ -351,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ────────────────────────────────────────────────────────────────
   Widget _quickActions(BuildContext context) {
     final tiles = [
-      (AppStrings.addExpense, Icons.add_rounded, AppColors.mint,
+      (AppStrings.addExpense, Icons.add_circle_rounded, AppColors.mint,
           () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
               )),
@@ -359,11 +362,11 @@ class _HomeScreenState extends State<HomeScreen> {
           () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const VoiceEntryScreen()),
               )),
-      (AppStrings.analytics, Icons.bar_chart_rounded, AppColors.primaryIndigo,
+      (AppStrings.analytics, Icons.insights_rounded, AppColors.primaryIndigo,
           () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
               )),
-      (AppStrings.goals, Icons.flag_rounded, AppColors.blue,
+      (AppStrings.goals, Icons.savings_rounded, AppColors.blue,
           () => Navigator.of(context).push(
                 MaterialPageRoute(
                     builder: (_) => const SavingsGoalsScreen()),

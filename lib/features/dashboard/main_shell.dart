@@ -137,13 +137,36 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       backgroundColor: AppColorsOf.background(context),
       extendBody: true,
-      body: IndexedStack(
-        index: _index,
-        children: _screens,
+      // Smooth fade+slide between tabs (instead of IndexedStack which
+      // doesn't animate). Each tab swap crossfades over 280ms with a
+      // subtle slide-up.
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 320),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, anim) {
+          return FadeTransition(
+            opacity: anim,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.04),
+                end: Offset.zero,
+              ).animate(anim),
+              child: child,
+            ),
+          );
+        },
+        child: KeyedSubtree(
+          key: ValueKey(_index),
+          child: _screens[_index],
+        ),
       ),
       bottomNavigationBar: FloatingNavBar(
         currentIndex: _index,
-        onTabSelected: (i) => setState(() => _index = i),
+        onTabSelected: (i) {
+          HapticFeedback.selectionClick();
+          setState(() => _index = i);
+        },
         onFabPressed: _openAddExpense,
       ),
     );

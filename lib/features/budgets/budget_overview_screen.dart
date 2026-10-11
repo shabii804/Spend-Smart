@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/animated_money.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/progress_bar.dart';
 import '../../core/widgets/section_header.dart';
@@ -76,8 +77,8 @@ class BudgetOverviewScreen extends StatelessWidget {
                       style: TextStyles.label(context).copyWith(
                           color: Colors.white.withOpacity(0.85))),
                   const SizedBox(height: 6),
-                  Text(
-                    Formatters.money(budget.monthlyLimit),
+                  AnimatedMoney(
+                    amount: budget.monthlyLimit,
                     style: TextStyles.moneyHero(context, color: Colors.white),
                   ),
                   const SizedBox(height: 16),

@@ -99,7 +99,7 @@ class FloatingNavBar extends StatelessWidget {
   }
 }
 
-class _NavSlot extends StatelessWidget {
+class _NavSlot extends StatefulWidget {
   final String label;
   final IconData icon;
   final bool selected;
@@ -113,47 +113,84 @@ class _NavSlot extends StatelessWidget {
   });
 
   @override
+  State<_NavSlot> createState() => _NavSlotState();
+}
+
+class _NavSlotState extends State<_NavSlot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _press = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 110),
+    lowerBound: 0.0,
+    upperBound: 1.0,
+  );
+
+  void _onTapDown(TapDownDetails _) {
+    if (!widget.selected) _press.forward();
+  }
+
+  void _onTapUp(TapUpDetails _) => _press.reverse();
+  void _onTapCancel() => _press.reverse();
+
+  @override
+  void dispose() {
+    _press.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final activeColor = AppColors.primaryIndigo;
     final inactiveColor = AppColorsOf.secondaryText(context);
-    final color = selected ? activeColor : inactiveColor;
+    final color = widget.selected ? activeColor : inactiveColor;
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(32),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
         onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
+          HapticFeedback.selectionClick();
+          widget.onTap();
         },
-        child: AnimatedScale(
-          scale: selected ? 1.05 : 1.0,
-          duration: AppConstants.durFast,
-          curve: AppConstants.curveDefault,
+        child: AnimatedBuilder(
+          animation: _press,
+          builder: (context, child) {
+            // Scale down to 0.86 when pressed, spring back.
+            final pressScale = 1.0 - (_press.value * 0.14);
+            return AnimatedScale(
+              scale: widget.selected ? 1.06 : pressScale,
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOutCubic,
+              child: child,
+            );
+          },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
               // Soft pill highlight behind the icon when selected.
               AnimatedContainer(
-                duration: AppConstants.durFast,
-                curve: AppConstants.curveDefault,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: selected
-                      ? AppColors.primaryIndigo.withOpacity(0.12)
+                  color: widget.selected
+                      ? AppColors.primaryIndigo.withOpacity(0.14)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, size: 20, color: color),
+                child: Icon(widget.icon, size: 20, color: color),
               ),
               const SizedBox(height: 4),
               Text(
-                label,
+                widget.label,
                 style: TextStyles.caption(context).copyWith(
                   color: color,
                   fontSize: 10.5,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
             ],

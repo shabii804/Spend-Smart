@@ -289,7 +289,8 @@ class AppTheme {
   }
 }
 
-/// Subtle fade-up transition for pushed routes.
+/// Premium page transition: subtle slide-up + fade + scale.
+/// Used by all pushed MaterialPageRoute (Android + iOS).
 class _FadeUpTransitionsBuilder extends PageTransitionsBuilder {
   const _FadeUpTransitionsBuilder();
 
@@ -301,14 +302,19 @@ class _FadeUpTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondary,
     Widget child,
   ) {
+    final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
     return FadeTransition(
-      opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+      opacity: curved,
       child: SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(0, 0.025),
+          begin: const Offset(0, 0.06),
           end: Offset.zero,
-        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-        child: child,
+        ).animate(curved),
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.98, end: 1.0).animate(curved),
+          alignment: Alignment.topCenter,
+          child: child,
+        ),
       ),
     );
   }

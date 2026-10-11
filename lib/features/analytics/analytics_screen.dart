@@ -8,6 +8,7 @@ import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/glass_card.dart';
+import '../../core/widgets/screen_entrance.dart';
 import '../../providers/expense_provider.dart';
 
 enum AnalyticsPeriod { daily, weekly, monthly }
@@ -103,10 +104,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ),
             const SizedBox(height: 20),
             // Spending Overview — smooth area chart
-            _SpendingAreaChart(dailyMap: dailyMap, total: total),
+            ChartEntrance(
+              child: _SpendingAreaChart(dailyMap: dailyMap, total: total),
+            ),
             const SizedBox(height: 20),
             // Spending Breakdown — donut + right legend
-            _BreakdownDonut(total: total, items: top),
+            ChartEntrance(
+              delay: const Duration(milliseconds: 160),
+              child: _BreakdownDonut(total: total, items: top),
+            ),
             const SizedBox(height: 20),
             // Two insight cards at bottom
             Row(
@@ -349,7 +355,7 @@ class _SpendingAreaChart extends StatelessWidget {
                   color: AppColors.primaryIndigo.withOpacity(0.10),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.tune_rounded,
+                child: const Icon(Icons.auto_graph_rounded,
                     color: AppColors.primaryIndigo, size: 14),
               ),
             ],

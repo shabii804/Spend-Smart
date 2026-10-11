@@ -174,7 +174,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               const SizedBox(height: 24),
               PrimaryButton(
                 label: _isEdit ? AppStrings.save : 'Save Expense',
-                icon: Icons.arrow_forward_rounded,
+                icon: _isEdit ? Icons.save_rounded : Icons.check_circle_rounded,
                 loading: _saving,
                 onPressed: _save,
               ),

@@ -62,40 +62,62 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return SafeArea(
       bottom: false,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
-        children: [
-          _appHeader(context, notif.unreadCount),
-          const SizedBox(height: 20),
-          _greetingRow(context, greeting, user.fullName),
-          const SizedBox(height: 24),
-          _budgetHero(context, spent, remaining, percent, limit),
-          const SizedBox(height: 24),
-          _quickActions(context),
-          const SizedBox(height: 28),
-          ChartEntrance(
-            child: WeeklyBarChart(data: weekly),
-          ),
-          const SizedBox(height: 28),
-          SectionHeader(
-            title: 'Top Categories',
-            actionLabel: 'This Month',
-            onAction: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _appHeader(context, notif.unreadCount),
+                const SizedBox(height: 20),
+                _greetingRow(context, greeting, user.fullName),
+              ]),
             ),
           ),
-          const SizedBox(height: 12),
-          _topCategoriesScroll(context, top),
-          const SizedBox(height: 28),
-          SectionHeader(
-            title: AppStrings.recentTransactions,
-            actionLabel: AppStrings.viewAll,
-            onAction: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+          // Budget hero with parallax — translates slower than scroll
+          SliverToBoxAdapter(
+            child: _ParallaxHero(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                child: _budgetHero(context, spent, remaining, percent, limit),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
-          _recentList(context, recent),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _quickActions(context),
+                const SizedBox(height: 28),
+                ChartEntrance(
+                  child: WeeklyBarChart(data: weekly),
+                ),
+                const SizedBox(height: 28),
+                SectionHeader(
+                  title: 'Top Categories',
+                  actionLabel: 'This Month',
+                  onAction: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _topCategoriesScroll(context, top),
+                const SizedBox(height: 28),
+                SectionHeader(
+                  title: AppStrings.recentTransactions,
+                  actionLabel: AppStrings.viewAll,
+                  onAction: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _recentList(context, recent),
+              ]),
+            ),
+          ),
         ],
       ),
     );
@@ -627,6 +649,42 @@ class _TransactionTile extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Parallax wrapper — translates child slower than scroll for depth effect.
+/// Uses NotificationListener to track scroll without managing a controller.
+class _ParallaxHero extends StatefulWidget {
+  final Widget child;
+  const _ParallaxHero({required this.child});
+
+  @override
+  State<_ParallaxHero> createState() => _ParallaxHeroState();
+}
+
+class _ParallaxHeroState extends State<_ParallaxHero> {
+  double _offset = 0.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollUpdateNotification) {
+          final pixels = notification.metrics.pixels;
+          if (pixels >= 0) {
+            setState(() {
+              // Parallax depth: hero moves up at 25% of scroll speed
+              _offset = (pixels * 0.25).clamp(0.0, 120.0);
+            });
+          }
+        }
+        return false;
+      },
+      child: Transform.translate(
+        offset: Offset(0, -_offset),
+        child: widget.child,
       ),
     );
   }

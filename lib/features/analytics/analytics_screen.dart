@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/animated_money.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/screen_entrance.dart';
 import '../../providers/expense_provider.dart';
@@ -80,7 +81,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 Expanded(
                   child: _SummaryCard(
                     label: 'Total Spending',
-                    value: Formatters.money(total),
+                    amount: total,
                     delta: '+12%',
                     deltaPositive: true,
                     deltaText: 'vs last month',
@@ -92,7 +93,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 Expanded(
                   child: _SummaryCard(
                     label: 'Average Daily',
-                    value: Formatters.money(avg),
+                    amount: avg,
                     delta: '+8%',
                     deltaPositive: true,
                     deltaText: 'vs last month',
@@ -202,16 +203,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 // ----------------------------------------------------------------
 class _SummaryCard extends StatelessWidget {
   final String label;
-  final String value;
   final String delta;
   final bool deltaPositive;
   final String deltaText;
   final IconData icon;
   final Color color;
+  final double amount;
 
   const _SummaryCard({
     required this.label,
-    required this.value,
+    required this.amount,
     required this.delta,
     required this.deltaPositive,
     required this.deltaText,
@@ -247,9 +248,11 @@ class _SummaryCard extends StatelessWidget {
               ],
             ),
             const Spacer(),
-            Text(value,
-                style: TextStyles.money(context, size: 18)
-                    .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+            AnimatedMoney(
+              amount: amount,
+              style: TextStyles.money(context, size: 18)
+                  .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+            ),
             const SizedBox(height: 6),
             Row(
               children: [
@@ -283,22 +286,38 @@ class _SummaryCard extends StatelessWidget {
 // Spending Overview — smooth area line chart across the full month.
 // Generates a 1..N day series so the x-axis is calendar-correct.
 // ----------------------------------------------------------------
-class _SpendingAreaChart extends StatelessWidget {
+class _SpendingAreaChart extends StatefulWidget {
   final Map<String, double> dailyMap;
   final double total;
   const _SpendingAreaChart({required this.dailyMap, required this.total});
 
   @override
+  State<_SpendingAreaChart> createState() => _SpendingAreaChartState();
+}
+
+class _SpendingAreaChartState extends State<_SpendingAreaChart> {
+  bool _showData = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Trigger line draw-in animation after first frame.
+    Future.delayed(const Duration(milliseconds: 160), () {
+      if (mounted) setState(() => _showData = true);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Build a full-month series (day 1..lastDay) with 0 for missing days.
-    final anchor = dailyMap.keys.isNotEmpty
-        ? _parseAnchorMonth(dailyMap.keys.first)
+    final anchor = widget.dailyMap.keys.isNotEmpty
+        ? _parseAnchorMonth(widget.dailyMap.keys.first)
         : DateTime.now();
     final lastDay = DateTime(anchor.year, anchor.month + 1, 0).day;
     final series = List.generate(lastDay, (i) {
       final day = i + 1;
       final key = '${anchor.year}-${anchor.month}-$day';
-      return _DayPoint(day: day, value: dailyMap[key] ?? 0.0);
+      return _DayPoint(day: day, value: widget.dailyMap[key] ?? 0.0);
     });
 
     if (series.every((e) => e.value == 0)) {
@@ -311,10 +330,15 @@ class _SpendingAreaChart extends StatelessWidget {
     }
 
     final maxVal = series.fold<double>(0, (m, e) => e.value > m ? e.value : m);
-    // Round safeMax up to a "nice" value for cleaner y-axis.
     final safeMax = _niceMax(maxVal);
     final activeIdx = series.indexWhere((e) => e.value == maxVal);
     final safeActiveIdx = activeIdx < 0 ? 0 : activeIdx;
+
+    // Build spots: all 0 on first render, real values after _showData flips.
+    final spots = [
+      for (int i = 0; i < series.length; i++)
+        FlSpot(i.toDouble(), _showData ? series[i].value : 0),
+    ];
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 12, 12),
@@ -362,13 +386,15 @@ class _SpendingAreaChart extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${Formatters.money(total)} this month',
+            '${Formatters.money(widget.total)} this month',
             style: TextStyles.caption(context),
           ),
           const SizedBox(height: 16),
           SizedBox(
             height: 220,
             child: LineChart(
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.easeOutCubic,
               LineChartData(
                 gridData: FlGridData(
                   show: true,
@@ -475,10 +501,7 @@ class _SpendingAreaChart extends StatelessWidget {
                         ],
                       ),
                     ),
-                    spots: [
-                      for (int i = 0; i < series.length; i++)
-                        FlSpot(i.toDouble(), series[i].value),
-                    ],
+                    spots: spots,
                   ),
                 ],
                 lineTouchData: LineTouchData(
@@ -542,14 +565,29 @@ class _DayPoint {
 // ----------------------------------------------------------------
 // Spending Breakdown — donut with % labels on slices + right legend
 // ----------------------------------------------------------------
-class _BreakdownDonut extends StatelessWidget {
+class _BreakdownDonut extends StatefulWidget {
   final double total;
   final List<MapEntry<dynamic, double>> items;
   const _BreakdownDonut({required this.total, required this.items});
 
   @override
+  State<_BreakdownDonut> createState() => _BreakdownDonutState();
+}
+
+class _BreakdownDonutState extends State<_BreakdownDonut> {
+  bool _showData = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 240), () {
+      if (mounted) setState(() => _showData = true);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (items.isEmpty) {
+    if (widget.items.isEmpty) {
       return GlassCard(
         padding: const EdgeInsets.all(20),
         child: Text(AppStrings.noDataYet,
@@ -557,17 +595,18 @@ class _BreakdownDonut extends StatelessWidget {
                 color: AppColorsOf.secondaryText(context))),
       );
     }
-    final safeTotal = total == 0 ? 1.0 : total;
+    final safeTotal = widget.total == 0 ? 1.0 : widget.total;
     final sections = <PieChartSectionData>[];
-    for (int i = 0; i < items.length; i++) {
-      final entry = items[i];
+    for (int i = 0; i < widget.items.length; i++) {
+      final entry = widget.items[i];
       final c = entry.key;
       final pct = entry.value / safeTotal;
       // Only show the % label on slices that are big enough (>= 6%).
       final showLabel = pct >= 0.06;
       sections.add(PieChartSectionData(
         color: c.color,
-        value: entry.value,
+        // 0 on first render, real value after _showData flips → arcs sweep in
+        value: _showData ? entry.value : 0.0001,
         title: showLabel ? '${(pct * 100).round()}%' : '',
         titleStyle: const TextStyle(
           color: Colors.white,
@@ -638,6 +677,8 @@ class _BreakdownDonut extends StatelessWidget {
                   alignment: Alignment.center,
                   children: [
                     PieChart(
+                      duration: const Duration(milliseconds: 1100),
+                      curve: Curves.easeOutCubic,
                       PieChartData(
                         sectionsSpace: 2,
                         centerSpaceRadius: 56,
@@ -649,8 +690,8 @@ class _BreakdownDonut extends StatelessWidget {
                       children: [
                         Text('Total Spent', style: TextStyles.label(context)),
                         const SizedBox(height: 4),
-                        Text(
-                          Formatters.money(total),
+                        AnimatedMoney(
+                          amount: widget.total,
                           style: TextStyles.money(context, size: 18),
                         ),
                       ],
@@ -662,7 +703,7 @@ class _BreakdownDonut extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: items
+                  children: widget.items
                       .map((e) {
                         final c = e.key;
                         final pctVal = ((e.value / safeTotal) * 100).round();

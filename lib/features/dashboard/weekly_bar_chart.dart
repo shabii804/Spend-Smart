@@ -4,19 +4,35 @@ import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/animated_money.dart';
 
 /// Vertical bar chart for weekly spending on the home dashboard.
-/// Reference design: 7 bars (Mon-Sun), rounded tops, indigo color,
-/// tooltip on the highest bar showing the amount.
-class WeeklyBarChart extends StatelessWidget {
+/// Bars grow from 0 to their final height on first render (animated entrance).
+class WeeklyBarChart extends StatefulWidget {
   final List<MapEntry<String, double>> data; // [(day, total), ...]
 
   const WeeklyBarChart({super.key, required this.data});
 
   @override
+  State<WeeklyBarChart> createState() => _WeeklyBarChartState();
+}
+
+class _WeeklyBarChartState extends State<WeeklyBarChart> {
+  bool _showData = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Slight delay so fl_chart's swap animation triggers and bars grow up.
+    Future.delayed(const Duration(milliseconds: 120), () {
+      if (mounted) setState(() => _showData = true);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final data = widget.data;
     final maxVal = data.fold<double>(0, (m, e) => e.value > m ? e.value : m);
-    // Round up to a nice value (1k, 2k, 5k) for cleaner y-axis labels.
     final safeMax = _niceMax(maxVal);
     final activeIdx = data.indexWhere((e) => e.value == maxVal);
     final safeActiveIdx = activeIdx < 0 ? 0 : activeIdx;
@@ -25,7 +41,6 @@ class WeeklyBarChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 12, 12),
       decoration: BoxDecoration(
-        // Subtle linear gradient background — indigo tint fading to card surface.
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -72,12 +87,18 @@ class WeeklyBarChart extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text('${Formatters.money(total)} this week',
-              style: TextStyles.caption(context)),
+          // Animated total — count-up tween
+          AnimatedMoney(
+            amount: total,
+            style: TextStyles.caption(context, weight: FontWeight.w600),
+          ),
           const SizedBox(height: 12),
           SizedBox(
             height: 180,
             child: BarChart(
+              // Longer swap animation = visible bar-grow entrance
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
                 maxY: safeMax,
@@ -88,7 +109,8 @@ class WeeklyBarChart extends StatelessWidget {
                       x: i,
                       barRods: [
                         BarChartRodData(
-                          toY: data[i].value,
+                          // 0 on first render, real value after _showData flips
+                          toY: _showData ? data[i].value : 0,
                           color: i == safeActiveIdx && maxVal > 0
                               ? AppColors.primaryIndigo
                               : AppColors.primaryIndigo.withOpacity(0.32),
@@ -102,7 +124,7 @@ class WeeklyBarChart extends StatelessWidget {
                           ),
                         ),
                       ],
-                      showingTooltipIndicators: i == safeActiveIdx && maxVal > 0
+                      showingTooltipIndicators: i == safeActiveIdx && maxVal > 0 && _showData
                           ? [0]
                           : [],
                     ),

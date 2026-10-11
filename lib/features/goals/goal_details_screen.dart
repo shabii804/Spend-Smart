@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/animated_money.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../models/goal.dart';
@@ -64,8 +65,8 @@ class GoalDetailsScreen extends StatelessWidget {
                       child: Icon(goal.icon, color: Colors.white, size: 40),
                     ),
                     const SizedBox(height: 14),
-                    Text(
-                      Formatters.money(goal.savedAmount),
+                    AnimatedMoney(
+                      amount: goal.savedAmount,
                       style: TextStyles.moneyHero(context, color: Colors.white),
                     ),
                     const SizedBox(height: 4),

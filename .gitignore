@@ -1,2 +1,25 @@
+# Build artifacts (Flutter/Dart)
+spendsmart/.dart_tool/
+spendsmart/.flutter-plugins
+spendsmart/.flutter-plugins-dependencies
+spendsmart/.packages
+spendsmart/build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated screenshots + zips (don't commit)
+download/
+upload/
+*.zip
+*.log
+
+# Skills + node
 skills/
 node_modules/

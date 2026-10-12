@@ -38,3 +38,28 @@ Stage Summary:
 - Deliverables: 2 new files (motion_debug_screen.dart, motion_test.dart), 4 modified files (empty_state.dart, home_screen.dart, main_shell.dart, add_expense_screen.dart).
 - All animation controllers properly disposed. Reduce-motion respected throughout (static fallbacks).
 - GitHub Actions should auto-deploy to Pages within 2-3 minutes.
+
+---
+Task ID: motion-compile-fix
+Agent: Shabii (main)
+Task: Fix web compile errors that broke Build #29
+
+Work Log:
+- Pushed commit 4c2f988 bundled with prior session commits 30559ff and 19a8792 (which were never pushed). The combined push triggered Build #29 which failed at the dart2js step (Step #5 "Build web app").
+- Fetched run logs via GitHub API. Two concrete errors found:
+  1. lib/core/motion/app_logo.dart: "Error: The getter 'alignment' isn't defined for the class 'Alignment'." — RadialGradient's center param expects AlignmentGeometry; Alignment has no `.alignment` getter.
+  2. lib/core/motion/motion_widgets.dart: "Error: The getter 'math' isn't defined for the class 'ShakeWidgetState'." — ShakeWidgetState.build uses math.sin() but dart:math was not imported.
+- Fix #1: replaced `Alignment.topLeft.alignment` with `Alignment.topLeft` directly (the enum value IS an AlignmentGeometry).
+- Fix #2: added `import 'dart:math' as math;` at the top of motion_widgets.dart.
+- Scanned lib/ for similar latent issues:
+  - Searched for other `Alignment.*.alignment` misuses — none found.
+  - Searched for other `math.` usages — only analytics_screen.dart (which already had `import 'dart:math' as math;`) and motion_widgets.dart (now fixed).
+  - Searched for `pi` usages — confetti_burst.dart already imports `dart:math` (unprefixed).
+  - Verified home_screen _BellButton uses numeric literal `3.14159` (no import needed).
+- Committed fix as 652fdbd, pushed to origin main.
+- Build #30 (status check): completed/success — Pages deploy should be live.
+
+Stage Summary:
+- Root cause: prior session's commits (30559ff, 19a8792) introduced app_logo.dart and motion_widgets.dart but were never pushed/compiled, so latent errors never surfaced.
+- Both files fixed. App now compiles cleanly with dart2js.
+- GitHub Pages deployment live at https://shabii804.github.io/Spend-Smart/

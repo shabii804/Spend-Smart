@@ -21,6 +21,7 @@ import '../settings/general_settings_screen.dart';
 import '../settings/notification_preferences_screen.dart';
 import '../settings/theme_settings_screen.dart';
 import '../expenses/transactions_screen.dart';
+import '../dev/motion_debug_screen.dart';
 import 'home_screen.dart';
 
 /// Main app shell — IndexedStack of Home / Transactions / Goals / Profile
@@ -112,6 +113,9 @@ class _MainShellState extends State<MainShell> {
             break;
           case 'addMoney':
             if (goalId != null) target = AddMoneyScreen(goalId: goalId);
+            break;
+          case 'motionDebug':
+            target = const MotionDebugScreen();
             break;
         }
         if (target != null) {

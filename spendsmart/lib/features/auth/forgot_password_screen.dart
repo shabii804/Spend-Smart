@@ -126,21 +126,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   Widget _buildForm() {
     return Form(key: _formKey,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        TextFormField(
-          controller: _emailCtrl, validator: Validators.email,
+        AuthTextField(
+          controller: _emailCtrl,
+          validator: Validators.email,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.done,
-          style: TextStyles.body(context).copyWith(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Email',
-            labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-            floatingLabelStyle: TextStyle(color: AppColors.primaryIndigo.withOpacity(0.9)),
-            hintText: 'you@example.com',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
-            prefixIcon: Icon(Icons.alternate_email_rounded,
-                size: 20, color: Colors.white.withOpacity(0.5)),
-            errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
-          ),
+          label: 'Email',
+          hint: 'you@example.com',
+          prefixIcon: Icons.alternate_email_rounded,
         ),
         const SizedBox(height: 20),
         MorphingLoadingButton(

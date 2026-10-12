@@ -7,6 +7,19 @@ import '../../core/widgets/premium_motion.dart';
 /// Shared auth components used by Login, Register, and Forgot Password screens.
 /// Keeping these in ONE file guarantees visual consistency across all auth screens.
 
+// ═══ Centralized spacing + sizing tokens ═══
+class AuthSpacing {
+  AuthSpacing._();
+  static const double xs = 8;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 24;
+  static const double xl = 32;
+  static const double contentMaxWidth = 440;
+  static const double fieldHeight = 56;
+  static const double buttonHeight = 54;
+}
+
 /// Glassmorphic container — frosted-glass style card over the bg image.
 /// Used by all 3 auth screens to wrap form fields.
 class AuthGlassContainer extends StatelessWidget {
@@ -287,24 +300,29 @@ class AuthScreenScaffold extends StatelessWidget {
                   const Positioned.fill(
                     child: AmbientBackgroundAnimation(),
                   ),
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (showBackButton) ...[
-                          const SizedBox(height: 12),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: AuthBackButton(
-                              onTap: onBack ?? () => Navigator.of(context).maybePop(),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                        ] else
-                          const SizedBox(height: 24),
-                        child,
-                      ],
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: AuthSpacing.contentMaxWidth),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (showBackButton) ...[
+                              const SizedBox(height: AuthSpacing.sm),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: AuthBackButton(
+                                  onTap: onBack ?? () => Navigator.of(context).maybePop(),
+                                ),
+                              ),
+                              const SizedBox(height: AuthSpacing.xs),
+                            ] else
+                              const SizedBox(height: AuthSpacing.lg),
+                            child,
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -339,6 +357,99 @@ class AuthDividerRow extends StatelessWidget {
           child: Divider(color: Colors.white.withOpacity(0.18), height: 1),
         ),
       ],
+    );
+  }
+}
+
+// ═══ AuthTextField — shared, consistent text field with floating label ═══
+class AuthTextField extends StatelessWidget {
+  final TextEditingController? controller;
+  final String label;
+  final String? hint;
+  final IconData? prefixIcon;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
+  final TextInputAction? textInputAction;
+  final bool obscureText;
+  final Widget? suffix;
+
+  const AuthTextField({
+    super.key,
+    this.controller,
+    required this.label,
+    this.hint,
+    this.prefixIcon,
+    this.keyboardType,
+    this.validator,
+    this.textInputAction = TextInputAction.next,
+    this.obscureText = false,
+    this.suffix,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      obscureText: obscureText,
+      style: TextStyles.body(context).copyWith(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        floatingLabelStyle:
+            TextStyle(color: AppColors.primaryIndigo.withOpacity(0.9)),
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, size: 20, color: Colors.white.withOpacity(0.5))
+            : null,
+        suffixIcon: suffix,
+        errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      ),
+    );
+  }
+}
+
+// ═══ AuthSocialCircle — shared icon-only social login circle ═══
+class AuthSocialCircle extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final double size;
+  const AuthSocialCircle({
+    super.key,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    this.size = 48,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(size),
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 22, color: color),
+        ),
+      ),
     );
   }
 }

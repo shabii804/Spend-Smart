@@ -95,21 +95,13 @@ class _LoginScreenState extends State<LoginScreen>
               child: Form(key: _formKey,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   // Email
-                  TextFormField(
-                    controller: _emailCtrl, validator: Validators.email,
+                  AuthTextField(
+                    controller: _emailCtrl,
+                    validator: Validators.email,
                     keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    style: TextStyles.body(context).copyWith(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                      floatingLabelStyle: TextStyle(color: AppColors.primaryIndigo.withOpacity(0.9)),
-                      hintText: 'you@example.com',
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
-                      prefixIcon: Icon(Icons.alternate_email_rounded,
-                          size: 20, color: Colors.white.withOpacity(0.5)),
-                      errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
-                    ),
+                    label: 'Email',
+                    hint: 'you@example.com',
+                    prefixIcon: Icons.alternate_email_rounded,
                   ),
                   const SizedBox(height: 16),
                   // Password
@@ -172,17 +164,17 @@ class _LoginScreenState extends State<LoginScreen>
                       .copyWith(color: Colors.white.withOpacity(0.5))),
               const SizedBox(height: 16),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                _SocialCircle(
+                AuthSocialCircle(
                   icon: Icons.g_mobiledata_rounded,
                   color: const Color(0xFFEA4335),
                   onTap: () => _demoSnack('Google sign-in')),
                 const SizedBox(width: 16),
-                _SocialCircle(
+                AuthSocialCircle(
                   icon: Icons.apple_rounded,
                   color: Colors.white,
                   onTap: () => _demoSnack('Apple sign-in')),
                 const SizedBox(width: 16),
-                _SocialCircle(
+                AuthSocialCircle(
                   icon: Icons.facebook_rounded,
                   color: const Color(0xFF1877F2),
                   onTap: () => _demoSnack('Facebook sign-in')),
@@ -224,31 +216,3 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-/// Premium social login circle — icon only, no text label.
-class _SocialCircle extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  const _SocialCircle({required this.icon, required this.color, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(28),
-        onTap: onTap,
-        child: Container(
-          width: 56, height: 56,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
-            border: Border.all(color: Colors.white.withOpacity(0.18)),
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Icon(icon, size: 24, color: color),
-        ),
-      ),
-    );
-  }
-}

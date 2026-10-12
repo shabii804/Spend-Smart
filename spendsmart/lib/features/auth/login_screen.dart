@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const AuthFloatingLogo(icon: Icons.account_balance_wallet_rounded),
-                const SizedBox(height: 16),
+                const SizedBox(height: AuthSpacing.md),
                 Text('Welcome Back',
                     style: TextStyles.h1(context).copyWith(
                       color: Colors.white, fontSize: 28, letterSpacing: -0.5)),
@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen>
               ],
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: AuthSpacing.lg),
 
           // ═══ Form (glassmorphic) ═══
           AuthStaggerItem(controller: _entrance, start: 0.12,
@@ -102,8 +102,9 @@ class _LoginScreenState extends State<LoginScreen>
                     label: 'Email',
                     hint: 'you@example.com',
                     prefixIcon: Icons.alternate_email_rounded,
+                    autofillHints: const [AutofillHints.email],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AuthSpacing.md),
                   // Password
                   AuthPasswordField(controller: _pwdCtrl, label: 'Password',
                       textInputAction: TextInputAction.done),
@@ -146,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen>
                               .copyWith(color: AppColors.primaryIndigo)),
                     ),
                   ]),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AuthSpacing.lg),
                   // Login button (primary CTA)
                   MorphingLoadingButton(
                     label: 'Log In', loading: _loading, onPressed: _login),
@@ -162,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen>
               Text('or continue with',
                   style: TextStyles.caption(context)
                       .copyWith(color: Colors.white.withOpacity(0.5))),
-              const SizedBox(height: 16),
+              const SizedBox(height: AuthSpacing.md),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 AuthSocialCircle(
                   icon: Icons.g_mobiledata_rounded,
@@ -181,35 +182,17 @@ class _LoginScreenState extends State<LoginScreen>
               ]),
             ]),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: AuthSpacing.xl),
           // ═══ Signup CTA (prominent) ═══
           AuthStaggerItem(controller: _entrance, start: 0.32,
-            child: GestureDetector(
+            child: AuthFooterLink(
+              prompt: "Don't have an account? ",
+              action: 'Sign Up',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const RegisterScreen())),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  border: Border.all(color: Colors.white.withOpacity(0.15)),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text("Don't have an account? ",
-                      style: TextStyles.body(context)
-                          .copyWith(color: Colors.white.withOpacity(0.6))),
-                  const SizedBox(width: 4),
-                  Text('Sign Up',
-                      style: TextStyles.body(context, weight: FontWeight.w700)
-                          .copyWith(color: Colors.white)),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.arrow_forward_rounded,
-                      color: Colors.white, size: 18),
-                ]),
-              ),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: AuthSpacing.lg),
         ],
       ),
     );

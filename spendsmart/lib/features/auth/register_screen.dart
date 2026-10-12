@@ -84,7 +84,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const AuthFloatingLogo(icon: Icons.person_add_rounded),
-                const SizedBox(height: 10),
+                const SizedBox(height: AuthSpacing.sm),
                 Text('Create Account',
                     style: TextStyles.h2(context).copyWith(
                       color: Colors.white, fontSize: 22, letterSpacing: -0.3)),
@@ -95,7 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AuthSpacing.md),
 
           // ═══ Form (glassmorphic — compact spacing) ═══
           AuthStaggerItem(controller: _entrance, start: 0.12,
@@ -109,8 +109,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                     label: 'Full Name',
                     hint: 'Muhammad Shoaib',
                     prefixIcon: Icons.person_outline_rounded,
+                    autofillHints: const [AutofillHints.fullName],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AuthSpacing.sm),
                   // Email
                   AuthTextField(
                     controller: _emailCtrl,
@@ -119,17 +120,18 @@ class _RegisterScreenState extends State<RegisterScreen>
                     label: 'Email',
                     hint: 'you@example.com',
                     prefixIcon: Icons.alternate_email_rounded,
+                    autofillHints: const [AutofillHints.email],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AuthSpacing.sm),
                   // Password + strength meter
                   AuthPasswordField(controller: _pwdCtrl, label: 'Password'),
                   const SizedBox(height: 4),
                   PasswordStrengthMeter(password: _pwdCtrl.text),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AuthSpacing.sm),
                   // Confirm password
                   AuthPasswordField(controller: _confirmCtrl, label: 'Confirm Password',
                       validator: (v) => Validators.confirmPassword(v, _pwdCtrl.text)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AuthSpacing.sm),
                   // Terms
                   GestureDetector(
                     onTap: () => setState(() => _acceptTerms = !_acceptTerms),
@@ -154,7 +156,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               .copyWith(color: Colors.white.withOpacity(0.8)))),
                     ]),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AuthSpacing.sm),
                   // Create Account button
                   MorphingLoadingButton(
                     label: 'Create Account', loading: _loading, onPressed: _register),
@@ -162,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AuthSpacing.md),
 
           // ═══ Social (icon-only circles — compact) ═══
           AuthStaggerItem(controller: _entrance, start: 0.24,
@@ -180,7 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   onTap: () => _demoSnack('Facebook sign-up')),
             ]),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AuthSpacing.lg),
 
           // ═══ Sign in CTA (glassmorphic + arrow) ═══
           AuthStaggerItem(controller: _entrance, start: 0.32,
@@ -209,7 +211,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AuthSpacing.md),
         ],
       ),
     );

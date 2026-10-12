@@ -62,7 +62,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                   iconColor: _sent ? AppColors.mint : AppColors.primaryIndigo,
                   size: 38,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AuthSpacing.md),
                 Text(
                   _sent ? 'Check Your Inbox' : 'Reset Password',
                   style: TextStyles.h1(context).copyWith(
@@ -81,7 +81,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               ],
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: AuthSpacing.lg),
 
           // ═══ Form / success (glassmorphic) ═══
           AuthStaggerItem(controller: _entrance, start: 0.12,
@@ -89,35 +89,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               child: _sent ? _buildSuccessState() : _buildForm(),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: AuthSpacing.lg),
 
           // ═══ Back to login CTA (glassmorphic + arrow — matches login) ═══
           AuthStaggerItem(controller: _entrance, start: 0.2,
-            child: GestureDetector(
+            child: AuthFooterLink(
+              prompt: 'Remember your password? ',
+              action: 'Back to Login',
+              arrow: Icons.arrow_back_rounded,
               onTap: () => Navigator.of(context).maybePop(),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  border: Border.all(color: Colors.white.withOpacity(0.15)),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text('Remember your password? ',
-                      style: TextStyles.body(context)
-                          .copyWith(color: Colors.white.withOpacity(0.6))),
-                  const SizedBox(width: 4),
-                  Text('Back to Login',
-                      style: TextStyles.body(context, weight: FontWeight.w700)
-                          .copyWith(color: Colors.white)),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.arrow_back_rounded,
-                      color: Colors.white, size: 18),
-                ]),
-              ),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: AuthSpacing.lg),
         ],
       ),
     );
@@ -134,8 +117,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
           label: 'Email',
           hint: 'you@example.com',
           prefixIcon: Icons.alternate_email_rounded,
+          autofillHints: const [AutofillHints.email],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: AuthSpacing.lg),
         MorphingLoadingButton(
           label: 'Send Reset Link', loading: _loading, onPressed: _send),
       ]),
@@ -157,13 +141,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
             style: TextStyles.body(context, weight: FontWeight.w700)
                 .copyWith(color: Colors.white))),
       ]),
-      const SizedBox(height: 16),
+      const SizedBox(height: AuthSpacing.md),
       Text(
         'Check your inbox and follow the instructions to reset your password. The link will expire in 30 minutes.',
         style: TextStyles.caption(context)
             .copyWith(color: Colors.white.withOpacity(0.7)),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: AuthSpacing.lg),
       MorphingLoadingButton(
         label: 'Back to Login',
         icon: Icons.arrow_back_rounded,

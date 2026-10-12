@@ -28,11 +28,11 @@ jobs:
           cache: true
 
       - name: Install dependencies
+        working-directory: spendsmart
         run: flutter pub get
 
       - name: Build web app for GitHub Pages
-        # The --base-href must match the repo name so assets load correctly
-        # when served at https://<user>.github.io/<repo>/
+        working-directory: spendsmart
         run: flutter build web --base-href "/Spend-Smart/" --release
 
       - name: Setup Pages
@@ -41,7 +41,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/web
+          path: spendsmart/build/web
 
   deploy:
     needs: build

@@ -118,3 +118,34 @@ Stage Summary:
 - Responsive: Flexible + SingleChildScrollView + maxWidth 440 + SafeArea + Scaffold's default resizeToAvoidBottomInset.
 - Status bar fixed via AnnotatedRegion<SystemUiOverlayStyle>.
 - Live at https://shabii804.github.io/Spend-Smart/?auth=login (or register / forgot).
+
+---
+Task ID: register-single-page-conditional-meter
+Agent: Shabii (main)
+Task: Register screen — single page no scroll + strength meter only when typing
+
+Work Log:
+- Made AuthGlassContainer accept optional `padding` parameter (default 18, backwards-compatible).
+- Register screen spacing tightened:
+  - Logo 72 → 56
+  - Heading 26 → 24
+  - Subtitle 14 → 13
+  - Card padding 18 → 14
+  - Gap above form: lg(24) → md(16)
+  - Gap below form: md(16) → sm(12)
+  - Gap between social buttons: sm(12) → xs(8)
+  - Gap above footer: lg(24) → md(16)
+  - Gap below footer: lg(24) → md(16)
+  - Field-to-field gaps remain at sm(12) for input breathing room
+  - Total vertical savings ~60px → fits typical 700px phone viewport without scroll
+- PasswordStrengthMeter wrapped in AnimatedSize(200ms easeOutCubic):
+  - When _pwdText is empty → SizedBox.shrink() (height 0, meter fully collapses)
+  - When user types → PasswordStrengthMeter(password: _pwdText) animates in
+  - 'Too short' label only shows once the user has typed at least one character
+- Removed broken _LiveStrengthMeter class (was returning SizedBox.shrink() by mistake).
+- Commit 6db0326 pushed to origin main.
+- Build #32: completed/success.
+
+Stage Summary:
+- Register screen now fits on a single viewport without scrolling on typical phone screens.
+- Password strength label only appears when user actually types in the password field.

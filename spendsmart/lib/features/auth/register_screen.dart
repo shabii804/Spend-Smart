@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
@@ -24,9 +26,11 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _pwdCtrl = TextEditingController();
-  final _confirmCtrl = TextEditingController();
   bool _acceptTerms = false;
   bool _loading = false;
+  bool _nameValid = false;
+  bool _emailValid = false;
+  bool _pwdValid = false;
   late final AnimationController _entrance = AnimationController(
     vsync: this, duration: const Duration(milliseconds: 800),
   );
@@ -35,13 +39,26 @@ class _RegisterScreenState extends State<RegisterScreen>
   void initState() {
     super.initState();
     _entrance.forward();
-    _pwdCtrl.addListener(() => setState(() {}));
+    _nameCtrl.addListener(() {
+      final v = _nameCtrl.text.trim().isNotEmpty;
+      if (v != _nameValid) setState(() => _nameValid = v);
+    });
+    _emailCtrl.addListener(() {
+      final v = RegExp(r'^[\w.+-]+@[\w-]+\.[\w.-]+$').hasMatch(_emailCtrl.text.trim());
+      if (v != _emailValid) setState(() => _emailValid = v);
+    });
+    _pwdCtrl.addListener(() {
+      final v = _pwdCtrl.text.length >= 8;
+      if (v != _pwdValid) setState(() => _pwdValid = v);
+    });
   }
+
+  bool get _isFormValid => _nameValid && _emailValid && _pwdValid && _acceptTerms;
 
   @override
   void dispose() {
     _nameCtrl.dispose(); _emailCtrl.dispose(); _pwdCtrl.dispose();
-    _confirmCtrl.dispose(); _entrance.dispose();
+    _entrance.dispose();
     super.dispose();
   }
 
@@ -78,31 +95,31 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ═══ Logo + heading (compact — fits screen) ═══
+          // ═══ Logo + heading ═══
           AuthStaggerItem(controller: _entrance, start: 0.05,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const AuthFloatingLogo(icon: Icons.person_add_rounded),
-                const SizedBox(height: AuthSpacing.sm),
+                const SizedBox(height: AuthSpacing.md),
                 Text('Create Account',
-                    style: TextStyles.h2(context).copyWith(
-                      color: Colors.white, fontSize: 22, letterSpacing: -0.3)),
-                const SizedBox(height: 2),
+                    style: TextStyles.h1(context).copyWith(
+                      color: AppColors.darkTextPrimary, fontSize: 26)),
+                const SizedBox(height: 4),
                 Text('Start your smart spending journey.',
-                    style: TextStyles.caption(context)
-                        .copyWith(color: Colors.white.withOpacity(0.7))),
+                    style: TextStyles.body(context,
+                        color: AppColors.darkTextSecondary)),
               ],
             ),
           ),
           const SizedBox(height: AuthSpacing.md),
 
-          // ═══ Form (glassmorphic — compact spacing) ═══
+          // ═══ Form (solid surface card) ═══
           AuthStaggerItem(controller: _entrance, start: 0.12,
             child: AuthGlassContainer(
               child: Form(key: _formKey,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  // Full name
+                  // Full Name
                   AuthTextField(
                     controller: _nameCtrl,
                     validator: Validators.required,
@@ -123,98 +140,177 @@ class _RegisterScreenState extends State<RegisterScreen>
                     autofillHints: const [AutofillHints.email],
                   ),
                   const SizedBox(height: AuthSpacing.sm),
-                  // Password + strength meter
-                  AuthPasswordField(controller: _pwdCtrl, label: 'Password'),
-                  const SizedBox(height: 4),
+                  // Password (single field — no confirm)
+                  AuthPasswordField(
+                    controller: _pwdCtrl,
+                    label: 'Password',
+                  ),
+                  const SizedBox(height: AuthSpacing.xs),
+                  // Strength meter + requirement hint
                   PasswordStrengthMeter(password: _pwdCtrl.text),
+                  const SizedBox(height: 4),
+                  Text('Use at least 8 characters',
+                      style: TextStyles.caption(context)
+                          .copyWith(color: AppColors.darkTextTertiary, fontSize: 11)),
                   const SizedBox(height: AuthSpacing.sm),
-                  // Confirm password
-                  AuthPasswordField(controller: _confirmCtrl, label: 'Confirm Password',
-                      validator: (v) => Validators.confirmPassword(v, _pwdCtrl.text)),
-                  const SizedBox(height: AuthSpacing.sm),
-                  // Terms
+                  // Terms checkbox (24px) with tappable links
                   GestureDetector(
                     onTap: () => setState(() => _acceptTerms = !_acceptTerms),
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         curve: Curves.easeOutCubic,
-                        width: 20, height: 20, margin: const EdgeInsets.only(top: 2),
+                        width: 24, height: 24, margin: const EdgeInsets.only(top: 2),
                         decoration: BoxDecoration(
                           color: _acceptTerms ? AppColors.primaryIndigo : Colors.transparent,
                           border: Border.all(
-                            color: _acceptTerms ? AppColors.primaryIndigo : Colors.white.withOpacity(0.3),
+                            color: _acceptTerms ? AppColors.primaryIndigo : AppColors.darkBorder,
                             width: 1.5),
                           borderRadius: BorderRadius.circular(6)),
                         alignment: Alignment.center,
                         child: _acceptTerms
-                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
                           : null),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(AppStrings.acceptTerms,
-                          style: TextStyles.caption(context)
-                              .copyWith(color: Colors.white.withOpacity(0.8)))),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontFamily: 'PlusJakartaSans',
+                              fontSize: 12,
+                              color: AppColors.darkTextSecondary,
+                              height: 1.4,
+                            ),
+                            children: [
+                              const TextSpan(text: 'I accept the '),
+                              TextSpan(
+                                text: 'Terms',
+                                style: TextStyle(color: AppColors.primaryIndigo, fontWeight: FontWeight.w700),
+                                recognizer: TapGestureRecognizer()..onTap = () => _demoSnack('Terms'),
+                              ),
+                              const TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: TextStyle(color: AppColors.primaryIndigo, fontWeight: FontWeight.w700),
+                                recognizer: TapGestureRecognizer()..onTap = () => _demoSnack('Privacy Policy'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ]),
                   ),
-                  const SizedBox(height: AuthSpacing.sm),
-                  // Create Account button
+                  const SizedBox(height: AuthSpacing.md),
+                  // Create Account button (DISABLED until form valid)
                   MorphingLoadingButton(
-                    label: 'Create Account', loading: _loading, onPressed: _register),
+                    label: 'Create Account',
+                    loading: _loading,
+                    onPressed: _isFormValid ? _register : null,
+                  ),
                 ]),
               ),
             ),
           ),
           const SizedBox(height: AuthSpacing.md),
 
-          // ═══ Social (icon-only circles — compact) ═══
+          // ═══ Social: 2 full-width outlined buttons (matching login) ═══
           AuthStaggerItem(controller: _entrance, start: 0.24,
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              AuthSocialCircle(icon: Icons.g_mobiledata_rounded,
-                  color: const Color(0xFFEA4335),
-                  onTap: () => _demoSnack('Google sign-up')),
-              const SizedBox(width: 14),
-              AuthSocialCircle(icon: Icons.apple_rounded,
-                  color: Colors.white,
-                  onTap: () => _demoSnack('Apple sign-up')),
-              const SizedBox(width: 14),
-              AuthSocialCircle(icon: Icons.facebook_rounded,
-                  color: const Color(0xFF1877F2),
-                  onTap: () => _demoSnack('Facebook sign-up')),
+            child: Column(children: [
+              _SocialButton(
+                label: 'Continue with Google',
+                icon: Icons.g_mobiledata_rounded,
+                iconColor: const Color(0xFFEA4335),
+                onTap: () => _demoSnack('Google sign-up'),
+              ),
+              const SizedBox(height: AuthSpacing.xs),
+              _SocialButton(
+                label: 'Continue with Apple',
+                icon: Icons.apple_rounded,
+                iconColor: AppColors.darkTextPrimary,
+                onTap: () => _demoSnack('Apple sign-up'),
+              ),
             ]),
           ),
           const SizedBox(height: AuthSpacing.lg),
 
-          // ═══ Sign in CTA (glassmorphic + arrow) ═══
+          // ═══ Sign in link (simple centered text — matching login) ═══
           AuthStaggerItem(controller: _entrance, start: 0.32,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const LoginScreen())),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  border: Border.all(color: Colors.white.withOpacity(0.15)),
-                  borderRadius: BorderRadius.circular(14),
+            child: Center(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const LoginScreen())),
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontFamily: 'PlusJakartaSans',
+                      fontSize: 14,
+                      color: AppColors.darkTextSecondary,
+                    ),
+                    children: [
+                      const TextSpan(text: 'Already have an account? '),
+                      TextSpan(
+                        text: 'Sign In',
+                        style: TextStyle(
+                          color: AppColors.primaryIndigo,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text('Already have an account? ',
-                      style: TextStyles.caption(context)
-                          .copyWith(color: Colors.white.withOpacity(0.6))),
-                  const SizedBox(width: 4),
-                  Text('Sign In',
-                      style: TextStyles.body(context, weight: FontWeight.w700)
-                          .copyWith(color: Colors.white)),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.arrow_forward_rounded,
-                      color: Colors.white, size: 16),
-                ]),
               ),
             ),
           ),
-          const SizedBox(height: AuthSpacing.md),
+          const SizedBox(height: AuthSpacing.lg),
         ],
       ),
     );
   }
 }
 
+/// Full-width outlined social button (matches login screen).
+class _SocialButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color iconColor;
+  final VoidCallback onTap;
+  const _SocialButton({
+    required this.label,
+    required this.icon,
+    required this.iconColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () { HapticFeedback.lightImpact(); onTap(); },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            border: Border.all(color: AppColors.darkBorder, width: 1.5),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20, color: iconColor),
+              const SizedBox(width: 10),
+              Text(label,
+                  style: const TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkTextPrimary,
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

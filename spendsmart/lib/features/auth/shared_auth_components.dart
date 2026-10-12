@@ -350,8 +350,7 @@ class AuthScreenScaffold extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
 

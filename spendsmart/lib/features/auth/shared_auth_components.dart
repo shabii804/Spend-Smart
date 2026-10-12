@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
-import '../../core/widgets/premium_motion.dart';
 
 /// Shared auth components used by Login, Register, and Forgot Password screens.
 /// Keeping these in ONE file guarantees visual consistency across all auth screens.
@@ -189,7 +188,7 @@ class AuthBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(label: 'Back', button: true, child: GestureDetector(
       onTap: onTap,
       child: Container(
         width: 40,
@@ -202,7 +201,7 @@ class AuthBackButton extends StatelessWidget {
         alignment: Alignment.center,
         child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
       ),
-    );
+    ));
   }
 }
 
@@ -529,7 +528,7 @@ class AuthFooterLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(label: 'Back', button: true, child: GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

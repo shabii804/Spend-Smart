@@ -54,7 +54,7 @@ class _GlassCardState extends State<GlassCard>
     return AnimatedBuilder(
       animation: _press,
       builder: (context, child) {
-        final scale = 1.0 - (_press.value * 0.02);
+        final scale = 1.0 - (_press.value * 0.03);
         return Transform.scale(scale: scale, child: child);
       },
       child: Container(

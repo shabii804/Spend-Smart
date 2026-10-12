@@ -156,14 +156,16 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _floatingShapes() {
-    return Stack(children: [
-      Positioned(top: 100, left: -40,
-        child: _floatingCircle(120, AppColors.primaryPurple.withOpacity(0.08), _rings)),
-      Positioned(bottom: 200, right: -30,
-        child: _floatingCircle(80, AppColors.mint.withOpacity(0.06), _rings)),
-      Positioned(top: 300, right: 60,
-        child: _floatingCircle(50, Colors.white.withOpacity(0.04), _rings)),
-    ]);
+    return Positioned.fill(
+      child: Stack(children: [
+        Positioned(top: 100, left: -40,
+          child: _floatingCircle(120, AppColors.primaryPurple.withOpacity(0.08), _rings)),
+        Positioned(bottom: 200, right: -30,
+          child: _floatingCircle(80, AppColors.mint.withOpacity(0.06), _rings)),
+        Positioned(top: 300, right: 60,
+          child: _floatingCircle(50, Colors.white.withOpacity(0.04), _rings)),
+      ]),
+    );
   }
 
   Widget _floatingCircle(double size, Color color, AnimationController anim) {

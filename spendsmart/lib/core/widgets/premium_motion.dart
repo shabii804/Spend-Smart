@@ -228,17 +228,19 @@ class PasswordStrengthMeter extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Motion.easeOut,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        ClipRRect(borderRadius: BorderRadius.circular(3),
-          child: Stack(children: [
-            Container(height: 4, color: AppColors.primaryIndigo.withOpacity(0.12)),
-            AnimatedContainer(duration: const Duration(milliseconds: 300), curve: Motion.easeOut,
-              height: 4, width: (strength * MediaQuery.sizeOf(context).width).clamp(0.0, double.infinity),
-              decoration: BoxDecoration(gradient: LinearGradient(colors: [color, color.withOpacity(0.7)]), borderRadius: BorderRadius.circular(3))),
-          ])),
-        const SizedBox(height: 6),
-        Text(label, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: color, fontSize: 11)),
-      ]),
+      child: LayoutBuilder(builder: (context, constraints) {
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          ClipRRect(borderRadius: BorderRadius.circular(3),
+            child: Stack(children: [
+              Container(height: 4, color: AppColors.primaryIndigo.withOpacity(0.12)),
+              AnimatedContainer(duration: const Duration(milliseconds: 300), curve: Motion.easeOut,
+                height: 4, width: (strength * constraints.maxWidth).clamp(0.0, constraints.maxWidth),
+                decoration: BoxDecoration(gradient: LinearGradient(colors: [color, color.withOpacity(0.7)]), borderRadius: BorderRadius.circular(3))),
+            ])),
+          const SizedBox(height: 6),
+          Text(label, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: color, fontSize: 11)),
+        ]);
+      }),
     );
   }
 

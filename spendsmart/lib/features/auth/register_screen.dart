@@ -103,40 +103,22 @@ class _RegisterScreenState extends State<RegisterScreen>
               child: Form(key: _formKey,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   // Full name
-                  TextFormField(
-                    controller: _nameCtrl, validator: Validators.required,
-                    textInputAction: TextInputAction.next,
-                    style: TextStyles.body(context).copyWith(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Full Name',
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                      floatingLabelStyle: TextStyle(color: AppColors.primaryIndigo.withOpacity(0.9)),
-                      hintText: 'Muhammad Shoaib',
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
-                      prefixIcon: Icon(Icons.person_outline_rounded,
-                          size: 20, color: Colors.white.withOpacity(0.5)),
-                      errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    ),
+                  AuthTextField(
+                    controller: _nameCtrl,
+                    validator: Validators.required,
+                    label: 'Full Name',
+                    hint: 'Muhammad Shoaib',
+                    prefixIcon: Icons.person_outline_rounded,
                   ),
                   const SizedBox(height: 10),
                   // Email
-                  TextFormField(
-                    controller: _emailCtrl, validator: Validators.email,
+                  AuthTextField(
+                    controller: _emailCtrl,
+                    validator: Validators.email,
                     keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    style: TextStyles.body(context).copyWith(color: Colors.white),
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                      floatingLabelStyle: TextStyle(color: AppColors.primaryIndigo.withOpacity(0.9)),
-                      hintText: 'you@example.com',
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
-                      prefixIcon: Icon(Icons.alternate_email_rounded,
-                          size: 20, color: Colors.white.withOpacity(0.5)),
-                      errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    ),
+                    label: 'Email',
+                    hint: 'you@example.com',
+                    prefixIcon: Icons.alternate_email_rounded,
                   ),
                   const SizedBox(height: 10),
                   // Password + strength meter
@@ -185,15 +167,15 @@ class _RegisterScreenState extends State<RegisterScreen>
           // ═══ Social (icon-only circles — compact) ═══
           AuthStaggerItem(controller: _entrance, start: 0.24,
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              _SocialCircle(icon: Icons.g_mobiledata_rounded,
+              AuthSocialCircle(icon: Icons.g_mobiledata_rounded,
                   color: const Color(0xFFEA4335),
                   onTap: () => _demoSnack('Google sign-up')),
               const SizedBox(width: 14),
-              _SocialCircle(icon: Icons.apple_rounded,
+              AuthSocialCircle(icon: Icons.apple_rounded,
                   color: Colors.white,
                   onTap: () => _demoSnack('Apple sign-up')),
               const SizedBox(width: 14),
-              _SocialCircle(icon: Icons.facebook_rounded,
+              AuthSocialCircle(icon: Icons.facebook_rounded,
                   color: const Color(0xFF1877F2),
                   onTap: () => _demoSnack('Facebook sign-up')),
             ]),
@@ -234,30 +216,3 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 }
 
-class _SocialCircle extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  const _SocialCircle({required this.icon, required this.color, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Container(
-          width: 48, height: 48,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
-            border: Border.all(color: Colors.white.withOpacity(0.18)),
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Icon(icon, size: 22, color: color),
-        ),
-      ),
-    );
-  }
-}

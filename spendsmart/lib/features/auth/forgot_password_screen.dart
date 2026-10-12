@@ -57,47 +57,61 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Floating logo (icon changes based on _sent state)
+          // Floating logo (centered)
           AuthStaggerItem(controller: _entrance, start: 0.05,
-            child: Column(children: [
-              AuthFloatingLogo(
-                icon: _sent ? Icons.mark_email_read_rounded : Icons.lock_reset_rounded,
-                iconColor: _sent ? AppColors.mint : AppColors.primaryIndigo,
-                size: 38,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _sent ? 'Check Your Inbox' : AppStrings.forgotPasswordTitle,
-                style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 24),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _sent ? AppStrings.resetLinkSent : AppStrings.forgotPasswordSubtitle,
-                style: TextStyles.body(context).copyWith(color: Colors.white.withOpacity(0.78)),
-                textAlign: TextAlign.center,
-              ),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                AuthFloatingLogo(
+                  icon: _sent ? Icons.mark_email_read_rounded : Icons.lock_reset_rounded,
+                  iconColor: _sent ? AppColors.mint : AppColors.primaryIndigo,
+                  size: 38,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _sent ? 'Check Your Inbox' : AppStrings.forgotPasswordTitle,
+                  style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 24),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _sent ? AppStrings.resetLinkSent : AppStrings.forgotPasswordSubtitle,
+                  style: TextStyles.body(context).copyWith(color: Colors.white.withOpacity(0.78)),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           // Glassmorphic form OR success state
           AuthStaggerItem(controller: _entrance, start: 0.15,
             child: AuthGlassContainer(
               child: _sent ? _buildSuccessState() : _buildForm(),
             ),
           ),
-          const SizedBox(height: 12),
-          // Back to login link
+          const SizedBox(height: 20),
+          // Back to login button (prominent)
           AuthStaggerItem(controller: _entrance, start: 0.25,
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text('Remember your password? ',
-                  style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.7))),
-              GestureDetector(onTap: () => Navigator.of(context).maybePop(),
-                child: Text(AppStrings.backToLogin,
-                    style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: Colors.white))),
-            ]),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).maybePop(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  border: Border.all(color: Colors.white.withOpacity(0.18)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Text('Remember your password? ',
+                      style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.7))),
+                  const SizedBox(width: 4),
+                  Text(AppStrings.backToLogin,
+                      style: TextStyles.body(context, weight: FontWeight.w700).copyWith(color: Colors.white)),
+                ]),
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
         ],
       ),
     );

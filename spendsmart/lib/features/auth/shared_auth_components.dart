@@ -302,7 +302,7 @@ class AuthScreenScaffold extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                         ] else
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 24),
                         child,
                       ],
                     ),

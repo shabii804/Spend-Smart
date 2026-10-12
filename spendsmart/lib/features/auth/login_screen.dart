@@ -27,8 +27,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _loading = false;
   bool _rememberMe = true;
   late final AnimationController _entrance = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 800),
+    vsync: this, duration: const Duration(milliseconds: 800),
   );
 
   @override
@@ -39,9 +38,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
-    _pwdCtrl.dispose();
-    _entrance.dispose();
+    _emailCtrl.dispose(); _pwdCtrl.dispose(); _entrance.dispose();
     super.dispose();
   }
 
@@ -52,14 +49,12 @@ class _LoginScreenState extends State<LoginScreen>
     if (!mounted) return;
     setState(() => _loading = false);
     context.read<UserProvider>().updateUser(UserProfile(
-          fullName: 'Muhammad Shoaib',
-          email: _emailCtrl.text.trim(),
-        ));
+      fullName: 'Muhammad Shoaib', email: _emailCtrl.text.trim(),
+    ));
     await showPremiumSuccess(context);
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const MainShell()),
-      (_) => false,
+      MaterialPageRoute(builder: (_) => const MainShell()), (_) => false,
     );
   }
 
@@ -75,40 +70,44 @@ class _LoginScreenState extends State<LoginScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Floating logo + brand
+          // Logo + brand (centered)
           AuthStaggerItem(controller: _entrance, start: 0.0,
-            child: Column(children: [
-              const AuthFloatingLogo(icon: Icons.account_balance_wallet_rounded),
-              const SizedBox(height: 8),
-              Text('SpendSmart',
-                  style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 26)),
-              const SizedBox(height: 2),
-              Text(AppStrings.appTagline,
-                  style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85))),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const AuthFloatingLogo(icon: Icons.account_balance_wallet_rounded),
+                const SizedBox(height: 12),
+                Text('SpendSmart',
+                    style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 26)),
+                const SizedBox(height: 4),
+                Text(AppStrings.appTagline,
+                    style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85))),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           // Heading
           AuthStaggerItem(controller: _entrance, start: 0.1,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(AppStrings.welcomeBack,
-                  style: TextStyles.h1(context).copyWith(color: Colors.white, fontSize: 28)),
-              const SizedBox(height: 4),
-              Text(AppStrings.welcomeBackSubtitle,
-                  style: TextStyles.body(context, color: Colors.white.withOpacity(0.78))),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(AppStrings.welcomeBack,
+                    style: TextStyles.h1(context).copyWith(color: Colors.white, fontSize: 28)),
+                const SizedBox(height: 6),
+                Text(AppStrings.welcomeBackSubtitle,
+                    style: TextStyles.body(context, color: Colors.white.withOpacity(0.78))),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          // Form on glassmorphic container
+          const SizedBox(height: 20),
+          // Form
           AuthStaggerItem(controller: _entrance, start: 0.18,
             child: AuthGlassContainer(
               child: Form(key: _formKey,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   TextFormField(
-                    controller: _emailCtrl,
-                    validator: Validators.email,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
+                    controller: _emailCtrl, validator: Validators.email,
+                    keyboardType: TextInputType.emailAddress, textInputAction: TextInputAction.next,
                     style: TextStyles.body(context).copyWith(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: AppStrings.email,
@@ -117,9 +116,8 @@ class _LoginScreenState extends State<LoginScreen>
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  AuthPasswordField(controller: _pwdCtrl, label: AppStrings.password,
-                      textInputAction: TextInputAction.done),
+                  const SizedBox(height: 16),
+                  AuthPasswordField(controller: _pwdCtrl, label: AppStrings.password, textInputAction: TextInputAction.done),
                   const SizedBox(height: 12),
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     GestureDetector(onTap: () => setState(() => _rememberMe = !_rememberMe),
@@ -134,7 +132,8 @@ class _LoginScreenState extends State<LoginScreen>
                           child: _rememberMe ? const Icon(Icons.check_rounded, color: Colors.white, size: 14) : null),
                         const SizedBox(width: 8),
                         Text('Remember me', style: TextStyles.caption(context, weight: FontWeight.w500).copyWith(color: Colors.white.withOpacity(0.85))),
-                      ])),
+                      ]),
+                    ),
                     TextButton(onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
                       child: Text(AppStrings.forgotPassword, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: AppColors.primaryIndigo))),
                   ]),
@@ -144,9 +143,9 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           AuthStaggerItem(controller: _entrance, start: 0.26, child: const AuthDividerRow()),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           // Social buttons
           AuthStaggerItem(controller: _entrance, start: 0.32,
             child: Row(children: [
@@ -157,16 +156,27 @@ class _LoginScreenState extends State<LoginScreen>
               Expanded(child: AuthSocialButton(label: 'Facebook', icon: Icons.facebook_rounded, color: const Color(0xFF1877F2), onTap: () => _demoSnack('Facebook sign-in'))),
             ]),
           ),
-          const SizedBox(height: 12),
-          // Sign up link
+          const SizedBox(height: 20),
+          // Sign up button (prominent)
           AuthStaggerItem(controller: _entrance, start: 0.4,
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(AppStrings.dontHaveAccount, style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.7))),
-              GestureDetector(onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                child: Text(AppStrings.signUp, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: Colors.white))),
-            ]),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RegisterScreen())),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  border: Border.all(color: Colors.white.withOpacity(0.18)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Text(AppStrings.dontHaveAccount, style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.7))),
+                  const SizedBox(width: 4),
+                  Text(AppStrings.signUp, style: TextStyles.body(context, weight: FontWeight.w700).copyWith(color: Colors.white)),
+                ]),
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
         ],
       ),
     );

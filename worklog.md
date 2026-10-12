@@ -149,3 +149,41 @@ Work Log:
 Stage Summary:
 - Register screen now fits on a single viewport without scrolling on typical phone screens.
 - Password strength label only appears when user actually types in the password field.
+
+---
+Task ID: auth-invisible-text-align-confirm-pwd
+Agent: Shabii (main)
+Task: Fix invisible typed text, start-from-middle alignment, add Confirm Password field
+
+Work Log:
+- Diagnosed 3 root causes by code inspection:
+  1. INVISIBLE TYPED TEXT — AuthScreenScaffold used `Theme.of(context).copyWith(brightness: Brightness.dark)` which only swaps brightness, NOT the inputDecorationTheme. When MaterialApp was in light mode, auth fields inherited the LIGHT input theme (lightSurface fill) but text was forced to Colors.white → white-on-light = invisible.
+  2. START FROM MIDDLE — AuthScreenScaffold wrapped content in Center, vertically centering on tall viewports → empty space on top.
+  3. NO CONFIRM PASSWORD — register had only Name + Email + Password, no confirm field.
+
+shared_auth_components.dart fixes:
+- AuthScreenScaffold: `Theme.of(context).copyWith(brightness: Brightness.dark)` → `Theme(data: AppTheme.dark())` — applies the FULL dark theme including dark input decoration theme.
+- AuthScreenScaffold: `Center(child: ConstrainedBox(...))` → `Align(alignment: Alignment.topCenter, child: ConstrainedBox(...))` — content anchors to top instead of vertically centering.
+- AuthTextField: text color `Colors.white` → `AppColors.darkTextPrimary` (theme-adaptive); hint color → `AppColors.darkTextSecondary.withOpacity(0.45)`; prefix icon color → `AppColors.darkTextSecondary`.
+- AuthPasswordField: same color updates so text is visible on the dark surface fill.
+
+register_screen.dart fixes:
+- Added `_confirmPwdCtrl` TextEditingController + listener.
+- Added `_confirmValid` bool — true when confirm field is non-empty AND matches password.
+- Added AuthPasswordField labeled 'Confirm Password' with inline validator returning 'Passwords do not match' when value differs from password.
+- Updated `_isFormValid` to require `_confirmValid` in addition to name + email + password length + terms.
+- Password listener now also re-evaluates confirm validity when password changes (so confirm auto-invalidates if password changes to something else).
+- Layout tightening to fit the new field on one viewport:
+  - Removed subtitle 'Start your smart spending journey.' (saves ~22px)
+  - Replaced two full-width AuthSocialButtonWide (52+8+52=112px) with two compact AuthSocialCircle in a Row (48px) — saves 64px
+  - Tightened gap above form: lg → md; gap above heading: md → sm
+
+Verification:
+- Commit 0b5c106 pushed to origin main.
+- Build #33: completed/success.
+- Live at https://shabii804.github.io/Spend-Smart/?auth=register (and login + forgot also benefit from the shared fixes).
+
+Stage Summary:
+- Typed text is now visible in all auth fields (dark text on dark surface via AppTheme.dark()).
+- All three auth screens anchor content to the top of the SafeArea — no more empty space on top or "starts from middle".
+- Register now has a Confirm Password field with matching validator; Create Account button stays disabled until password + confirm match.

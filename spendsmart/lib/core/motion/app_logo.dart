@@ -154,7 +154,7 @@ class _LogoPainter extends CustomPainter {
     if (!monochrome) {
       final highlightPaint = Paint()
         ..shader = RadialGradient(
-          center: Alignment.topLeft.alignment,
+          center: Alignment.topLeft,
           radius: 0.6,
           colors: [
             Colors.white.withOpacity(0.12),

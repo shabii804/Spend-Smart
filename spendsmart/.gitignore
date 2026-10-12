@@ -23,3 +23,7 @@ Thumbs.db
 # Misc
 *.log
 .flutter/
+
+# User-uploaded reference images (don't commit)
+upload/
+*upload*

@@ -78,26 +78,26 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ═══ Logo + heading (matches login style) ═══
+          // ═══ Logo + heading (compact — fits screen) ═══
           AuthStaggerItem(controller: _entrance, start: 0.05,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const AuthFloatingLogo(icon: Icons.person_add_rounded),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 Text('Create Account',
-                    style: TextStyles.h1(context).copyWith(
-                      color: Colors.white, fontSize: 26, letterSpacing: -0.5)),
-                const SizedBox(height: 6),
-                Text('Start your smart spending journey today.',
-                    style: TextStyles.body(context,
-                        color: Colors.white.withOpacity(0.7))),
+                    style: TextStyles.h2(context).copyWith(
+                      color: Colors.white, fontSize: 22, letterSpacing: -0.3)),
+                const SizedBox(height: 2),
+                Text('Start your smart spending journey.',
+                    style: TextStyles.caption(context)
+                        .copyWith(color: Colors.white.withOpacity(0.7))),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
-          // ═══ Form (glassmorphic) ═══
+          // ═══ Form (glassmorphic — compact spacing) ═══
           AuthStaggerItem(controller: _entrance, start: 0.12,
             child: AuthGlassContainer(
               child: Form(key: _formKey,
@@ -116,9 +116,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                       prefixIcon: Icon(Icons.person_outline_rounded,
                           size: 20, color: Colors.white.withOpacity(0.5)),
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
                   // Email
                   TextFormField(
                     controller: _emailCtrl, validator: Validators.email,
@@ -134,18 +135,19 @@ class _RegisterScreenState extends State<RegisterScreen>
                       prefixIcon: Icon(Icons.alternate_email_rounded,
                           size: 20, color: Colors.white.withOpacity(0.5)),
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
                   // Password + strength meter
                   AuthPasswordField(controller: _pwdCtrl, label: 'Password'),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   PasswordStrengthMeter(password: _pwdCtrl.text),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
                   // Confirm password
                   AuthPasswordField(controller: _confirmCtrl, label: 'Confirm Password',
                       validator: (v) => Validators.confirmPassword(v, _pwdCtrl.text)),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
                   // Terms
                   GestureDetector(
                     onTap: () => setState(() => _acceptTerms = !_acceptTerms),
@@ -170,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               .copyWith(color: Colors.white.withOpacity(0.8)))),
                     ]),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
                   // Create Account button
                   MorphingLoadingButton(
                     label: 'Create Account', loading: _loading, onPressed: _register),
@@ -178,47 +180,41 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
-          // ═══ Social (icon-only circles — matches login) ═══
+          // ═══ Social (icon-only circles — compact) ═══
           AuthStaggerItem(controller: _entrance, start: 0.24,
-            child: Column(children: [
-              Text('or continue with',
-                  style: TextStyles.caption(context)
-                      .copyWith(color: Colors.white.withOpacity(0.5))),
-              const SizedBox(height: 16),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                _SocialCircle(icon: Icons.g_mobiledata_rounded,
-                    color: const Color(0xFFEA4335),
-                    onTap: () => _demoSnack('Google sign-up')),
-                const SizedBox(width: 16),
-                _SocialCircle(icon: Icons.apple_rounded,
-                    color: Colors.white,
-                    onTap: () => _demoSnack('Apple sign-up')),
-                const SizedBox(width: 16),
-                _SocialCircle(icon: Icons.facebook_rounded,
-                    color: const Color(0xFF1877F2),
-                    onTap: () => _demoSnack('Facebook sign-up')),
-              ]),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              _SocialCircle(icon: Icons.g_mobiledata_rounded,
+                  color: const Color(0xFFEA4335),
+                  onTap: () => _demoSnack('Google sign-up')),
+              const SizedBox(width: 14),
+              _SocialCircle(icon: Icons.apple_rounded,
+                  color: Colors.white,
+                  onTap: () => _demoSnack('Apple sign-up')),
+              const SizedBox(width: 14),
+              _SocialCircle(icon: Icons.facebook_rounded,
+                  color: const Color(0xFF1877F2),
+                  onTap: () => _demoSnack('Facebook sign-up')),
             ]),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
 
-          // ═══ Sign in CTA (glassmorphic button + arrow — matches login) ═══
+          // ═══ Sign in CTA (glassmorphic + arrow) ═══
           AuthStaggerItem(controller: _entrance, start: 0.32,
             child: GestureDetector(
               onTap: () => Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const LoginScreen())),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.06),
                   border: Border.all(color: Colors.white.withOpacity(0.15)),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Text('Already have an account? ',
-                      style: TextStyles.body(context)
+                      style: TextStyles.caption(context)
                           .copyWith(color: Colors.white.withOpacity(0.6))),
                   const SizedBox(width: 4),
                   Text('Sign In',
@@ -226,19 +222,18 @@ class _RegisterScreenState extends State<RegisterScreen>
                           .copyWith(color: Colors.white)),
                   const SizedBox(width: 6),
                   const Icon(Icons.arrow_forward_rounded,
-                      color: Colors.white, size: 18),
+                      color: Colors.white, size: 16),
                 ]),
               ),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 16),
         ],
       ),
     );
   }
 }
 
-/// Premium social circle — matches login screen's _SocialCircle.
 class _SocialCircle extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -250,17 +245,17 @@ class _SocialCircle extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         onTap: onTap,
         child: Container(
-          width: 56, height: 56,
+          width: 48, height: 48,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.08),
             border: Border.all(color: Colors.white.withOpacity(0.18)),
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
-          child: Icon(icon, size: 24, color: color),
+          child: Icon(icon, size: 22, color: color),
         ),
       ),
     );

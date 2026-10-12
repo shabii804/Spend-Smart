@@ -63,3 +63,58 @@ Stage Summary:
 - Root cause: prior session's commits (30559ff, 19a8792) introduced app_logo.dart and motion_widgets.dart but were never pushed/compiled, so latent errors never surfaced.
 - Both files fixed. App now compiles cleanly with dart2js.
 - GitHub Pages deployment live at https://shabii804.github.io/Spend-Smart/
+
+---
+Task ID: auth-ui-redesign
+Agent: Shabii (main)
+Task: Fix UI problems in Login, Register, Forgot Password screens — premium, consistent, responsive
+
+Work Log:
+- Inspected existing auth code (shared_auth_components.dart, login_screen.dart, register_screen.dart, forgot_password_screen.dart).
+- Identified root causes (not just symptoms):
+  1. AuthPasswordField used Material's floating labelText — clipped into prefix icon when unfocused, and was visually inconsistent with AuthTextField's permanent-label-above design.
+  2. AuthTextField overrode contentPadding to 14/14 while AuthPasswordField used theme's 16/16 — email and password fields had DIFFERENT heights.
+  3. AuthScreenScaffold never set SystemUiOverlayStyle — status-bar area showed system default (bright blue on some devices), clashing with dark theme.
+  4. Register's PasswordStrengthMeter (StatelessWidget) only rebuilt when validity changed, not on every keystroke — meter lagged behind typed text.
+  5. Redundant 'Use at least 8 characters' hint sat under the meter's own 'Too short' label — crowded duplicate feedback.
+  6. Remember-Me + Forgot-Password row had no Flexible/Expanded — overflowed on narrow screens.
+  7. login_screen and register_screen each defined their own _SocialButton — duplicate code, drift risk.
+  8. Forgot Password success state showed TWO 'Back to Login' actions — confusing duplicate CTA.
+
+shared_auth_components.dart fixes:
+- Wrap Scaffold in AnnotatedRegion<SystemUiOverlayStyle> with transparent statusBarColor + light icons → fixes bright-blue status-bar bug.
+- Refactor AuthPasswordField to use permanent label above (same design as AuthTextField) — no floating label, no clip, no prefix-icon collision.
+- Remove contentPadding override in AuthTextField → both fields now use theme's 16/16 (identical heights).
+- AuthGlassContainer padding 20 → 18.
+- Extract AuthSocialButtonWide (replaces duplicate _SocialButton).
+- New AuthRememberMeRow: Flexible on both sides, never overflows.
+- New AuthTermsRow: crossAxisAlignment.start + Expanded RichText — checkbox top-anchored, text wraps cleanly.
+- AuthFooterLink: Flexible + RichText(center) — shrinks instead of overflowing.
+- Fix indentation bug on old lines 441-443.
+
+login_screen.dart fixes:
+- Use shared AuthSocialButtonWide, AuthRememberMeRow.
+- Consistent AuthSpacing tokens throughout.
+- HitTestBehavior.opaque + haptic feedback on tap handlers.
+
+register_screen.dart fixes:
+- Use shared AuthSocialButtonWide, AuthTermsRow.
+- FIX: password listener calls setState on EVERY keystroke (updates _pwdText) so PasswordStrengthMeter rebuilds live.
+- Remove redundant 'Use at least 8 characters' hint.
+- Breathing room: xs after password → meter → sm → terms → md → Create Account.
+
+forgot_password_screen.dart fixes:
+- Remove duplicate 'Back to Login' in success state (in-card button is primary).
+- Keep AuthFooterLink in form state only.
+- Drop unused app_strings import.
+
+Verification:
+- Commit 8b716ae pushed to origin main.
+- Build #31: completed/success (Pages deploy live).
+- All functionality preserved: login, registration, password reset, validation, password visibility toggle, social CTAs, navigation, session handling.
+
+Stage Summary:
+- All three auth screens now share the same visual system: permanent label above field, identical field heights, consistent spacing tokens (xs/sm/md/lg/xl), same social button (AuthSocialButtonWide), same primary button (MorphingLoadingButton), same back button (AuthBackButton), same footer link (AuthFooterLink).
+- Responsive: Flexible + SingleChildScrollView + maxWidth 440 + SafeArea + Scaffold's default resizeToAvoidBottomInset.
+- Status bar fixed via AnnotatedRegion<SystemUiOverlayStyle>.
+- Live at https://shabii804.github.io/Spend-Smart/?auth=login (or register / forgot).

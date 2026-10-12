@@ -4,8 +4,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/validators.dart';
-import '../../core/widgets/primary_button.dart';
-import '../../core/widgets/success_overlay.dart';
+import '../../core/widgets/premium_motion.dart';
 import '../../models/user_profile.dart';
 import '../../providers/user_provider.dart';
 import '../dashboard/main_shell.dart';
@@ -37,6 +36,8 @@ class _RegisterScreenState extends State<RegisterScreen>
   void initState() {
     super.initState();
     _entrance.forward();
+    // Rebuild when password changes (for strength meter)
+    _pwdCtrl.addListener(() => setState(() {}));
   }
 
   @override
@@ -65,7 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           fullName: _nameCtrl.text.trim(),
           email: _emailCtrl.text.trim(),
         ));
-    await SuccessOverlay.show(context, label: 'Account created!');
+    await showPremiumSuccess(context);
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const MainShell()),
@@ -133,6 +134,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ),
                   const SizedBox(height: 16),
                   AuthPasswordField(controller: _pwdCtrl, label: AppStrings.password),
+                  const SizedBox(height: 8),
+                  // Premium password strength meter
+                  PasswordStrengthMeter(password: _pwdCtrl.text),
                   const SizedBox(height: 16),
                   AuthPasswordField(controller: _confirmCtrl, label: AppStrings.confirmPassword,
                       validator: (v) => Validators.confirmPassword(v, _pwdCtrl.text)),
@@ -153,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85)))),
                     ])),
                   const SizedBox(height: 20),
-                  PrimaryButton(label: AppStrings.createAccount, loading: _loading, onPressed: _register),
+                  MorphingLoadingButton(label: AppStrings.createAccount, loading: _loading, onPressed: _register),
                 ]),
               ),
             ),

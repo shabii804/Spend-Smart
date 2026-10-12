@@ -109,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     label: 'Full Name',
                     hint: 'Muhammad Shoaib',
                     prefixIcon: Icons.person_outline_rounded,
-                    autofillHints: const [AutofillHints.fullName],
+                    autofillHints: const [AutofillHints.name],
                   ),
                   const SizedBox(height: AuthSpacing.sm),
                   // Email

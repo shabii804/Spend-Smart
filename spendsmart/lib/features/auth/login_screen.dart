@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/motion/app_logo.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/validators.dart';
@@ -75,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const AuthFloatingLogo(icon: Icons.account_balance_wallet_rounded),
+                const AppLogo(size: 72, variant: AppLogoVariant.markOnly),
                 const SizedBox(height: AuthSpacing.md),
                 Text('Welcome Back',
                     style: TextStyles.h1(context).copyWith(

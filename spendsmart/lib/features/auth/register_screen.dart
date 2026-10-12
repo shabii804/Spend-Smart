@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../core/motion/app_logo.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
@@ -100,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const AuthFloatingLogo(icon: Icons.person_add_rounded),
+                const AppLogo(size: 72, variant: AppLogoVariant.markOnly),
                 const SizedBox(height: AuthSpacing.md),
                 Text('Create Account',
                     style: TextStyles.h1(context).copyWith(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/motion.dart';
+import '../../core/motion/app_logo.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
@@ -108,11 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // White circle with logo
                   ScaleTransition(scale: CurvedAnimation(parent: _logo, curve: Motion.springOut),
                     child: FadeTransition(opacity: CurvedAnimation(parent: _logo, curve: Motion.easeOut),
-                      child: Container(width: 90, height: 90,
-                        decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 30, offset: const Offset(0, 16))]),
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primaryIndigo, size: 44)))),
+                      child: AppLogo(size: 90, variant: AppLogoVariant.markOnly))),
 
                   // Expanding ring pulse
                   AnimatedBuilder(animation: _rings, builder: (context, _) {

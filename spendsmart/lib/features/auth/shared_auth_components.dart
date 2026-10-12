@@ -32,17 +32,21 @@ const TextStyle _kFieldLabelStyle = TextStyle(
 );
 
 /// Solid surface card (not see-through glass). Used by all 3 auth screens.
-/// Padding reduced from 20 to 18 for tighter, more spacious feel — fields
-/// already have their own contentPadding so the card no longer needs a thick
-/// inner margin.
+/// Padding defaults to 18 but can be overridden per-screen (e.g. register
+/// uses a tighter 14 to fit on one viewport without scrolling).
 class AuthGlassContainer extends StatelessWidget {
   final Widget child;
-  const AuthGlassContainer({super.key, required this.child});
+  final EdgeInsets padding;
+  const AuthGlassContainer({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(18),
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: padding,
       decoration: BoxDecoration(
         color: AppColors.darkSurface,
         borderRadius: BorderRadius.circular(20),

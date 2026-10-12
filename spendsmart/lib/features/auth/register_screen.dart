@@ -113,45 +113,56 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Compact spacing for register so the entire form fits on a single
+    // viewport without scrolling on typical phone screens.
+    const gapAboveForm = AuthSpacing.md;
+    const gapBelowForm = AuthSpacing.sm;
+    const gapBetweenSocial = AuthSpacing.xs;
+    const gapAboveFooter = AuthSpacing.md;
+    const gapBelowFooter = AuthSpacing.md;
+
     return AuthScreenScaffold(
       showBackButton: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ═══ Logo + heading ═══
+          // ═══ Logo + heading (compact — smaller logo, smaller heading) ═══
           AuthStaggerItem(
             controller: _entrance,
             start: 0.05,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const AppLogo(size: 72, variant: AppLogoVariant.markOnly),
-                const SizedBox(height: AuthSpacing.md),
+                const AppLogo(size: 56, variant: AppLogoVariant.markOnly),
+                const SizedBox(height: AuthSpacing.sm),
                 Text(
                   'Create Account',
                   style: TextStyles.h1(context).copyWith(
                     color: AppColors.darkTextPrimary,
-                    fontSize: 26,
+                    fontSize: 24,
                     letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Start your smart spending journey.',
-                  style: TextStyles.body(context,
-                      color: AppColors.darkTextSecondary),
+                  style: TextStyles.body(
+                    context,
+                    color: AppColors.darkTextSecondary,
+                  ).copyWith(fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: AuthSpacing.md),
+          const SizedBox(height: gapAboveForm),
 
-          // ═══ Form (solid surface card) ═══
+          // ═══ Form (compact card — tighter 14px padding) ═══
           AuthStaggerItem(
             controller: _entrance,
             start: 0.12,
             child: AuthGlassContainer(
+              padding: const EdgeInsets.all(14),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -167,7 +178,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       autofillHints: const [AutofillHints.name],
                       textInputAction: TextInputAction.next,
                     ),
-                    const SizedBox(height: AuthSpacing.md),
+                    const SizedBox(height: AuthSpacing.sm),
                     // Email
                     AuthTextField(
                       controller: _emailCtrl,
@@ -179,22 +190,30 @@ class _RegisterScreenState extends State<RegisterScreen>
                       autofillHints: const [AutofillHints.email],
                       textInputAction: TextInputAction.next,
                     ),
-                    const SizedBox(height: AuthSpacing.md),
+                    const SizedBox(height: AuthSpacing.sm),
                     // Password — same permanent-label design as other fields.
                     AuthPasswordField(
                       controller: _pwdCtrl,
                       label: 'Password',
                       textInputAction: TextInputAction.done,
                     ),
-                    const SizedBox(height: AuthSpacing.xs),
-                    // Strength meter — now updates on every keystroke because
-                    // _pwdText is rebuilt via setState in the listener above.
-                    // Removed the redundant "Use at least 8 characters" hint
-                    // because the meter's "Too short" label already conveys
-                    // that — single source of truth, less crowding.
-                    PasswordStrengthMeter(password: _pwdText),
+                    // Strength meter — ONLY visible while the user is typing
+                    // a password. When the field is empty, the meter fully
+                    // collapses (AnimatedSize → 0px) so the form stays
+                    // compact and the "Too short" label doesn't show until
+                    // the user actually starts typing.
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
+                      alignment: Alignment.topCenter,
+                      child: _pwdText.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: AuthSpacing.xs),
+                              child: PasswordStrengthMeter(password: _pwdText),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                     const SizedBox(height: AuthSpacing.sm),
-
                     // Terms checkbox — uses the shared AuthTermsRow widget so
                     // the checkbox stays top-anchored and the RichText wraps
                     // cleanly on small screens.
@@ -207,10 +226,8 @@ class _RegisterScreenState extends State<RegisterScreen>
                       onTermsTap: () => _demoSnack('Terms'),
                       onPrivacyTap: () => _demoSnack('Privacy Policy'),
                     ),
-                    const SizedBox(height: AuthSpacing.md),
-
+                    const SizedBox(height: AuthSpacing.sm),
                     // Create Account button — DISABLED until form is valid.
-                    // Sits below the terms section with breathing room.
                     MorphingLoadingButton(
                       label: 'Create Account',
                       loading: _loading,
@@ -221,7 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
           ),
-          const SizedBox(height: AuthSpacing.md),
+          const SizedBox(height: gapBelowForm),
 
           // ═══ Social: 2 full-width outlined buttons (matching login) ═══
           AuthStaggerItem(
@@ -235,7 +252,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   iconColor: const Color(0xFFEA4335),
                   onTap: () => _demoSnack('Google sign-up'),
                 ),
-                const SizedBox(height: AuthSpacing.sm),
+                const SizedBox(height: gapBetweenSocial),
                 AuthSocialButtonWide(
                   label: 'Continue with Apple',
                   icon: Icons.apple_rounded,
@@ -245,7 +262,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               ],
             ),
           ),
-          const SizedBox(height: AuthSpacing.lg),
+          const SizedBox(height: gapAboveFooter),
 
           // ═══ Sign in link (centered text — matching login) ═══
           AuthStaggerItem(
@@ -283,7 +300,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
           ),
-          const SizedBox(height: AuthSpacing.lg),
+          const SizedBox(height: gapBelowFooter),
         ],
       ),
     );

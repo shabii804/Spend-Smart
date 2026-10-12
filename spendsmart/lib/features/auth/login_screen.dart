@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen>
               ]),
             ]),
           ),
-          const Spacer(),
+          const SizedBox(height: 32),
           // ═══ Signup CTA (prominent) ═══
           AuthStaggerItem(controller: _entrance, start: 0.32,
             child: GestureDetector(
@@ -217,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 28),
         ],
       ),
     );

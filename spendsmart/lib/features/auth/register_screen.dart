@@ -28,25 +28,20 @@ class _RegisterScreenState extends State<RegisterScreen>
   bool _acceptTerms = false;
   bool _loading = false;
   late final AnimationController _entrance = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 800),
+    vsync: this, duration: const Duration(milliseconds: 800),
   );
 
   @override
   void initState() {
     super.initState();
     _entrance.forward();
-    // Rebuild when password changes (for strength meter)
     _pwdCtrl.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
-    _emailCtrl.dispose();
-    _pwdCtrl.dispose();
-    _confirmCtrl.dispose();
-    _entrance.dispose();
+    _nameCtrl.dispose(); _emailCtrl.dispose(); _pwdCtrl.dispose();
+    _confirmCtrl.dispose(); _entrance.dispose();
     super.dispose();
   }
 
@@ -54,8 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     if (!_formKey.currentState!.validate()) return;
     if (!_acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.errAcceptTerms)),
-      );
+        const SnackBar(content: Text(AppStrings.errAcceptTerms)));
       return;
     }
     setState(() => _loading = true);
@@ -63,21 +57,18 @@ class _RegisterScreenState extends State<RegisterScreen>
     if (!mounted) return;
     setState(() => _loading = false);
     context.read<UserProvider>().updateUser(UserProfile(
-          fullName: _nameCtrl.text.trim(),
-          email: _emailCtrl.text.trim(),
-        ));
+      fullName: _nameCtrl.text.trim(), email: _emailCtrl.text.trim(),
+    ));
     await showPremiumSuccess(context);
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const MainShell()),
-      (_) => false,
+      MaterialPageRoute(builder: (_) => const MainShell()), (_) => false,
     );
   }
 
   void _demoSnack(String label) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$label — ${AppStrings.demoOnly}')),
-    );
+      SnackBar(content: Text('$label — ${AppStrings.demoOnly}')));
   }
 
   @override
@@ -87,115 +78,190 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Floating logo + brand (centered)
+          // ═══ Logo + heading (matches login style) ═══
           AuthStaggerItem(controller: _entrance, start: 0.05,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const AuthFloatingLogo(icon: Icons.person_add_rounded),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Text('Create Account',
-                    style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 24)),
-                const SizedBox(height: 4),
-                Text(AppStrings.createAccountSubtitle,
-                    style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85)),
-                    textAlign: TextAlign.center),
+                    style: TextStyles.h1(context).copyWith(
+                      color: Colors.white, fontSize: 26, letterSpacing: -0.5)),
+                const SizedBox(height: 6),
+                Text('Start your smart spending journey today.',
+                    style: TextStyles.body(context,
+                        color: Colors.white.withOpacity(0.7))),
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          // Form
-          AuthStaggerItem(controller: _entrance, start: 0.15,
+          const SizedBox(height: 24),
+
+          // ═══ Form (glassmorphic) ═══
+          AuthStaggerItem(controller: _entrance, start: 0.12,
             child: AuthGlassContainer(
               child: Form(key: _formKey,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  // Full name
                   TextFormField(
                     controller: _nameCtrl, validator: Validators.required,
                     textInputAction: TextInputAction.next,
                     style: TextStyles.body(context).copyWith(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: AppStrings.fullName,
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                      prefixIcon: Icon(Icons.person_outline_rounded, size: 20, color: Colors.white.withOpacity(0.7)),
+                      labelText: 'Full Name',
+                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                      floatingLabelStyle: TextStyle(color: AppColors.primaryIndigo.withOpacity(0.9)),
+                      hintText: 'Muhammad Shoaib',
+                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
+                      prefixIcon: Icon(Icons.person_outline_rounded,
+                          size: 20, color: Colors.white.withOpacity(0.5)),
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
                     ),
                   ),
                   const SizedBox(height: 14),
+                  // Email
                   TextFormField(
                     controller: _emailCtrl, validator: Validators.email,
-                    keyboardType: TextInputType.emailAddress, textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     style: TextStyles.body(context).copyWith(color: Colors.white),
                     decoration: InputDecoration(
-                      labelText: AppStrings.email,
-                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                      prefixIcon: Icon(Icons.alternate_email_rounded, size: 20, color: Colors.white.withOpacity(0.7)),
+                      labelText: 'Email',
+                      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                      floatingLabelStyle: TextStyle(color: AppColors.primaryIndigo.withOpacity(0.9)),
+                      hintText: 'you@example.com',
+                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
+                      prefixIcon: Icon(Icons.alternate_email_rounded,
+                          size: 20, color: Colors.white.withOpacity(0.5)),
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
                     ),
                   ),
                   const SizedBox(height: 14),
-                  AuthPasswordField(controller: _pwdCtrl, label: AppStrings.password),
+                  // Password + strength meter
+                  AuthPasswordField(controller: _pwdCtrl, label: 'Password'),
                   const SizedBox(height: 8),
                   PasswordStrengthMeter(password: _pwdCtrl.text),
                   const SizedBox(height: 14),
-                  AuthPasswordField(controller: _confirmCtrl, label: AppStrings.confirmPassword,
+                  // Confirm password
+                  AuthPasswordField(controller: _confirmCtrl, label: 'Confirm Password',
                       validator: (v) => Validators.confirmPassword(v, _pwdCtrl.text)),
                   const SizedBox(height: 14),
                   // Terms
-                  GestureDetector(onTap: () => setState(() => _acceptTerms = !_acceptTerms),
+                  GestureDetector(
+                    onTap: () => setState(() => _acceptTerms = !_acceptTerms),
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      AnimatedContainer(duration: const Duration(milliseconds: 180),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOutCubic,
                         width: 20, height: 20, margin: const EdgeInsets.only(top: 2),
                         decoration: BoxDecoration(
                           color: _acceptTerms ? AppColors.primaryIndigo : Colors.transparent,
-                          border: Border.all(color: _acceptTerms ? AppColors.primaryIndigo : Colors.white.withOpacity(0.35), width: 1.5),
+                          border: Border.all(
+                            color: _acceptTerms ? AppColors.primaryIndigo : Colors.white.withOpacity(0.3),
+                            width: 1.5),
                           borderRadius: BorderRadius.circular(6)),
                         alignment: Alignment.center,
-                        child: _acceptTerms ? const Icon(Icons.check_rounded, color: Colors.white, size: 14) : null),
+                        child: _acceptTerms
+                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                          : null),
                       const SizedBox(width: 10),
                       Expanded(child: Text(AppStrings.acceptTerms,
-                          style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85)))),
-                    ])),
-                  const SizedBox(height: 16),
-                  MorphingLoadingButton(label: AppStrings.createAccount, loading: _loading, onPressed: _register),
+                          style: TextStyles.caption(context)
+                              .copyWith(color: Colors.white.withOpacity(0.8)))),
+                    ]),
+                  ),
+                  const SizedBox(height: 18),
+                  // Create Account button
+                  MorphingLoadingButton(
+                    label: 'Create Account', loading: _loading, onPressed: _register),
                 ]),
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          AuthStaggerItem(controller: _entrance, start: 0.25, child: const AuthDividerRow()),
-          const SizedBox(height: 12),
-          // Social buttons
-          AuthStaggerItem(controller: _entrance, start: 0.3,
-            child: Row(children: [
-              Expanded(child: AuthSocialButton(label: 'Google', icon: Icons.g_mobiledata_rounded, color: const Color(0xFFEA4335), onTap: () => _demoSnack('Google sign-up'))),
-              const SizedBox(width: 10),
-              Expanded(child: AuthSocialButton(label: 'Apple', icon: Icons.apple_rounded, color: Colors.white, onTap: () => _demoSnack('Apple sign-up'))),
-              const SizedBox(width: 10),
-              Expanded(child: AuthSocialButton(label: 'Facebook', icon: Icons.facebook_rounded, color: const Color(0xFF1877F2), onTap: () => _demoSnack('Facebook sign-up'))),
+          const SizedBox(height: 24),
+
+          // ═══ Social (icon-only circles — matches login) ═══
+          AuthStaggerItem(controller: _entrance, start: 0.24,
+            child: Column(children: [
+              Text('or continue with',
+                  style: TextStyles.caption(context)
+                      .copyWith(color: Colors.white.withOpacity(0.5))),
+              const SizedBox(height: 16),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                _SocialCircle(icon: Icons.g_mobiledata_rounded,
+                    color: const Color(0xFFEA4335),
+                    onTap: () => _demoSnack('Google sign-up')),
+                const SizedBox(width: 16),
+                _SocialCircle(icon: Icons.apple_rounded,
+                    color: Colors.white,
+                    onTap: () => _demoSnack('Apple sign-up')),
+                const SizedBox(width: 16),
+                _SocialCircle(icon: Icons.facebook_rounded,
+                    color: const Color(0xFF1877F2),
+                    onTap: () => _demoSnack('Facebook sign-up')),
+              ]),
             ]),
           ),
-          const SizedBox(height: 20),
-          // Sign in button (prominent)
-          AuthStaggerItem(controller: _entrance, start: 0.4,
+          const SizedBox(height: 32),
+
+          // ═══ Sign in CTA (glassmorphic button + arrow — matches login) ═══
+          AuthStaggerItem(controller: _entrance, start: 0.32,
             child: GestureDetector(
-              onTap: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen())),
+              onTap: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen())),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
-                  border: Border.all(color: Colors.white.withOpacity(0.18)),
-                  borderRadius: BorderRadius.circular(14),
+                  color: Colors.white.withOpacity(0.06),
+                  border: Border.all(color: Colors.white.withOpacity(0.15)),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text(AppStrings.alreadyHaveAccount, style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.7))),
+                  Text('Already have an account? ',
+                      style: TextStyles.body(context)
+                          .copyWith(color: Colors.white.withOpacity(0.6))),
                   const SizedBox(width: 4),
-                  Text(AppStrings.signIn, style: TextStyles.body(context, weight: FontWeight.w700).copyWith(color: Colors.white)),
+                  Text('Sign In',
+                      style: TextStyles.body(context, weight: FontWeight.w700)
+                          .copyWith(color: Colors.white)),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.arrow_forward_rounded,
+                      color: Colors.white, size: 18),
                 ]),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 28),
         ],
+      ),
+    );
+  }
+}
+
+/// Premium social circle — matches login screen's _SocialCircle.
+class _SocialCircle extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const _SocialCircle({required this.icon, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(28),
+        onTap: onTap,
+        child: Container(
+          width: 56, height: 56,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 24, color: color),
+        ),
       ),
     );
   }

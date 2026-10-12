@@ -1,0 +1,686 @@
+     1→import 'package:flutter/material.dart';
+     2→import 'package:flutter/services.dart';
+     3→import 'package:provider/provider.dart';
+     4→import '../../core/constants/app_strings.dart';
+     5→import '../../core/theme/app_colors.dart';
+     6→import '../../core/theme/app_gradients.dart';
+     7→import '../../core/theme/text_styles.dart';
+     8→import '../../core/utils/formatters.dart';
+     9→import '../../core/widgets/glass_card.dart';
+    10→import '../../core/widgets/animated_money.dart';
+    11→import '../../core/widgets/screen_entrance.dart';
+    12→import '../../core/widgets/section_header.dart';
+    13→import '../../core/widgets/staggered_entrance.dart';
+    14→import '../../data/sample_data.dart';
+    15→import '../../models/category.dart';
+    16→import '../../models/expense.dart';
+    17→import '../../providers/budget_provider.dart';
+    18→import '../../providers/expense_provider.dart';
+    19→import '../../providers/goal_provider.dart';
+    20→import '../../providers/notification_provider.dart';
+    21→import '../../providers/user_provider.dart';
+    22→import '../analytics/analytics_screen.dart';
+    23→import '../expenses/add_expense_screen.dart';
+    24→import '../expenses/expense_details_screen.dart';
+    25→import '../expenses/transactions_screen.dart';
+    26→import '../expenses/voice_entry_screen.dart';
+    27→import '../goals/savings_goals_screen.dart';
+    28→import '../notifications/notifications_screen.dart';
+    29→import 'weekly_bar_chart.dart';
+    30→
+    31→class HomeScreen extends StatefulWidget {
+    32→  const HomeScreen({super.key});
+    33→
+    34→  @override
+    35→  State<HomeScreen> createState() => _HomeScreenState();
+    36→}
+    37→
+    38→class _HomeScreenState extends State<HomeScreen> {
+    39→  @override
+    40→  Widget build(BuildContext context) {
+    41→    final expenses = context.watch<ExpenseProvider>();
+    42→    final budget = context.watch<BudgetProvider>();
+    43→    context.watch<GoalProvider>();
+    44→    final notif = context.watch<NotificationProvider>();
+    45→    final user = context.watch<UserProvider>().user;
+    46→
+    47→    final hour = DateTime.now().hour;
+    48→    final greeting = hour < 12
+    49→        ? 'Good Morning,'
+    50→        : hour < 17
+    51→            ? 'Good Afternoon,'
+    52→            : 'Good Evening,';
+    53→
+    54→    final limit = budget.monthlyLimit;
+    55→    final spent = expenses.totalSpent;
+    56→    final remaining = limit - spent;
+    57→    final percent = limit == 0 ? 0.0 : spent / limit;
+    58→
+    59→    final recent = expenses.recentTransactions(5);
+    60→    final top = expenses.topCategories(4);
+    61→    final weekly = expenses.last7Days();
+    62→
+    63→    return SafeArea(
+    64→      bottom: false,
+    65→      child: CustomScrollView(
+    66→        physics: const BouncingScrollPhysics(
+    67→          parent: AlwaysScrollableScrollPhysics(),
+    68→        ),
+    69→        slivers: [
+    70→          SliverPadding(
+    71→            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+    72→            sliver: SliverList(
+    73→              delegate: SliverChildListDelegate([
+    74→                _appHeader(context, notif.unreadCount),
+    75→                const SizedBox(height: 20),
+    76→                _greetingRow(context, greeting, user.fullName),
+    77→              ]),
+    78→            ),
+    79→          ),
+    80→          // Budget hero with parallax — translates slower than scroll
+    81→          SliverToBoxAdapter(
+    82→            child: _ParallaxHero(
+    83→              child: Padding(
+    84→                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+    85→                child: _budgetHero(context, spent, remaining, percent, limit),
+    86→              ),
+    87→            ),
+    88→          ),
+    89→          SliverPadding(
+    90→            padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+    91→            sliver: SliverList(
+    92→              delegate: SliverChildListDelegate([
+    93→                _quickActions(context),
+    94→                const SizedBox(height: 28),
+    95→                ChartEntrance(
+    96→                  child: WeeklyBarChart(data: weekly),
+    97→                ),
+    98→                const SizedBox(height: 28),
+    99→                SectionHeader(
+   100→                  title: 'Top Categories',
+   101→                  actionLabel: 'See All',
+   102→                  onAction: () => Navigator.of(context).push(
+   103→                    MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+   104→                  ),
+   105→                ),
+   106→                const SizedBox(height: 12),
+   107→                _topCategoriesScroll(context, top),
+   108→                const SizedBox(height: 28),
+   109→                SectionHeader(
+   110→                  title: AppStrings.recentTransactions,
+   111→                  actionLabel: AppStrings.viewAll,
+   112→                  onAction: () => Navigator.of(context).push(
+   113→                    MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+   114→                  ),
+   115→                ),
+   116→                const SizedBox(height: 12),
+   117→                _recentList(context, recent),
+   118→              ]),
+   119→            ),
+   120→          ),
+   121→        ],
+   122→      ),
+   123→    );
+   124→  }
+   125→
+   126→  // ────────────────────────────────────────────────────────────────
+   127→  // App header — logo + SpendSmart + tagline | bell + avatar
+   128→  // ────────────────────────────────────────────────────────────────
+   129→  Widget _appHeader(BuildContext context, int unread) {
+   130→    return Row(
+   131→      children: [
+   132→        Container(
+   133→          width: 36,
+   134→          height: 36,
+   135→          decoration: const BoxDecoration(
+   136→            gradient: AppGradients.primaryButton,
+   137→            shape: BoxShape.circle,
+   138→          ),
+   139→          alignment: Alignment.center,
+   140→          child: const Icon(Icons.insights_rounded, color: Colors.white, size: 20),
+   141→        ),
+   142→        const SizedBox(width: 10),
+   143→        Column(
+   144→          crossAxisAlignment: CrossAxisAlignment.start,
+   145→          mainAxisSize: MainAxisSize.min,
+   146→          children: [
+   147→            Text('SpendSmart',
+   148→                style: TextStyles.body(context, weight: FontWeight.w700)
+   149→                    .copyWith(fontSize: 16)),
+   150→            Text('Track. Plan. Achieve.',
+   151→                style: TextStyles.caption(context).copyWith(fontSize: 10)),
+   152→          ],
+   153→        ),
+   154→        const Spacer(),
+   155→        Semantics(
+   156→          label: 'Notifications',
+   157→          button: true,
+   158→          child: GestureDetector(
+   159→            onTap: () => Navigator.of(context).push(
+   160→              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+   161→            ),
+   162→            child: Container(
+   163→              width: 44,
+   164→              height: 44,
+   165→              decoration: BoxDecoration(
+   166→                color: AppColorsOf.card(context),
+   167→                shape: BoxShape.circle,
+   168→                border: Border.all(color: AppColorsOf.border(context)),
+   169→              ),
+   170→            child: Stack(
+   171→              alignment: Alignment.center,
+   172→              children: [
+   173→                Icon(Icons.notifications_none_rounded,
+   174→                    color: AppColorsOf.mainText(context), size: 20),
+   175→                if (unread > 0)
+   176→                  Positioned(
+   177→                    top: 8,
+   178→                    right: 9,
+   179→                    child: Container(
+   180→                      width: 8,
+   181→                      height: 8,
+   182→                      decoration: const BoxDecoration(
+   183→                        color: AppColors.danger,
+   184→                        shape: BoxShape.circle,
+   185→                      ),
+   186→                    ),
+   187→                  ),
+   188→              ],
+   189→            ),
+   190→          ),
+   191→        ),
+   192→        ),
+   193→        const SizedBox(width: 8),
+   194→        Container(
+   195→          width: 40,
+   196→          height: 40,
+   197→          decoration: const BoxDecoration(
+   198→            gradient: AppGradients.primaryButton,
+   199→            shape: BoxShape.circle,
+   200→          ),
+   201→          alignment: Alignment.center,
+   202→          child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
+   203→        ),
+   204→      ],
+   205→    );
+   206→  }
+   207→
+   208→  // ────────────────────────────────────────────────────────────────
+   209→  // Greeting row — BIG name, light subtitle (clear hierarchy)
+   210→  // ────────────────────────────────────────────────────────────────
+   211→  Widget _greetingRow(BuildContext context, String greeting, String fullName) {
+   212→    final firstName = fullName.split(' ').first;
+   213→    return Row(
+   214→      crossAxisAlignment: CrossAxisAlignment.center,
+   215→      children: [
+   216→        Expanded(
+   217→          child: Column(
+   218→            crossAxisAlignment: CrossAxisAlignment.start,
+   219→            children: [
+   220→              Text(greeting,
+   221→                  style: TextStyles.body(context,
+   222→                      color: AppColorsOf.secondaryText(context),
+   223→                      weight: FontWeight.w500)),
+   224→              const SizedBox(height: 2),
+   225→              Text('$firstName!',
+   226→                  style: TextStyles.h1(context).copyWith(
+   227→                      fontSize: 26,
+   228→                      fontWeight: FontWeight.w700,
+   229→                      letterSpacing: -0.5)),
+   230→              const SizedBox(height: 4),
+   231→              // Date merged into subtitle (replaces date pill)
+   232→              Text('${Formatters.dateShort(DateTime.now())} · Small steps make big progress',
+   233→                  style: TextStyles.caption(context)
+   234→                      .copyWith(color: AppColorsOf.tertiaryText(context))),
+   235→            ],
+   236→          ),
+   237→        ),
+   238→      ],
+   239→    );
+   240→  }
+   241→
+   242→  // ────────────────────────────────────────────────────────────────
+   243→  // Budget hero — gradient card with CIRCULAR donut progress
+   244→  // ────────────────────────────────────────────────────────────────
+   245→  Widget _budgetHero(
+   246→      BuildContext context, double spent, double remaining, double percent, double limit) {
+   247→    final pctInt = (percent * 100).clamp(0, 999).toInt();
+   248→    // Days left in month + safe-to-spend calculation
+   249→    final now = DateTime.now();
+   250→    final endOfMonth = DateTime(now.year, now.month + 1, 0);
+   251→    final daysLeft = (endOfMonth.day - now.day).clamp(0, 31);
+   252→    final safeToSpend = daysLeft > 0 ? (remaining / daysLeft).clamp(0.0, double.infinity) : remaining;
+   253→    // Ring color: cyan → amber at 80% → red above 100%
+   254→    final ringColor = percent >= 1.0 ? AppColors.danger : percent >= 0.8 ? AppColors.warning : AppColors.cyan;
+   255→    return Container(
+   256→      padding: const EdgeInsets.all(16),
+   257→      decoration: BoxDecoration(
+   258→        gradient: AppGradients.heroCard(context),
+   259→        borderRadius: BorderRadius.circular(20),
+   260→        boxShadow: [
+   261→          BoxShadow(
+   262→            color: AppColors.primaryIndigo.withOpacity(0.32),
+   263→            blurRadius: 28,
+   264→            offset: const Offset(0, 14),
+   265→          ),
+   266→        ],
+   267→      ),
+   268→      child: Row(
+   269→        children: [
+   270→          Expanded(
+   271→            child: Column(
+   272→              crossAxisAlignment: CrossAxisAlignment.start,
+   273→              children: [
+   274→                Text(AppStrings.monthlyBudget,
+   275→                    style: TextStyles.label(context).copyWith(
+   276→                        color: Colors.white.withOpacity(0.85))),
+   277→                const SizedBox(height: 8),
+   278→                // 40px display amount
+   279→                AnimatedMoney(
+   280→                  amount: limit,
+   281→                  style: TextStyles.moneyHero(context, color: Colors.white),
+   282→                ),
+   283→                const SizedBox(height: 12),
+   284→                // Safe to spend today
+   285→                Text('Safe to spend today: ${Formatters.money(safeToSpend)}',
+   286→                    style: TextStyles.caption(context, weight: FontWeight.w600)
+   287→                        .copyWith(color: Colors.white.withOpacity(0.9))),
+   288→                const SizedBox(height: 4),
+   289→                // Rs. X left, N days to go
+   290→                Text('${Formatters.money(remaining.abs())} left · $daysLeft days to go',
+   291→                    style: TextStyles.caption(context)
+   292→                        .copyWith(color: Colors.white.withOpacity(0.7))),
+   293→                const SizedBox(height: 12),
+   294→                Row(
+   295→                  children: [
+   296→                    Column(
+   297→                      crossAxisAlignment: CrossAxisAlignment.start,
+   298→                      children: [
+   299→                        Text(AppStrings.spentThisMonth,
+   300→                            style: TextStyles.label(context).copyWith(
+   301→                                color: Colors.white.withOpacity(0.7))),
+   302→                        const SizedBox(height: 2),
+   303→                        AnimatedMoney(
+   304→                          amount: spent,
+   305→                          style: TextStyles.money(context,
+   306→                              size: 16, color: Colors.white),
+   307→                        ),
+   308→                      ],
+   309→                    ),
+   310→                    const SizedBox(width: 24),
+   311→                    Column(
+   312→                      crossAxisAlignment: CrossAxisAlignment.start,
+   313→                      children: [
+   314→                        Text(AppStrings.remaining,
+   315→                            style: TextStyles.label(context).copyWith(
+   316→                                color: Colors.white.withOpacity(0.7))),
+   317→                        const SizedBox(height: 2),
+   318→                        AnimatedMoney(
+   319→                          amount: remaining.abs(),
+   320→                          style: TextStyles.money(context,
+   321→                              size: 16, color: Colors.white),
+   322→                        ),
+   323→                      ],
+   324→                    ),
+   325→                  ],
+   326→                ),
+   327→              ],
+   328→            ),
+   329→          ),
+   330→          const SizedBox(width: 12),
+   331→          // Circular donut progress — color changes at 80% / 100%
+   332→          SizedBox(
+   333→            width: 72,
+   334→            height: 72,
+   335→            child: Stack(
+   336→              alignment: Alignment.center,
+   337→              children: [
+   338→                SizedBox(
+   339→                  width: 72,
+   340→                  height: 72,
+   341→                  child: CircularProgressIndicator(
+   342→                    value: percent.clamp(0.0, 1.0),
+   343→                    strokeWidth: 8,
+   344→                    backgroundColor: Colors.white.withOpacity(0.18),
+   345→                    valueColor: AlwaysStoppedAnimation<Color>(ringColor),
+   346→                  ),
+   347→                ),
+   348→                Column(
+   349→                  mainAxisSize: MainAxisSize.min,
+   350→                  children: [
+   351→                    Text('$pctInt%',
+   352→                        style: TextStyles.money(context,
+   353→                            size: 22, color: Colors.white)),
+   354→                    Text('used',
+   355→                        style: TextStyles.caption(context).copyWith(
+   356→                            color: Colors.white.withOpacity(0.7),
+   357→                            fontSize: 10)),
+   358→                  ],
+   359→                ),
+   360→              ],
+   361→            ),
+   362→          ),
+   363→        ],
+   364→      ),
+   365→    );
+   366→  }
+   367→
+   368→  // ────────────────────────────────────────────────────────────────
+   369→  // Quick actions — premium rounded-square tiles with subtle shadow
+   370→  // ────────────────────────────────────────────────────────────────
+   371→  Widget _quickActions(BuildContext context) {
+   372→    final tiles = [
+   373→      ('Scan', Icons.document_scanner_rounded, AppColors.mint,
+   374→          () => Navigator.of(context).push(
+   375→                MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+   376→              )),
+   377→      ('Voice', Icons.mic_rounded, AppColors.primaryPurple,
+   378→          () => Navigator.of(context).push(
+   379→                MaterialPageRoute(builder: (_) => const VoiceEntryScreen()),
+   380→              )),
+   381→      ('Insights', Icons.insights_rounded, AppColors.primaryIndigo,
+   382→          () => Navigator.of(context).push(
+   383→                MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
+   384→              )),
+   385→      ('Goals', Icons.savings_rounded, AppColors.blue,
+   386→          () => Navigator.of(context).push(
+   387→                MaterialPageRoute(
+   388→                    builder: (_) => const SavingsGoalsScreen()),
+   389→              )),
+   390→    ];
+   391→    return Row(
+   392→      children: tiles.map((t) {
+   393→        return Expanded(
+   394→          child: GestureDetector(
+   395→            onTap: () {
+   396→              HapticFeedback.lightImpact();
+   397→              t.$4();
+   398→            },
+   399→            child: Container(
+   400→              margin: const EdgeInsets.symmetric(horizontal: 4),
+   401→              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+   402→              decoration: BoxDecoration(
+   403→                color: AppColorsOf.card(context),
+   404→                border: Border.all(color: AppColorsOf.border(context)),
+   405→                borderRadius: BorderRadius.circular(18),
+   406→                boxShadow: Theme.of(context).brightness == Brightness.light
+   407→                    ? [
+   408→                        const BoxShadow(
+   409→                          color: Color(0x10000000),
+   410→                          blurRadius: 14,
+   411→                          offset: Offset(0, 6),
+   412→                        ),
+   413→                      ]
+   414→                    : null,
+   415→              ),
+   416→              child: Column(
+   417→                mainAxisSize: MainAxisSize.min,
+   418→                children: [
+   419→                  Container(
+   420→                    width: 48,
+   421→                    height: 48,
+   422→                    decoration: BoxDecoration(
+   423→                      gradient: LinearGradient(
+   424→                        begin: Alignment.topLeft,
+   425→                        end: Alignment.bottomRight,
+   426→                        colors: [
+   427→                          t.$3.withOpacity(0.22),
+   428→                          t.$3.withOpacity(0.10),
+   429→                        ],
+   430→                      ),
+   431→                      shape: BoxShape.circle,
+   432→                    ),
+   433→                    alignment: Alignment.center,
+   434→                    child: Icon(t.$2, color: t.$3, size: 28),
+   435→                  ),
+   436→                  const SizedBox(height: 8),
+   437→                  Text(
+   438→                    t.$1,
+   439→                    style: TextStyles.caption(context, weight: FontWeight.w700)
+   440→                        .copyWith(fontSize: 12),
+   441→                    textAlign: TextAlign.center,
+   442→                    maxLines: 1,
+   443→                    overflow: TextOverflow.ellipsis,
+   444→                  ),
+   445→                ],
+   446→              ),
+   447→            ),
+   448→          ),
+   449→        );
+   450→      }).toList(),
+   451→    );
+   452→  }
+   453→
+   454→  // ────────────────────────────────────────────────────────────────
+   455→  // Top categories — horizontal scroll of small cards
+   456→  // ────────────────────────────────────────────────────────────────
+   457→  Widget _topCategoriesScroll(BuildContext context, List<MapEntry<Category, double>> items) {
+   458→    if (items.isEmpty) {
+   459→      return GlassCard(
+   460→        padding: const EdgeInsets.all(16),
+   461→        child: Text(
+   462→          AppStrings.noDataYet,
+   463→          style: TextStyles.body(context,
+   464→              color: AppColorsOf.secondaryText(context)),
+   465→        ),
+   466→      );
+   467→    }
+   468→    // Use total spent as the denominator so the percentages reflect each
+   469→    // category's share of overall spending (not of the top category).
+   470→    final totalSpent = items.fold<double>(0.0, (s, e) => s + e.value);
+   471→    final safeTotal = totalSpent == 0 ? 1.0 : totalSpent;
+   472→    return SizedBox(
+   473→      height: 120,
+   474→      child: ListView.separated(
+   475→        scrollDirection: Axis.horizontal,
+   476→        itemCount: items.length,
+   477→        separatorBuilder: (_, __) => const SizedBox(width: 12),
+   478→        itemBuilder: (_, i) {
+   479→          final c = items[i].key;
+   480→          final amt = items[i].value;
+   481→          final pct = ((amt / safeTotal) * 100).round();
+   482→          return Container(
+   483→            width: 168,
+   484→            padding: const EdgeInsets.all(14),
+   485→            decoration: BoxDecoration(
+   486→              color: AppColorsOf.card(context),
+   487→              border: Border.all(color: AppColorsOf.border(context)),
+   488→              borderRadius: BorderRadius.circular(20),
+   489→            ),
+   490→            child: Column(
+   491→              crossAxisAlignment: CrossAxisAlignment.start,
+   492→              children: [
+   493→                Row(
+   494→                  children: [
+   495→                    Container(
+   496→                      width: 36,
+   497→                      height: 36,
+   498→                      decoration: BoxDecoration(
+   499→                        color: c.color.withOpacity(0.14),
+   500→                        shape: BoxShape.circle,
+   501→                      ),
+   502→                      alignment: Alignment.center,
+   503→                      child: Icon(c.icon, color: c.color, size: 18),
+   504→                    ),
+   505→                    const Spacer(),
+   506→                    Container(
+   507→                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+   508→                      decoration: BoxDecoration(
+   509→                        color: c.color.withOpacity(0.14),
+   510→                        borderRadius: BorderRadius.circular(8),
+   511→                      ),
+   512→                      child: Text('$pct%',
+   513→                          style: TextStyles.caption(context,
+   514→                              weight: FontWeight.w700).copyWith(color: c.color, fontSize: 11)),
+   515→                    ),
+   516→                  ],
+   517→                ),
+   518→                const Spacer(),
+   519→                Text(c.name, style: TextStyles.body(context,
+   520→                    weight: FontWeight.w600), maxLines: 1,
+   521→                    overflow: TextOverflow.ellipsis),
+   522→                const SizedBox(height: 2),
+   523→                Text(Formatters.money(amt),
+   524→                    style: TextStyles.body(context, weight: FontWeight.w700)
+   525→                        .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+   526→              ],
+   527→            ),
+   528→          );
+   529→        },
+   530→      ),
+   531→    );
+   532→  }
+   533→
+   534→  // ────────────────────────────────────────────────────────────────
+   535→  // Recent transactions — list with RED negative amounts
+   536→  // ────────────────────────────────────────────────────────────────
+   537→  Widget _recentList(BuildContext context, List<Expense> items) {
+   538→    if (items.isEmpty) {
+   539→      return GlassCard(
+   540→        padding: const EdgeInsets.all(16),
+   541→        child: Text(AppStrings.noTransactions,
+   542→            style: TextStyles.body(context,
+   543→                color: AppColorsOf.secondaryText(context))),
+   544→      );
+   545→    }
+   546→    return GlassCard(
+   547→      padding: const EdgeInsets.symmetric(vertical: 4),
+   548→      child: Column(
+   549→        children: [
+   550→          for (int i = 0; i < items.length; i++) ...[
+   551→            StaggeredEntrance(
+   552→              index: i,
+   553→              child: _TransactionTile(
+   554→                expense: items[i],
+   555→                category: SampleData.categoryById(items[i].categoryId),
+   556→                onTap: () => Navigator.of(context).push(
+   557→                  MaterialPageRoute(
+   558→                    builder: (_) => ExpenseDetailsScreen(expenseId: items[i].id),
+   559→                  ),
+   560→                ),
+   561→              ),
+   562→            ),
+   563→            if (i != items.length - 1)
+   564→              Divider(height: 1, indent: 12, endIndent: 12,
+   565→                  color: AppColorsOf.divider(context)),
+   566→          ],
+   567→        ],
+   568→      ),
+   569→    );
+   570→  }
+   571→}
+   572→
+   573→class _TransactionTile extends StatelessWidget {
+   574→  final Expense expense;
+   575→  final Category category;
+   576→  final VoidCallback onTap;
+   577→
+   578→  const _TransactionTile({
+   579→    required this.expense,
+   580→    required this.category,
+   581→    required this.onTap,
+   582→  });
+   583→
+   584→  @override
+   585→  Widget build(BuildContext context) {
+   586→    return Material(
+   587→      color: Colors.transparent,
+   588→      child: InkWell(
+   589→        onTap: onTap,
+   590→        child: Padding(
+   591→          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+   592→          child: Row(
+   593→            children: [
+   594→              // Category-colored left accent bar — premium polish
+   595→              Container(
+   596→                width: 3,
+   597→                height: 40,
+   598→                decoration: BoxDecoration(
+   599→                  color: category.color,
+   600→                  borderRadius: BorderRadius.circular(2),
+   601→                ),
+   602→              ),
+   603→              const SizedBox(width: 10),
+   604→              Container(
+   605→                width: 40,
+   606→                height: 40,
+   607→                decoration: BoxDecoration(
+   608→                  color: category.color.withOpacity(0.14),
+   609→                  shape: BoxShape.circle,
+   610→                ),
+   611→                alignment: Alignment.center,
+   612→                child: Icon(category.icon, color: category.color, size: 20),
+   613→              ),
+   614→              const SizedBox(width: 12),
+   615→              Expanded(
+   616→                child: Column(
+   617→                  crossAxisAlignment: CrossAxisAlignment.start,
+   618→                  children: [
+   619→                    Text(expense.title,
+   620→                        style: TextStyles.body(context,
+   621→                            weight: FontWeight.w600),
+   622→                        maxLines: 1,
+   623→                        overflow: TextOverflow.ellipsis),
+   624→                    const SizedBox(height: 2),
+   625→                    Text(
+   626→                      '${category.name} · ${Formatters.dateTime(expense.date)}',
+   627→                      style: TextStyles.caption(context).copyWith(
+   628→                          fontSize: 11),
+   629→                      maxLines: 1,
+   630→                      overflow: TextOverflow.ellipsis,
+   631→                    ),
+   632→                  ],
+   633→                ),
+   634→              ),
+   635→              const SizedBox(width: 8),
+   636→              Text(
+   637→                '-${Formatters.money(expense.amount)}',
+   638→                style: TextStyles.body(context, weight: FontWeight.w700)
+   639→                    .copyWith(
+   640→                        color: AppColors.danger,
+   641→                        fontFeatures: const [FontFeature.tabularFigures()]),
+   642→              ),
+   643→            ],
+   644→          ),
+   645→        ),
+   646→      ),
+   647→    );
+   648→  }
+   649→}
+   650→
+   651→/// Parallax wrapper — translates child slower than scroll for depth effect.
+   652→/// Uses NotificationListener to track scroll without managing a controller.
+   653→class _ParallaxHero extends StatefulWidget {
+   654→  final Widget child;
+   655→  const _ParallaxHero({required this.child});
+   656→
+   657→  @override
+   658→  State<_ParallaxHero> createState() => _ParallaxHeroState();
+   659→}
+   660→
+   661→class _ParallaxHeroState extends State<_ParallaxHero> {
+   662→  double _offset = 0.0;
+   663→
+   664→  @override
+   665→  Widget build(BuildContext context) {
+   666→    return NotificationListener<ScrollNotification>(
+   667→      onNotification: (notification) {
+   668→        if (notification is ScrollUpdateNotification) {
+   669→          final pixels = notification.metrics.pixels;
+   670→          if (pixels >= 0) {
+   671→            setState(() {
+   672→              // Parallax depth: hero moves up at 25% of scroll speed
+   673→              _offset = (pixels * 0.25).clamp(0.0, 120.0);
+   674→            });
+   675→          }
+   676→        }
+   677→        return false;
+   678→      },
+   679→      child: Transform.translate(
+   680→        offset: Offset(0, -_offset),
+   681→        child: widget.child,
+   682→      ),
+   683→    );
+   684→  }
+   685→}
+   686→

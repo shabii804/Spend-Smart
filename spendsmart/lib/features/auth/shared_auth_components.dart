@@ -372,6 +372,7 @@ class AuthTextField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final bool obscureText;
   final Widget? suffix;
+  final Iterable<String>? autofillHints;
 
   const AuthTextField({
     super.key,
@@ -384,6 +385,7 @@ class AuthTextField extends StatelessWidget {
     this.textInputAction = TextInputAction.next,
     this.obscureText = false,
     this.suffix,
+    this.autofillHints,
   });
 
   @override
@@ -394,6 +396,7 @@ class AuthTextField extends StatelessWidget {
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       obscureText: obscureText,
+      autofillHints: autofillHints,
       style: TextStyles.body(context).copyWith(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
@@ -449,6 +452,82 @@ class AuthSocialCircle extends StatelessWidget {
           alignment: Alignment.center,
           child: Icon(icon, size: 22, color: color),
         ),
+      ),
+    );
+  }
+}
+
+// ═══ AuthHeader — shared logo + heading + subtitle ═══
+class AuthHeader extends StatelessWidget {
+  final IconData icon;
+  final Color? iconColor;
+  final String title;
+  final String subtitle;
+  final double titleSize;
+  const AuthHeader({
+    super.key,
+    required this.icon,
+    this.iconColor,
+    required this.title,
+    required this.subtitle,
+    this.titleSize = 28,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        AuthFloatingLogo(icon: icon, iconColor: iconColor ?? AppColors.primaryIndigo),
+        const SizedBox(height: AuthSpacing.md),
+        Text(title,
+            style: TextStyles.h1(context).copyWith(
+              color: Colors.white, fontSize: titleSize, letterSpacing: -0.5)),
+        const SizedBox(height: 6),
+        Text(subtitle,
+            style: TextStyles.body(context, color: Colors.white.withOpacity(0.7)),
+            textAlign: TextAlign.center),
+      ],
+    );
+  }
+}
+
+// ═══ AuthFooterLink — shared glassmorphic CTA button + arrow ═══
+class AuthFooterLink extends StatelessWidget {
+  final String prompt;
+  final String action;
+  final IconData arrow;
+  final VoidCallback onTap;
+  const AuthFooterLink({
+    super.key,
+    required this.prompt,
+    required this.action,
+    this.arrow = Icons.arrow_forward_rounded,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.06),
+          border: Border.all(color: Colors.white.withOpacity(0.15)),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Text(prompt,
+              style: TextStyles.body(context)
+                  .copyWith(color: Colors.white.withOpacity(0.6))),
+          const SizedBox(width: 4),
+          Text(action,
+              style: TextStyles.body(context, weight: FontWeight.w700)
+                  .copyWith(color: Colors.white)),
+          const SizedBox(width: 6),
+          Icon(arrow, color: Colors.white, size: 18),
+        ]),
       ),
     );
   }

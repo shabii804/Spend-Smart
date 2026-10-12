@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
@@ -19,9 +20,21 @@ class AuthSpacing {
   static const double buttonHeight = 54;
 }
 
-/// Glassmorphic container — frosted-glass style card over the bg image.
-/// Used by all 3 auth screens to wrap form fields.
-/// Solid surface card (not see-through glass). Used by all auth screens.
+// ═══ Shared label style used by AuthTextField + AuthPasswordField ═══
+// A permanent label rendered ABOVE the field — never clips, never floats,
+// never collides with the prefix icon. Same look on every auth screen.
+const TextStyle _kFieldLabelStyle = TextStyle(
+  fontFamily: 'PlusJakartaSans',
+  fontSize: 12,
+  fontWeight: FontWeight.w600,
+  color: Color(0x80FFFFFF), // white @ 50%
+  height: 1.2,
+);
+
+/// Solid surface card (not see-through glass). Used by all 3 auth screens.
+/// Padding reduced from 20 to 18 for tighter, more spacious feel — fields
+/// already have their own contentPadding so the card no longer needs a thick
+/// inner margin.
 class AuthGlassContainer extends StatelessWidget {
   final Widget child;
   const AuthGlassContainer({super.key, required this.child});
@@ -29,7 +42,7 @@ class AuthGlassContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.darkSurface,
         borderRadius: BorderRadius.circular(20),
@@ -83,17 +96,18 @@ class AuthStaggerItem extends StatelessWidget {
   }
 }
 
-/// Social login/signup button — consistent across Login + Register.
-class AuthSocialButton extends StatelessWidget {
+/// Full-width outlined social login/signup button — shared by Login + Register.
+/// Same design on both screens so users recognise the pattern.
+class AuthSocialButtonWide extends StatelessWidget {
   final String label;
   final IconData icon;
-  final Color color;
+  final Color iconColor;
   final VoidCallback onTap;
-  const AuthSocialButton({
+  const AuthSocialButtonWide({
     super.key,
     required this.label,
     required this.icon,
-    required this.color,
+    required this.iconColor,
     required this.onTap,
   });
 
@@ -108,22 +122,29 @@ class AuthSocialButton extends StatelessWidget {
           onTap();
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.10),
-            border: Border.all(color: Colors.white.withOpacity(0.22)),
+            color: Colors.transparent,
+            border: Border.all(color: AppColors.darkBorder, width: 1.5),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: color),
-              const SizedBox(width: 6),
+              Icon(icon, size: 20, color: iconColor),
+              const SizedBox(width: 10),
               Flexible(
-                child: Text(label,
-                    style: TextStyles.body(context, weight: FontWeight.w600)
-                        .copyWith(color: Colors.white, fontSize: 13),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkTextPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -133,18 +154,70 @@ class AuthSocialButton extends StatelessWidget {
   }
 }
 
-/// Password field with show/hide toggle — consistent across Login + Register.
+/// Compact icon-only social circle — kept for completeness (used if a layout
+/// ever wants the icon-row variant).
+class AuthSocialCircle extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final double size;
+  const AuthSocialCircle({
+    super.key,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    this.size = 48,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(size),
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 22, color: color),
+        ),
+      ),
+    );
+  }
+}
+
+/// Password field with show/hide toggle — uses the SAME permanent-label-above
+/// design as AuthTextField so email/name/password all look identical.
+/// Fixes:
+///   • Floating label no longer clips into the prefix icon.
+///   • Field height matches AuthTextField (theme's contentPadding).
+///   • Label is always visible, even when field is focused or filled.
 class AuthPasswordField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
+  final String? hint;
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
+  final Iterable<String>? autofillHints;
+  final bool autofocus;
   const AuthPasswordField({
     super.key,
     required this.controller,
     required this.label,
+    this.hint,
     this.validator,
     this.textInputAction = TextInputAction.next,
+    this.autofillHints,
+    this.autofocus = false,
   });
 
   @override
@@ -153,30 +226,51 @@ class AuthPasswordField extends StatefulWidget {
 
 class _AuthPasswordFieldState extends State<AuthPasswordField> {
   bool _show = false;
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      validator: widget.validator,
-      obscureText: !_show,
-      textInputAction: widget.textInputAction,
-      style: TextStyles.body(context).copyWith(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: widget.label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
-        prefixIcon: Icon(Icons.lock_outline_rounded, size: 20,
-            color: Colors.white.withOpacity(0.7)),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _show ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-            color: Colors.white.withOpacity(0.7),
-            size: 20,
-          ),
-          onPressed: () => setState(() => _show = !_show),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 6),
+          child: Text(widget.label, style: _kFieldLabelStyle),
         ),
-        errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
-      ),
+        TextFormField(
+          controller: widget.controller,
+          validator: widget.validator,
+          obscureText: !_show,
+          textInputAction: widget.textInputAction,
+          autofocus: widget.autofocus,
+          autofillHints: widget.autofillHints ?? const [AutofillHints.password],
+          style: TextStyles.body(context).copyWith(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: widget.hint ?? '••••••••',
+            hintStyle: TextStyle(
+              color: Colors.white.withOpacity(0.25),
+              fontSize: 16,
+              letterSpacing: 4,
+            ),
+            prefixIcon: Icon(
+              Icons.lock_outline_rounded,
+              size: 20,
+              color: Colors.white.withOpacity(0.7),
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _show
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
+                color: Colors.white.withOpacity(0.7),
+                size: 20,
+              ),
+              onPressed: () => setState(() => _show = !_show),
+            ),
+            errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -188,46 +282,30 @@ class AuthBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(label: 'Back', button: true, child: GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.10),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(0.18), width: 1),
-        ),
-        alignment: Alignment.center,
-        child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
-      ),
-    ));
-  }
-}
-
-/// Dark gradient overlay used over the background image on all auth screens.
-/// Keeps text readable regardless of the app's light/dark theme setting.
-class AuthBackgroundOverlay extends StatelessWidget {
-  final Widget child;
-  const AuthBackgroundOverlay({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withOpacity(0.42),
-            Colors.black.withOpacity(0.18),
-            AppColors.darkBackground.withOpacity(0.78),
-            AppColors.darkBackground.withOpacity(0.96),
-          ],
-          stops: const [0.0, 0.32, 0.62, 1.0],
+    return Semantics(
+      label: 'Back',
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.10),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.18),
+              width: 1,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.arrow_back_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
         ),
       ),
-      child: child,
     );
   }
 }
@@ -272,7 +350,9 @@ class AuthFloatingLogo extends StatelessWidget {
 
 /// Full-screen wrapper for ALL auth screens.
 /// Clean dark gradient (#0B0F1A → #1B1240) + subtle purple glow.
-/// No background image, no watermark text.
+/// Sets the system status bar to transparent with LIGHT icons so the
+/// status-bar area never shows a bright blue color that clashes with the
+/// dark theme (the bug the user reported).
 class AuthScreenScaffold extends StatelessWidget {
   final Widget child;
   final bool showBackButton;
@@ -288,43 +368,57 @@ class AuthScreenScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(brightness: Brightness.dark),
-      child: Scaffold(
-        body: Container(
-          // Clean dark gradient (no bg image)
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF0B0F1A), Color(0xFF1B1240)],
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light, // Android
+          statusBarBrightness: Brightness.dark, // iOS — light icons on dark bg
+          systemNavigationBarColor: Color(0xFF0B0F1A),
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+        child: Scaffold(
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF0B0F1A), Color(0xFF1B1240)],
+              ),
             ),
-          ),
-          child: SafeArea(
-            child: Stack(
-              children: [
-                // Subtle purple glow behind logo position
-                Positioned(
-                  top: 40,
-                  left: 0,
-                  right: 0,
-                  height: 200,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          AppColors.primaryIndigo.withOpacity(0.15),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.3, 1.0],
+            child: SafeArea(
+              child: Stack(
+                children: [
+                  // Subtle purple glow behind logo position
+                  Positioned(
+                    top: 40,
+                    left: 0,
+                    right: 0,
+                    height: 200,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            AppColors.primaryIndigo.withOpacity(0.15),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.3, 1.0],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: AuthSpacing.contentMaxWidth),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: AuthSpacing.contentMaxWidth,
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        // The Scaffold's default `resizeToAvoidBottomInset`
+                        // already shrinks the body when the keyboard opens,
+                        // and the SingleChildScrollView scrolls hidden
+                        // fields into view — no manual viewInsets padding
+                        // needed (that would double-offset the content).
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
@@ -333,7 +427,8 @@ class AuthScreenScaffold extends StatelessWidget {
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: AuthBackButton(
-                                  onTap: onBack ?? () => Navigator.of(context).maybePop(),
+                                  onTap: onBack ??
+                                      () => Navigator.of(context).maybePop(),
                                 ),
                               ),
                               const SizedBox(height: AuthSpacing.xs),
@@ -350,7 +445,8 @@ class AuthScreenScaffold extends StatelessWidget {
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 }
 
@@ -364,23 +460,33 @@ class AuthDividerRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Divider(color: Colors.white.withOpacity(0.18), height: 1),
+          child: Divider(
+            color: Colors.white.withOpacity(0.18),
+            height: 1,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(label,
-              style: TextStyles.caption(context)
-                  .copyWith(color: Colors.white.withOpacity(0.6))),
+          child: Text(
+            label,
+            style: TextStyles.caption(context)
+                .copyWith(color: Colors.white.withOpacity(0.6)),
+          ),
         ),
         Expanded(
-          child: Divider(color: Colors.white.withOpacity(0.18), height: 1),
+          child: Divider(
+            color: Colors.white.withOpacity(0.18),
+            height: 1,
+          ),
         ),
       ],
     );
   }
 }
 
-// ═══ AuthTextField — shared, consistent text field with floating label ═══
+/// AuthTextField — shared, consistent text field with PERMANENT label above.
+/// No floating label, no clip risk. Same height as AuthPasswordField because
+/// both use the theme's contentPadding (no override here).
 class AuthTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String label;
@@ -392,6 +498,7 @@ class AuthTextField extends StatelessWidget {
   final bool obscureText;
   final Widget? suffix;
   final Iterable<String>? autofillHints;
+  final bool autofocus;
 
   const AuthTextField({
     super.key,
@@ -405,6 +512,7 @@ class AuthTextField extends StatelessWidget {
     this.obscureText = false,
     this.suffix,
     this.autofillHints,
+    this.autofocus = false,
   });
 
   @override
@@ -413,16 +521,9 @@ class AuthTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Permanent label above (never clips)
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 6),
-          child: Text(label,
-              style: TextStyle(
-                fontFamily: 'PlusJakartaSans',
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.5),
-              )),
+          child: Text(label, style: _kFieldLabelStyle),
         ),
         TextFormField(
           controller: controller,
@@ -430,18 +531,28 @@ class AuthTextField extends StatelessWidget {
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           obscureText: obscureText,
+          autofocus: autofocus,
           autofillHints: autofillHints,
           style: TextStyles.body(context).copyWith(color: Colors.white),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
+            hintStyle: TextStyle(
+              color: Colors.white.withOpacity(0.25),
+              fontSize: 14,
+            ),
             prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, size: 20, color: Colors.white.withOpacity(0.5))
+                ? Icon(
+                    prefixIcon,
+                    size: 20,
+                    color: Colors.white.withOpacity(0.7),
+                  )
                 : null,
-        suffixIcon: suffix,
-        errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
-            contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            suffixIcon: suffix,
+            errorStyle: const TextStyle(
+              color: AppColors.danger,
+              fontSize: 12,
+              height: 1.4,
+            ),
           ),
         ),
       ],
@@ -449,47 +560,7 @@ class AuthTextField extends StatelessWidget {
   }
 }
 
-// ═══ AuthSocialCircle — shared icon-only social login circle ═══
-class AuthSocialCircle extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  final double size;
-  const AuthSocialCircle({
-    super.key,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-    this.size = 48,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(size),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
-            border: Border.all(color: Colors.white.withOpacity(0.18)),
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Icon(icon, size: 22, color: color),
-        ),
-      ),
-    );
-  }
-}
-
-// ═══ AuthHeader — shared logo + heading + subtitle ═══
+/// AuthHeader — shared logo + heading + subtitle
 class AuthHeader extends StatelessWidget {
   final IconData icon;
   final Color? iconColor;
@@ -510,21 +581,31 @@ class AuthHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        AuthFloatingLogo(icon: icon, iconColor: iconColor ?? AppColors.primaryIndigo),
+        AuthFloatingLogo(
+          icon: icon,
+          iconColor: iconColor ?? AppColors.primaryIndigo,
+        ),
         const SizedBox(height: AuthSpacing.md),
-        Text(title,
-            style: TextStyles.h1(context).copyWith(
-              color: Colors.white, fontSize: titleSize, letterSpacing: -0.5)),
+        Text(
+          title,
+          style: TextStyles.h1(context).copyWith(
+            color: Colors.white,
+            fontSize: titleSize,
+            letterSpacing: -0.5,
+          ),
+        ),
         const SizedBox(height: 6),
-        Text(subtitle,
-            style: TextStyles.body(context, color: Colors.white.withOpacity(0.7)),
-            textAlign: TextAlign.center),
+        Text(
+          subtitle,
+          style: TextStyles.body(context, color: Colors.white.withOpacity(0.7)),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }
 }
 
-// ═══ AuthFooterLink — shared glassmorphic CTA button + arrow ═══
+/// AuthFooterLink — shared glassmorphic CTA button + arrow
 class AuthFooterLink extends StatelessWidget {
   final String prompt;
   final String action;
@@ -549,17 +630,229 @@ class AuthFooterLink extends StatelessWidget {
           border: Border.all(color: Colors.white.withOpacity(0.15)),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text(prompt,
-              style: TextStyles.body(context)
-                  .copyWith(color: Colors.white.withOpacity(0.6))),
-          const SizedBox(width: 4),
-          Text(action,
-              style: TextStyles.body(context, weight: FontWeight.w700)
-                  .copyWith(color: Colors.white)),
-          const SizedBox(width: 6),
-          Icon(arrow, color: Colors.white, size: 18),
-        ]),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                  children: [
+                    TextSpan(text: '$prompt '),
+                    TextSpan(
+                      text: action,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(arrow, color: Colors.white, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// AuthRememberMeRow — shared Remember-Me checkbox + Forgot-Password link row.
+/// Wraps both in `Flexible` so the row never overflows on small screens.
+class AuthRememberMeRow extends StatelessWidget {
+  final bool remember;
+  final ValueChanged<bool> onRememberChanged;
+  final VoidCallback onForgotPassword;
+  const AuthRememberMeRow({
+    super.key,
+    required this.remember,
+    required this.onRememberChanged,
+    required this.onForgotPassword,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Remember me — flexible so it shrinks on narrow screens
+        Flexible(
+          child: GestureDetector(
+            onTap: () => onRememberChanged(!remember),
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: remember
+                        ? AppColors.primaryIndigo
+                        : Colors.transparent,
+                    border: Border.all(
+                      color: remember
+                          ? AppColors.primaryIndigo
+                          : AppColors.darkBorder,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  alignment: Alignment.center,
+                  child: remember
+                      ? const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 14,
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Remember me',
+                    style: TextStyles.caption(context, weight: FontWeight.w500)
+                        .copyWith(color: AppColors.darkTextSecondary),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Forgot password — flexible so it shrinks on narrow screens
+        Flexible(
+          child: TextButton(
+            onPressed: onForgotPassword,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              minimumSize: const Size(80, 40),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              'Forgot Password?',
+              style: TextStyles.caption(context, weight: FontWeight.w700)
+                  .copyWith(color: AppColors.primaryIndigo),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// AuthTermsRow — shared Terms-and-Privacy-Policy checkbox row.
+/// Uses `crossAxisAlignment: CrossAxisAlignment.start` so the checkbox stays
+/// anchored at the top of the first line while the RichText wraps to multiple
+/// lines on small screens. The RichText is `Expanded` so it has full width
+/// to wrap properly without overflow.
+class AuthTermsRow extends StatelessWidget {
+  final bool accepted;
+  final ValueChanged<bool> onToggle;
+  final VoidCallback onTermsTap;
+  final VoidCallback onPrivacyTap;
+  final String promptText;
+  final String termsLabel;
+  final String privacyLabel;
+  final String conjunctionText;
+  const AuthTermsRow({
+    super.key,
+    required this.accepted,
+    required this.onToggle,
+    required this.onTermsTap,
+    required this.onPrivacyTap,
+    this.promptText = 'I accept the ',
+    this.termsLabel = 'Terms',
+    this.conjunctionText = ' and ',
+    this.privacyLabel = 'Privacy Policy',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onToggle(!accepted),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Checkbox — anchored to first line of text ──
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            width: 22,
+            height: 22,
+            margin: const EdgeInsets.only(top: 1),
+            decoration: BoxDecoration(
+              color: accepted ? AppColors.primaryIndigo : Colors.transparent,
+              border: Border.all(
+                color: accepted
+                    ? AppColors.primaryIndigo
+                    : AppColors.darkBorder,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            alignment: Alignment.center,
+            child: accepted
+                ? const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 14,
+                  )
+                : null,
+          ),
+          const SizedBox(width: 10),
+          // ── Terms text — Expanded so it can wrap on small screens ──
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 1),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 12,
+                    color: AppColors.darkTextSecondary,
+                    height: 1.45,
+                  ),
+                  children: [
+                    TextSpan(text: promptText),
+                    TextSpan(
+                      text: termsLabel,
+                      style: TextStyle(
+                        color: AppColors.primaryIndigo,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = onTermsTap,
+                    ),
+                    TextSpan(text: conjunctionText),
+                    TextSpan(
+                      text: privacyLabel,
+                      style: TextStyle(
+                        color: AppColors.primaryIndigo,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = onPrivacyTap,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

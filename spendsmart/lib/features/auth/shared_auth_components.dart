@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/widgets/premium_motion.dart';
 
 /// Shared auth components used by Login, Register, and Forgot Password screens.
 /// Keeping these in ONE file guarantees visual consistency across all auth screens.
@@ -282,6 +283,10 @@ class AuthScreenScaffold extends StatelessWidget {
             child: SafeArea(
               child: Stack(
                 children: [
+                  // Ambient floating shapes behind content
+                  const Positioned.fill(
+                    child: AmbientBackgroundAnimation(),
+                  ),
                   SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(

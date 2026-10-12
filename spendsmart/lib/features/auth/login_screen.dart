@@ -4,8 +4,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/validators.dart';
-import '../../core/widgets/primary_button.dart';
-import '../../core/widgets/success_overlay.dart';
+import '../../core/widgets/premium_motion.dart';
 import '../../models/user_profile.dart';
 import '../../providers/user_provider.dart';
 import '../dashboard/main_shell.dart';
@@ -56,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen>
           fullName: 'Muhammad Shoaib',
           email: _emailCtrl.text.trim(),
         ));
-    await SuccessOverlay.show(context, label: 'Welcome back!');
+    await showPremiumSuccess(context);
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const MainShell()),
@@ -140,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen>
                       child: Text(AppStrings.forgotPassword, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: AppColors.primaryIndigo))),
                   ]),
                   const SizedBox(height: 20),
-                  PrimaryButton(label: AppStrings.logIn, loading: _loading, onPressed: _login),
+                  MorphingLoadingButton(label: AppStrings.logIn, loading: _loading, onPressed: _login),
                 ]),
               ),
             ),

@@ -4,7 +4,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/validators.dart';
-import '../../core/widgets/primary_button.dart';
+import '../../core/widgets/premium_motion.dart';
 import 'shared_auth_components.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -120,7 +120,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
           ),
         ),
         const SizedBox(height: 24),
-        PrimaryButton(label: AppStrings.sendResetLink, loading: _loading, onPressed: _send),
+        MorphingLoadingButton(label: AppStrings.sendResetLink, loading: _loading, onPressed: _send),
       ]),
     );
   }
@@ -142,7 +142,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.78)),
       ),
       const SizedBox(height: 20),
-      PrimaryButton(
+      MorphingLoadingButton(
         label: AppStrings.backToLogin,
         icon: Icons.arrow_back_rounded,
         onPressed: () { if (Navigator.of(context).canPop()) Navigator.of(context).pop(); },

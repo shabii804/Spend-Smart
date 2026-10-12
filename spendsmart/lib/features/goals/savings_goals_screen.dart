@@ -228,7 +228,7 @@ class _GoalCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       goal.isComplete
-                          ? 'Goal achieved! 🎉'
+                          ? 'Goal achieved!'
                           : 'Next milestone: ${Formatters.money(_nextMilestone(goal))}',
                       style: TextStyles.caption(context).copyWith(
                           color: goal.isComplete ? AppColors.mint : null,

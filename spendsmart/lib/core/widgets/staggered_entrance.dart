@@ -13,7 +13,7 @@ class StaggeredEntrance extends StatefulWidget {
     required this.index,
     required this.child,
     this.baseDelayMs = 40,
-    this.stepDelayMs = 55,
+    this.stepDelayMs = 40,
   });
 
   @override
@@ -60,6 +60,10 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
 
   @override
   Widget build(BuildContext context) {
+    // Max 8 items: items beyond index 7 show without animation
+    if (widget.index > 7) return widget.child;
+    // Respect reduce-motion: skip animation entirely
+    if (MediaQuery.of(context).accessibleNavigation) return widget.child;
     return FadeTransition(
       opacity: _opacity,
       child: SlideTransition(

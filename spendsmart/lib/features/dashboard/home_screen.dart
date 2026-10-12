@@ -152,18 +152,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         const Spacer(),
-        GestureDetector(
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-          ),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColorsOf.card(context),
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColorsOf.border(context)),
+        Semantics(
+          label: 'Notifications',
+          button: true,
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
             ),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColorsOf.card(context),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColorsOf.border(context)),
+              ),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -185,6 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+        ),
         ),
         const SizedBox(width: 8),
         Container(

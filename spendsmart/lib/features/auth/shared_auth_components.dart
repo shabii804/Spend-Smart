@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/text_styles.dart';
 
 /// Shared auth components used by Login, Register, and Forgot Password screens.
@@ -248,25 +249,32 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
           textInputAction: widget.textInputAction,
           autofocus: widget.autofocus,
           autofillHints: widget.autofillHints ?? const [AutofillHints.password],
-          style: TextStyles.body(context).copyWith(color: Colors.white),
+          // Text color: AppColors.darkTextPrimary (near-white) so it reads on
+          // the dark surface fill (theme-applied). Adapts to theme overrides.
+          style: const TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            fontSize: 15,
+            color: AppColors.darkTextPrimary,
+            height: 1.4,
+          ),
           decoration: InputDecoration(
             hintText: widget.hint ?? '••••••••',
             hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.25),
+              color: AppColors.darkTextSecondary.withOpacity(0.45),
               fontSize: 16,
               letterSpacing: 4,
             ),
             prefixIcon: Icon(
               Icons.lock_outline_rounded,
               size: 20,
-              color: Colors.white.withOpacity(0.7),
+              color: AppColors.darkTextSecondary,
             ),
             suffixIcon: IconButton(
               icon: Icon(
                 _show
                     ? Icons.visibility_off_rounded
                     : Icons.visibility_rounded,
-                color: Colors.white.withOpacity(0.7),
+                color: AppColors.darkTextSecondary,
                 size: 20,
               ),
               onPressed: () => setState(() => _show = !_show),
@@ -370,8 +378,16 @@ class AuthScreenScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Use the FULL dark theme (AppTheme.dark()), NOT
+    // `Theme.of(context).copyWith(brightness: Brightness.dark)`.
+    // The copyWith approach only changes `brightness` and keeps the parent's
+    // inputDecorationTheme — so when the app is in light mode, auth fields
+    // would get the LIGHT input theme (lightSurface fill + lightBorder) with
+    // WHITE text forced in AuthTextField → white-on-light = invisible text.
+    // Using AppTheme.dark() guarantees fields use the dark input decoration
+    // theme: darkSurface fill + darkBorder + dark focus color.
     return Theme(
-      data: Theme.of(context).copyWith(brightness: Brightness.dark),
+      data: AppTheme.dark(),
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -411,7 +427,12 @@ class AuthScreenScaffold extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Center(
+                  // Align to TOP CENTER (not Center) so the form starts at
+                  // the top of the SafeArea instead of vertically centering
+                  // when content is shorter than the viewport. This fixes
+                  // the "starts from the middle / empty space on top" issue.
+                  Align(
+                    alignment: Alignment.topCenter,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
                         maxWidth: AuthSpacing.contentMaxWidth,
@@ -537,18 +558,25 @@ class AuthTextField extends StatelessWidget {
           obscureText: obscureText,
           autofocus: autofocus,
           autofillHints: autofillHints,
-          style: TextStyles.body(context).copyWith(color: Colors.white),
+          // Text color: AppColors.darkTextPrimary (near-white) so it reads on
+          // the dark surface fill (theme-applied). Adapts to theme overrides.
+          style: const TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            fontSize: 15,
+            color: AppColors.darkTextPrimary,
+            height: 1.4,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.25),
+              color: AppColors.darkTextSecondary.withOpacity(0.45),
               fontSize: 14,
             ),
             prefixIcon: prefixIcon != null
                 ? Icon(
                     prefixIcon,
                     size: 20,
-                    color: Colors.white.withOpacity(0.7),
+                    color: AppColors.darkTextSecondary,
                   )
                 : null,
             suffixIcon: suffix,

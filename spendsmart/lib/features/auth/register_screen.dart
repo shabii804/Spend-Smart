@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/validators.dart';
 import '../../core/widgets/app_text_field.dart';
@@ -32,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   bool _loading = false;
   late final AnimationController _entrance = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 700),
+    duration: const Duration(milliseconds: 800),
   );
 
   @override
@@ -83,242 +82,292 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   Widget build(BuildContext context) {
-    final stagger = CurvedAnimation(
-      parent: _entrance,
-      curve: Curves.easeOutCubic,
-    );
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Premium hero with logo + tagline
-              FadeTransition(
-                opacity: stagger,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, -0.04),
-                    end: Offset.zero,
-                  ).animate(stagger),
-                  child: _HeroLogo(),
-                ),
+    return Theme(
+      // Force dark theme so form fields render white over the bg image
+      data: Theme.of(context).copyWith(brightness: Brightness.dark),
+      child: Scaffold(
+        body: Container(
+          // Premium background image (same as login)
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/auth_bg.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Container(
+            // Dark gradient overlay for readability
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.42),
+                  Colors.black.withOpacity(0.18),
+                  AppColors.darkBackground.withOpacity(0.78),
+                  AppColors.darkBackground.withOpacity(0.96),
+                ],
+                stops: const [0.0, 0.32, 0.62, 1.0],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 24),
-                      _StaggerItem(
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 20),
+                    // Back button (top-left)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: _StaggerItem(
                         controller: _entrance,
-                        start: 0.1,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(AppStrings.createAccountTitle,
-                                style: TextStyles.h1(context)),
-                            const SizedBox(height: 6),
-                            Text(
-                              AppStrings.createAccountSubtitle,
-                              style: TextStyles.body(context,
-                                  color: AppColorsOf.secondaryText(context)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.18,
-                        child: AppTextField(
-                          label: AppStrings.fullName,
-                          controller: _nameCtrl,
-                          validator: Validators.required,
-                          prefix: const Icon(Icons.person_outline_rounded, size: 20),
-                          textInputAction: TextInputAction.next,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.26,
-                        child: AppTextField(
-                          label: AppStrings.email,
-                          controller: _emailCtrl,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: Validators.email,
-                          prefix: const Icon(Icons.alternate_email_rounded, size: 20),
-                          textInputAction: TextInputAction.next,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.34,
-                        child: _PasswordField(
-                          controller: _pwdCtrl,
-                          label: AppStrings.password,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.42,
-                        child: _PasswordField(
-                          controller: _confirmCtrl,
-                          label: AppStrings.confirmPassword,
-                          validator: (v) =>
-                              Validators.confirmPassword(v, _pwdCtrl.text),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Terms checkbox
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.5,
+                        start: 0.0,
                         child: GestureDetector(
-                          onTap: () => setState(() => _acceptTerms = !_acceptTerms),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          onTap: () => Navigator.of(context).maybePop(),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.10),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.18),
+                                  width: 1),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.arrow_back_rounded,
+                                color: Colors.white, size: 20),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Floating logo + brand
+                    _StaggerItem(
+                      controller: _entrance,
+                      start: 0.05,
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.32),
+                                  blurRadius: 28,
+                                  offset: const Offset(0, 14),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.person_add_rounded,
+                              color: AppColors.primaryIndigo,
+                              size: 36,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text('Create Account',
+                              style: TextStyles.h2(context)
+                                  .copyWith(color: Colors.white, fontSize: 26)),
+                          const SizedBox(height: 4),
+                          Text(AppStrings.createAccountSubtitle,
+                              style: TextStyles.caption(context)
+                                  .copyWith(color: Colors.white.withOpacity(0.85)),
+                              textAlign: TextAlign.center),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    // Form on glassmorphic container
+                    _StaggerItem(
+                      controller: _entrance,
+                      start: 0.15,
+                      child: _GlassContainer(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: _acceptTerms
-                                      ? AppColors.primaryIndigo
-                                      : Colors.transparent,
-                                  border: Border.all(
-                                    color: _acceptTerms
-                                        ? AppColors.primaryIndigo
-                                        : AppColorsOf.border(context),
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                margin: const EdgeInsets.only(top: 2),
-                                alignment: Alignment.center,
-                                child: _acceptTerms
-                                    ? const Icon(Icons.check_rounded,
-                                        color: Colors.white, size: 14)
-                                    : null,
+                              AppTextField(
+                                label: AppStrings.fullName,
+                                controller: _nameCtrl,
+                                validator: Validators.required,
+                                prefix: Icon(Icons.person_outline_rounded,
+                                    size: 20, color: Colors.white.withOpacity(0.7)),
+                                textInputAction: TextInputAction.next,
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  AppStrings.acceptTerms,
-                                  style: TextStyles.caption(context),
+                              const SizedBox(height: 16),
+                              AppTextField(
+                                label: AppStrings.email,
+                                controller: _emailCtrl,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: Validators.email,
+                                prefix: Icon(Icons.alternate_email_rounded,
+                                    size: 20, color: Colors.white.withOpacity(0.7)),
+                                textInputAction: TextInputAction.next,
+                              ),
+                              const SizedBox(height: 16),
+                              _PasswordField(
+                                controller: _pwdCtrl,
+                                label: AppStrings.password,
+                              ),
+                              const SizedBox(height: 16),
+                              _PasswordField(
+                                controller: _confirmCtrl,
+                                label: AppStrings.confirmPassword,
+                                validator: (v) =>
+                                    Validators.confirmPassword(v, _pwdCtrl.text),
+                              ),
+                              const SizedBox(height: 16),
+                              // Terms checkbox
+                              GestureDetector(
+                                onTap: () =>
+                                    setState(() => _acceptTerms = !_acceptTerms),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 180),
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        color: _acceptTerms
+                                            ? AppColors.primaryIndigo
+                                            : Colors.transparent,
+                                        border: Border.all(
+                                          color: _acceptTerms
+                                              ? AppColors.primaryIndigo
+                                              : Colors.white.withOpacity(0.35),
+                                          width: 1.5,
+                                        ),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      margin: const EdgeInsets.only(top: 2),
+                                      alignment: Alignment.center,
+                                      child: _acceptTerms
+                                          ? const Icon(Icons.check_rounded,
+                                              color: Colors.white, size: 14)
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        AppStrings.acceptTerms,
+                                        style: TextStyles.caption(context)
+                                            .copyWith(
+                                                color: Colors.white
+                                                    .withOpacity(0.85)),
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                              ),
+                              const SizedBox(height: 20),
+                              PrimaryButton(
+                                label: AppStrings.createAccount,
+                                loading: _loading,
+                                onPressed: _register,
                               ),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.58,
-                        child: PrimaryButton(
-                          label: AppStrings.createAccount,
-                          loading: _loading,
-                          onPressed: _register,
-                        ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Divider
+                    _StaggerItem(
+                      controller: _entrance,
+                      start: 0.25,
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: Divider(
+                                  color: Colors.white.withOpacity(0.18),
+                                  height: 1)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(AppStrings.orContinueWith,
+                                style: TextStyles.caption(context)
+                                    .copyWith(color: Colors.white.withOpacity(0.6))),
+                          ),
+                          Expanded(
+                              child: Divider(
+                                  color: Colors.white.withOpacity(0.18),
+                                  height: 1)),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.66,
-                        child: Row(
-                          children: [
-                            Expanded(
-                                child: Divider(
-                                    color: AppColorsOf.border(context), height: 1)),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Text(AppStrings.orContinueWith,
-                                  style: TextStyles.caption(context)),
+                    ),
+                    const SizedBox(height: 16),
+                    // Social buttons
+                    _StaggerItem(
+                      controller: _entrance,
+                      start: 0.3,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _SocialButton(
+                              label: 'Google',
+                              icon: Icons.g_mobiledata_rounded,
+                              color: const Color(0xFFEA4335),
+                              onTap: () => _demoSnack('Google sign-up'),
                             ),
-                            Expanded(
-                                child: Divider(
-                                    color: AppColorsOf.border(context), height: 1)),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _SocialButton(
+                              label: 'Apple',
+                              icon: Icons.apple_rounded,
+                              color: Colors.white,
+                              onTap: () => _demoSnack('Apple sign-up'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _SocialButton(
+                              label: 'Facebook',
+                              icon: Icons.facebook_rounded,
+                              color: const Color(0xFF1877F2),
+                              onTap: () => _demoSnack('Facebook sign-up'),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.74,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _SocialButton(
-                                label: 'Google',
-                                icon: Icons.g_mobiledata_rounded,
-                                color: const Color(0xFFEA4335),
-                                onTap: () => _demoSnack('Google sign-up'),
-                              ),
+                    ),
+                    const SizedBox(height: 28),
+                    // Sign in link
+                    _StaggerItem(
+                      controller: _entrance,
+                      start: 0.4,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(AppStrings.alreadyHaveAccount,
+                              style: TextStyles.caption(context)
+                                  .copyWith(color: Colors.white.withOpacity(0.7))),
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (_) => const LoginScreen()),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _SocialButton(
-                                label: 'Apple',
-                                icon: Icons.apple_rounded,
-                                color: Colors.black,
-                                onTap: () => _demoSnack('Apple sign-up'),
-                              ),
+                            child: Text(
+                              AppStrings.signIn,
+                              style: TextStyles.caption(context,
+                                      weight: FontWeight.w700)
+                                  .copyWith(color: Colors.white),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _SocialButton(
-                                label: 'Facebook',
-                                icon: Icons.facebook_rounded,
-                                color: const Color(0xFF1877F2),
-                                onTap: () => _demoSnack('Facebook sign-up'),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                      _StaggerItem(
-                        controller: _entrance,
-                        start: 0.82,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(AppStrings.alreadyHaveAccount,
-                                style: TextStyles.caption(context)),
-                            GestureDetector(
-                              onTap: () => Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (_) => const LoginScreen()),
-                              ),
-                              child: Text(
-                                AppStrings.signIn,
-                                style: TextStyles.caption(context,
-                                        weight: FontWeight.w700)
-                                    .copyWith(color: AppColors.primaryIndigo),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -326,54 +375,31 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 }
 
-class _HeroLogo extends StatelessWidget {
+/// Glassmorphic container — frosted-glass style card over the bg image.
+class _GlassContainer extends StatelessWidget {
+  final Widget child;
+  const _GlassContainer({required this.child});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 160,
-      decoration: const BoxDecoration(
-        gradient: AppGradients.splash,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [
-                  Colors.white.withOpacity(0.18),
-                  Colors.white.withOpacity(0.0),
-                ],
-                stops: const [0.4, 1.0],
-              ),
-            ),
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.18),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: const Icon(Icons.person_add_rounded,
-                    color: AppColors.primaryIndigo, size: 32),
-              ),
-            ],
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.18),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.20),
+            blurRadius: 32,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
+      child: child,
     );
   }
 }
@@ -399,7 +425,7 @@ class _StaggerItem extends StatelessWidget {
       opacity: anim,
       child: SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(0, 0.06),
+          begin: const Offset(0, 0.08),
           end: Offset.zero,
         ).animate(anim),
         child: child,
@@ -431,11 +457,12 @@ class _PasswordFieldState extends State<_PasswordField> {
       controller: widget.controller,
       validator: widget.validator ?? Validators.password,
       obscureText: !_show,
-      prefix: const Icon(Icons.lock_outline_rounded, size: 20),
+      prefix: Icon(Icons.lock_outline_rounded, size: 20,
+          color: Colors.white.withOpacity(0.7)),
       suffix: IconButton(
         icon: Icon(
           _show ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-          color: AppColorsOf.secondaryText(context),
+          color: Colors.white.withOpacity(0.7),
           size: 20,
         ),
         onPressed: () => setState(() => _show = !_show),
@@ -468,18 +495,23 @@ class _SocialButton extends StatelessWidget {
           onTap();
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColorsOf.card(context),
-            border: Border.all(color: AppColorsOf.border(context)),
+            color: Colors.white.withOpacity(0.10),
+            border: Border.all(color: Colors.white.withOpacity(0.22)),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 20, color: color),
-              const SizedBox(width: 8),
-              Text(label, style: TextStyles.body(context, weight: FontWeight.w600)),
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(label,
+                    style: TextStyles.body(context, weight: FontWeight.w600)
+                        .copyWith(color: Colors.white, fontSize: 13),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
             ],
           ),
         ),

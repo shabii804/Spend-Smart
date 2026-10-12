@@ -91,16 +91,16 @@ class _RegisterScreenState extends State<RegisterScreen>
           AuthStaggerItem(controller: _entrance, start: 0.05,
             child: Column(children: [
               const AuthFloatingLogo(icon: Icons.person_add_rounded),
-              const SizedBox(height: 14),
+              const SizedBox(height: 6),
               Text('Create Account',
                   style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 26)),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(AppStrings.createAccountSubtitle,
                   style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85)),
                   textAlign: TextAlign.center),
             ]),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
           // Form on glassmorphic container
           AuthStaggerItem(controller: _entrance, start: 0.15,
             child: AuthGlassContainer(
@@ -118,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   TextFormField(
                     controller: _emailCtrl,
                     validator: Validators.email,
@@ -132,15 +132,15 @@ class _RegisterScreenState extends State<RegisterScreen>
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   AuthPasswordField(controller: _pwdCtrl, label: AppStrings.password),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   // Premium password strength meter
                   PasswordStrengthMeter(password: _pwdCtrl.text),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   AuthPasswordField(controller: _confirmCtrl, label: AppStrings.confirmPassword,
                       validator: (v) => Validators.confirmPassword(v, _pwdCtrl.text)),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   // Terms checkbox
                   GestureDetector(onTap: () => setState(() => _acceptTerms = !_acceptTerms),
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -156,15 +156,15 @@ class _RegisterScreenState extends State<RegisterScreen>
                       Expanded(child: Text(AppStrings.acceptTerms,
                           style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85)))),
                     ])),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   MorphingLoadingButton(label: AppStrings.createAccount, loading: _loading, onPressed: _register),
                 ]),
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
           AuthStaggerItem(controller: _entrance, start: 0.25, child: const AuthDividerRow()),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           // Social buttons
           AuthStaggerItem(controller: _entrance, start: 0.3,
             child: Row(children: [
@@ -175,7 +175,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               Expanded(child: AuthSocialButton(label: 'Facebook', icon: Icons.facebook_rounded, color: const Color(0xFF1877F2), onTap: () => _demoSnack('Facebook sign-up'))),
             ]),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
           // Sign in link
           AuthStaggerItem(controller: _entrance, start: 0.4,
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -184,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 child: Text(AppStrings.signIn, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: Colors.white))),
             ]),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
         ],
       ),
     );

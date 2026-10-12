@@ -65,13 +65,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                 iconColor: _sent ? AppColors.mint : AppColors.primaryIndigo,
                 size: 38,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
               Text(
                 _sent ? 'Check Your Inbox' : AppStrings.forgotPasswordTitle,
                 style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 24),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 _sent ? AppStrings.resetLinkSent : AppStrings.forgotPasswordSubtitle,
                 style: TextStyles.body(context).copyWith(color: Colors.white.withOpacity(0.78)),
@@ -79,14 +79,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               ),
             ]),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 12),
           // Glassmorphic form OR success state
           AuthStaggerItem(controller: _entrance, start: 0.15,
             child: AuthGlassContainer(
               child: _sent ? _buildSuccessState() : _buildForm(),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
           // Back to login link
           AuthStaggerItem(controller: _entrance, start: 0.25,
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -97,7 +97,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                     style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: Colors.white))),
             ]),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
         ],
       ),
     );
@@ -119,7 +119,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
             errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 10),
         MorphingLoadingButton(label: AppStrings.sendResetLink, loading: _loading, onPressed: _send),
       ]),
     );
@@ -136,12 +136,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         Expanded(child: Text('Email sent successfully',
             style: TextStyles.body(context, weight: FontWeight.w600).copyWith(color: Colors.white))),
       ]),
-      const SizedBox(height: 16),
+      const SizedBox(height: 10),
       Text(
         'We sent a reset link to ${_emailCtrl.text.isEmpty ? "your email" : _emailCtrl.text.trim()}. Check your inbox and follow the instructions to reset your password.',
         style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.78)),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 8),
       MorphingLoadingButton(
         label: AppStrings.backToLogin,
         icon: Icons.arrow_back_rounded,

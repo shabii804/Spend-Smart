@@ -293,16 +293,16 @@ class AuthScreenScaffold extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (showBackButton) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 12),
                           Align(
                             alignment: Alignment.centerLeft,
                             child: AuthBackButton(
                               onTap: onBack ?? () => Navigator.of(context).maybePop(),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 8),
                         ] else
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 12),
                         child,
                       ],
                     ),

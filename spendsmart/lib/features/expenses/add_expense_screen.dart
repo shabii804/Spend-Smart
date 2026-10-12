@@ -279,7 +279,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             prefixStyle: TextStyles.money(context, size: 28,
                 color: AppColorsOf.secondaryText(context)),
             hintText: '0.00',
-            suffixIcon: const Icon(Icons.attach_money_rounded, color: AppColors.primaryIndigo),
+            // Rs. prefix already shown — no need for $ suffix icon
           ),
         ),
       ],

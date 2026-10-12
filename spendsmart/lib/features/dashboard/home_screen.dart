@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: AppColorsOf.secondaryText(context),
                       weight: FontWeight.w500)),
               const SizedBox(height: 2),
-              Text('$firstName! 👋',
+              Text('$firstName!',
                   style: TextStyles.h1(context).copyWith(
                       fontSize: 26,
                       fontWeight: FontWeight.w700,

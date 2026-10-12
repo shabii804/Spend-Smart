@@ -220,15 +220,18 @@ class _GroupedTransactionTile extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: category.color.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(12),
+              Hero(
+                tag: 'expense-icon-${expense.id}',
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: category.color.withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(category.icon, color: category.color, size: 22),
                 ),
-                alignment: Alignment.center,
-                child: Icon(category.icon, color: category.color, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(

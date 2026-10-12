@@ -55,15 +55,18 @@ class ExpenseDetailsScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.22),
-                      shape: BoxShape.circle,
+                  Hero(
+                    tag: 'expense-icon-${expense.id}',
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.22),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(cat.icon, color: Colors.white, size: 32),
                     ),
-                    alignment: Alignment.center,
-                    child: Icon(cat.icon, color: Colors.white, size: 32),
                   ),
                   const SizedBox(height: 14),
                   Text(

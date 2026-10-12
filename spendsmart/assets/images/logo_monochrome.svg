@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Monochrome version for Android 13 themed icons -->
+  <rect width="512" height="512" rx="143" fill="white"/>
+  <!-- Wallet body -->
+  <rect x="144" y="176" width="224" height="160" rx="40" fill="#7C6CFF"/>
+  <!-- Wallet flap -->
+  <rect x="144" y="176" width="224" height="56" rx="40" fill="#7C6CFF" fill-opacity="0.85"/>
+  <!-- Coin-dot clasp -->
+  <circle cx="312" cy="256" r="28" fill="#7C6CFF"/>
+  <!-- Growth spark -->
+  <path d="M 200 208 L 224 184 L 248 208" stroke="#7C6CFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

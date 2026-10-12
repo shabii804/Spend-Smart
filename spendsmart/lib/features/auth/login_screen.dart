@@ -79,26 +79,26 @@ class _LoginScreenState extends State<LoginScreen>
           AuthStaggerItem(controller: _entrance, start: 0.0,
             child: Column(children: [
               const AuthFloatingLogo(icon: Icons.account_balance_wallet_rounded),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
               Text('SpendSmart',
                   style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 26)),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(AppStrings.appTagline,
                   style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85))),
             ]),
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 12),
           // Heading
           AuthStaggerItem(controller: _entrance, start: 0.1,
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(AppStrings.welcomeBack,
                   style: TextStyles.h1(context).copyWith(color: Colors.white, fontSize: 28)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(AppStrings.welcomeBackSubtitle,
                   style: TextStyles.body(context, color: Colors.white.withOpacity(0.78))),
             ]),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
           // Form on glassmorphic container
           AuthStaggerItem(controller: _entrance, start: 0.18,
             child: AuthGlassContainer(
@@ -117,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen>
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   AuthPasswordField(controller: _pwdCtrl, label: AppStrings.password,
                       textInputAction: TextInputAction.done),
                   const SizedBox(height: 12),
@@ -144,9 +144,9 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
           AuthStaggerItem(controller: _entrance, start: 0.26, child: const AuthDividerRow()),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           // Social buttons
           AuthStaggerItem(controller: _entrance, start: 0.32,
             child: Row(children: [
@@ -157,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen>
               Expanded(child: AuthSocialButton(label: 'Facebook', icon: Icons.facebook_rounded, color: const Color(0xFF1877F2), onTap: () => _demoSnack('Facebook sign-in'))),
             ]),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
           // Sign up link
           AuthStaggerItem(controller: _entrance, start: 0.4,
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen>
                 child: Text(AppStrings.signUp, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: Colors.white))),
             ]),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
         ],
       ),
     );

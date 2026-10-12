@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/motion/app_motion.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
@@ -152,43 +153,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         const Spacer(),
-        Semantics(
-          label: 'Notifications',
-          button: true,
-          child: GestureDetector(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-            ),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColorsOf.card(context),
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColorsOf.border(context)),
-              ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(Icons.notifications_none_rounded,
-                    color: AppColorsOf.mainText(context), size: 20),
-                if (unread > 0)
-                  Positioned(
-                    top: 8,
-                    right: 9,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.danger,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+        _BellButton(
+          unread: unread,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
           ),
-        ),
         ),
         const SizedBox(width: 8),
         Container(
@@ -679,6 +648,114 @@ class _ParallaxHeroState extends State<_ParallaxHero> {
       child: Transform.translate(
         offset: Offset(0, -_offset),
         child: widget.child,
+      ),
+    );
+  }
+}
+
+/// Notifications bell button that wiggles periodically when there are
+/// unread notifications. Red dot badge appears with a scale pop.
+/// Respects reduce-motion (renders static, no wiggle).
+class _BellButton extends StatefulWidget {
+  final int unread;
+  final VoidCallback onTap;
+
+  const _BellButton({required this.unread, required this.onTap});
+
+  @override
+  State<_BellButton> createState() => _BellButtonState();
+}
+
+class _BellButtonState extends State<_BellButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _wiggle;
+
+  @override
+  void initState() {
+    super.initState();
+    _wiggle = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    // Schedule the first wiggle after 800ms, then repeat every 4 seconds.
+    // Only wiggles when there are unread notifications (checked in _scheduleNext).
+    _scheduleNext(const Duration(milliseconds: 800));
+  }
+
+  void _scheduleNext(Duration delay) {
+    Future.delayed(delay, () {
+      if (!mounted) return;
+      if (widget.unread > 0 && !AppMotion.reduceMotion(context)) {
+        _wiggle.forward(from: 0);
+      }
+      _scheduleNext(const Duration(seconds: 4));
+    });
+  }
+
+  @override
+  void dispose() {
+    _wiggle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Notifications${widget.unread > 0 ? ', ${widget.unread} unread' : ''}',
+      button: true,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          widget.onTap();
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColorsOf.card(context),
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColorsOf.border(context)),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // ── Bell icon (rotates back and forth when wiggle fires) ──
+              AnimatedBuilder(
+                animation: _wiggle,
+                builder: (context, child) {
+                  // 3 oscillations, ±15°, damped sin wave
+                  final t = _wiggle.value;
+                  final angle = (t * 6 * 3.14159) * (1 - t) * 0.26;
+                  return Transform.rotate(angle: angle, child: child);
+                },
+                child: Icon(Icons.notifications_none_rounded,
+                    color: AppColorsOf.mainText(context), size: 20),
+              ),
+              // ── Unread badge (scales in when unread > 0) ──
+              if (widget.unread > 0)
+                Positioned(
+                  top: 8,
+                  right: 9,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: AppMotion.base,
+                    curve: AppMotion.celebrate,
+                    builder: (context, v, child) {
+                      return Transform.scale(scale: v, child: child);
+                    },
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.danger,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

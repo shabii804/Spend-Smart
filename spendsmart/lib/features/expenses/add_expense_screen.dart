@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../core/motion/app_motion.dart';
+import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
@@ -144,6 +146,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Future<void> _save() async {
     if (!_hasAmount) return;
     if (_selectedCategoryId == null) {
+      Haptics.error();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a category')));
       return;
@@ -174,6 +177,38 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (!mounted) return;
     await showPremiumSuccess(context);
     if (!mounted) return;
+
+    // ── Undo snackbar (only on create, not on edit) ──
+    // Shows a snack with an UNDO action that removes the just-added expense.
+    if (!_isEdit && mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      // Clear any existing snack first so the new one is visible.
+      messenger.clearSnackBars();
+      messenger.showSnackBar(SnackBar(
+        content: Text('Added ${Formatters.money(amount)} to ${SampleData.categoryById(expense.categoryId).name}'),
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'UNDO',
+          textColor: AppColors.primaryIndigo,
+          onPressed: () {
+            prov.deleteExpense(expense.id);
+            Haptics.selection();
+            if (mounted) {
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Expense removed'),
+                  duration: Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+        ),
+      ));
+    }
+
     if (Navigator.of(context).canPop()) Navigator.of(context).maybePop();
   }
 
@@ -208,25 +243,39 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (_, i) {
                       final q = _quickAdd[i];
+                      final qSel = _selectedCategoryId == q.$2;
                       return GestureDetector(
-                        onTap: () => setState(() {
-                          _selectedCategoryId = q.$2;
-                          if (_titleCtrl.text.isEmpty) _titleCtrl.text = q.$1;
-                        }),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: AppColorsOf.card(context),
-                            border: Border.all(color: AppColorsOf.border(context)),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(q.$3, size: 14, color: q.$4),
-                              const SizedBox(width: 6),
-                              Text(q.$1,
-                                  style: TextStyles.caption(context, weight: FontWeight.w700)),
-                            ],
+                        onTap: () {
+                          Haptics.selection();
+                          setState(() {
+                            _selectedCategoryId = q.$2;
+                            if (_titleCtrl.text.isEmpty) _titleCtrl.text = q.$1;
+                          });
+                        },
+                        child: AnimatedScale(
+                          scale: qSel ? 1.06 : 1.0,
+                          duration: AppMotion.base,
+                          curve: AppMotion.celebrate,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: qSel
+                                  ? q.$4.withOpacity(0.18)
+                                  : AppColorsOf.card(context),
+                              border: Border.all(
+                                color: qSel ? q.$4 : AppColorsOf.border(context),
+                                width: qSel ? 1.6 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(q.$3, size: 14, color: q.$4),
+                                const SizedBox(width: 6),
+                                Text(q.$1,
+                                    style: TextStyles.caption(context, weight: FontWeight.w700)),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -347,11 +396,22 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             enabledBorder: InputBorder.none,
           ),
         ),
-        // Live formatted preview
+        // Live formatted preview with subtle scale-pop when amount changes.
+        // This is the "digit roll" feel — the formatted preview pulses
+        // whenever the parsed amount changes, giving visual confirmation.
         if (_hasAmount)
-          Text(_formattedAmount(),
-              style: TextStyles.caption(context)
-                  .copyWith(color: AppColorsOf.secondaryText(context))),
+          TweenAnimationBuilder<double>(
+            key: ValueKey(_formattedAmount()),
+            tween: Tween(begin: 0.92, end: 1.0),
+            duration: AppMotion.base,
+            curve: AppMotion.celebrate,
+            builder: (context, v, child) {
+              return Transform.scale(scale: v, child: child);
+            },
+            child: Text(_formattedAmount(),
+                style: TextStyles.caption(context)
+                    .copyWith(color: AppColorsOf.secondaryText(context))),
+          ),
       ],
     );
   }
@@ -360,21 +420,30 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget _dateChipBtn(int chip, String label) {
     final sel = _dateChip == chip;
     return GestureDetector(
-      onTap: () => _selectDateChip(chip),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: sel ? AppColors.primaryIndigo : AppColorsOf.card(context),
-          border: Border.all(
-            color: sel ? AppColors.primaryIndigo : AppColorsOf.border(context),
+      onTap: () {
+        Haptics.selection();
+        _selectDateChip(chip);
+      },
+      child: AnimatedScale(
+        scale: sel ? 1.04 : 1.0,
+        duration: AppMotion.base,
+        curve: AppMotion.celebrate,
+        child: AnimatedContainer(
+          duration: AppMotion.base,
+          curve: AppMotion.standard,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: sel ? AppColors.primaryIndigo : AppColorsOf.card(context),
+            border: Border.all(
+              color: sel ? AppColors.primaryIndigo : AppColorsOf.border(context),
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(12),
+          alignment: Alignment.center,
+          child: Text(label,
+              style: TextStyles.caption(context, weight: FontWeight.w600)
+                  .copyWith(color: sel ? Colors.white : AppColorsOf.secondaryText(context))),
         ),
-        alignment: Alignment.center,
-        child: Text(label,
-            style: TextStyles.caption(context, weight: FontWeight.w600)
-                .copyWith(color: sel ? Colors.white : AppColorsOf.secondaryText(context))),
       ),
     );
   }
@@ -391,58 +460,84 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         childAspectRatio: 0.92,
       ),
       itemCount: SampleData.categories.length,
-      itemBuilder: (_, i) {
+      itemBuilder: (ctx, i) {
         final c = SampleData.categories[i];
         final sel = _selectedCategoryId == c.id;
         final shortName = _shortLabels[c.id] ?? c.name;
+        // ── Scale pop on selection ──
+        // Selected items scale up to 1.06 with an easeOutBack curve for a
+        // delightful pop. Unselected items scale to 1.0 (default).
         return GestureDetector(
-          onTap: () => setState(() => _selectedCategoryId = c.id),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            decoration: BoxDecoration(
-              color: sel ? c.color.withOpacity(0.18) : AppColorsOf.card(context),
-              border: Border.all(
-                color: sel ? c.color : AppColorsOf.border(context),
-                width: sel ? 1.6 : 1,
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Stack(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 36, height: 36,
-                      decoration: BoxDecoration(
-                        color: c.color.withOpacity(0.16),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Icon(c.icon, color: c.color, size: 18),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(shortName,
-                        style: TextStyles.caption(context, weight: FontWeight.w600),
-                        textAlign: TextAlign.center,
-                        maxLines: 1),
-                  ],
+          onTap: () {
+            Haptics.selection();
+            setState(() => _selectedCategoryId = c.id);
+          },
+          child: AnimatedScale(
+            scale: sel ? 1.06 : 1.0,
+            duration: AppMotion.effective(ctx, AppMotion.base),
+            curve: AppMotion.effectiveCurve(ctx, AppMotion.celebrate),
+            child: AnimatedContainer(
+              duration: AppMotion.base,
+              curve: AppMotion.standard,
+              decoration: BoxDecoration(
+                color: sel ? c.color.withOpacity(0.18) : AppColorsOf.card(context),
+                border: Border.all(
+                  color: sel ? c.color : AppColorsOf.border(context),
+                  width: sel ? 1.6 : 1,
                 ),
-                // Check mark when selected
-                if (sel)
-                  Positioned(
-                    top: 6, right: 6,
-                    child: Container(
-                      width: 18, height: 18,
-                      decoration: BoxDecoration(
-                        color: c.color,
-                        shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // ── Icon also pops (scales up when selected) ──
+                      AnimatedScale(
+                        scale: sel ? 1.12 : 1.0,
+                        duration: AppMotion.base,
+                        curve: AppMotion.celebrate,
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: c.color.withOpacity(0.16),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(c.icon, color: c.color, size: 18),
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: const Icon(Icons.check_rounded, color: Colors.white, size: 12),
-                    ),
+                      const SizedBox(height: 6),
+                      Text(shortName,
+                          style: TextStyles.caption(context, weight: FontWeight.w600),
+                          textAlign: TextAlign.center,
+                          maxLines: 1),
+                    ],
                   ),
-              ],
+                  // Check mark when selected (drawn in with scale)
+                  if (sel)
+                    Positioned(
+                      top: 6, right: 6,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: AppMotion.base,
+                        curve: AppMotion.celebrate,
+                        builder: (context, v, child) {
+                          return Transform.scale(scale: v, child: child);
+                        },
+                        child: Container(
+                          width: 18, height: 18,
+                          decoration: BoxDecoration(
+                            color: c.color,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.check_rounded, color: Colors.white, size: 12),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         );

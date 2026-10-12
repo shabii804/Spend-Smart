@@ -87,28 +87,30 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Floating logo + brand
+          // Floating logo + brand (centered)
           AuthStaggerItem(controller: _entrance, start: 0.05,
-            child: Column(children: [
-              const AuthFloatingLogo(icon: Icons.person_add_rounded),
-              const SizedBox(height: 6),
-              Text('Create Account',
-                  style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 26)),
-              const SizedBox(height: 2),
-              Text(AppStrings.createAccountSubtitle,
-                  style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85)),
-                  textAlign: TextAlign.center),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const AuthFloatingLogo(icon: Icons.person_add_rounded),
+                const SizedBox(height: 12),
+                Text('Create Account',
+                    style: TextStyles.h2(context).copyWith(color: Colors.white, fontSize: 24)),
+                const SizedBox(height: 4),
+                Text(AppStrings.createAccountSubtitle,
+                    style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85)),
+                    textAlign: TextAlign.center),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          // Form on glassmorphic container
+          const SizedBox(height: 20),
+          // Form
           AuthStaggerItem(controller: _entrance, start: 0.15,
             child: AuthGlassContainer(
               child: Form(key: _formKey,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   TextFormField(
-                    controller: _nameCtrl,
-                    validator: Validators.required,
+                    controller: _nameCtrl, validator: Validators.required,
                     textInputAction: TextInputAction.next,
                     style: TextStyles.body(context).copyWith(color: Colors.white),
                     decoration: InputDecoration(
@@ -118,12 +120,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   TextFormField(
-                    controller: _emailCtrl,
-                    validator: Validators.email,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
+                    controller: _emailCtrl, validator: Validators.email,
+                    keyboardType: TextInputType.emailAddress, textInputAction: TextInputAction.next,
                     style: TextStyles.body(context).copyWith(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: AppStrings.email,
@@ -132,16 +132,15 @@ class _RegisterScreenState extends State<RegisterScreen>
                       errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   AuthPasswordField(controller: _pwdCtrl, label: AppStrings.password),
-                  const SizedBox(height: 6),
-                  // Premium password strength meter
+                  const SizedBox(height: 8),
                   PasswordStrengthMeter(password: _pwdCtrl.text),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   AuthPasswordField(controller: _confirmCtrl, label: AppStrings.confirmPassword,
                       validator: (v) => Validators.confirmPassword(v, _pwdCtrl.text)),
-                  const SizedBox(height: 10),
-                  // Terms checkbox
+                  const SizedBox(height: 14),
+                  // Terms
                   GestureDetector(onTap: () => setState(() => _acceptTerms = !_acceptTerms),
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       AnimatedContainer(duration: const Duration(milliseconds: 180),
@@ -156,15 +155,15 @@ class _RegisterScreenState extends State<RegisterScreen>
                       Expanded(child: Text(AppStrings.acceptTerms,
                           style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.85)))),
                     ])),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   MorphingLoadingButton(label: AppStrings.createAccount, loading: _loading, onPressed: _register),
                 ]),
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           AuthStaggerItem(controller: _entrance, start: 0.25, child: const AuthDividerRow()),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           // Social buttons
           AuthStaggerItem(controller: _entrance, start: 0.3,
             child: Row(children: [
@@ -175,16 +174,27 @@ class _RegisterScreenState extends State<RegisterScreen>
               Expanded(child: AuthSocialButton(label: 'Facebook', icon: Icons.facebook_rounded, color: const Color(0xFF1877F2), onTap: () => _demoSnack('Facebook sign-up'))),
             ]),
           ),
-          const SizedBox(height: 12),
-          // Sign in link
+          const SizedBox(height: 20),
+          // Sign in button (prominent)
           AuthStaggerItem(controller: _entrance, start: 0.4,
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(AppStrings.alreadyHaveAccount, style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.7))),
-              GestureDetector(onTap: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen())),
-                child: Text(AppStrings.signIn, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: Colors.white))),
-            ]),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen())),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  border: Border.all(color: Colors.white.withOpacity(0.18)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Text(AppStrings.alreadyHaveAccount, style: TextStyles.caption(context).copyWith(color: Colors.white.withOpacity(0.7))),
+                  const SizedBox(width: 4),
+                  Text(AppStrings.signIn, style: TextStyles.body(context, weight: FontWeight.w700).copyWith(color: Colors.white)),
+                ]),
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
         ],
       ),
     );

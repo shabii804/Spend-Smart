@@ -1,296 +1,199 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+import 'app_gradients.dart';
+import 'app_constants.dart';
 
 /// Builds the light + dark Material 3 themes for SpendSmart.
-/// All widget defaults (Card, AppBar, Chip, InputDecoration, etc.) are tuned here
-/// so screens can stay declarative and never override raw colors.
+/// Uses bundled Plus Jakarta Sans (no google_fonts dependency).
+/// Injects SpendSmartColors ThemeExtension for gradient + semantic tokens.
 class AppTheme {
   AppTheme._();
 
-  static ThemeData light() => _base(Brightness.light).copyWith(
+  // ── Shared text theme using local Plus Jakarta Sans ──
+  static TextTheme _textTheme(Color main, Color secondary) => TextTheme(
+        displayLarge: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 48, fontWeight: FontWeight.w700, color: main, height: 1.1, letterSpacing: -1.0),
+        displayMedium: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 40, fontWeight: FontWeight.w700, color: main, height: 1.15, letterSpacing: -0.8),
+        titleLarge: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 22, fontWeight: FontWeight.w600, color: main, height: 1.25, letterSpacing: -0.3),
+        titleMedium: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 16, fontWeight: FontWeight.w600, color: main, height: 1.35),
+        bodyLarge: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 16, color: main, height: 1.5),
+        bodyMedium: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 14, color: main, height: 1.5),
+        bodySmall: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 12, color: secondary, height: 1.4),
+        labelLarge: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 14, fontWeight: FontWeight.w600, color: main),
+        labelSmall: TextStyle(fontFamily: 'PlusJakartaSans', fontSize: 11, fontWeight: FontWeight.w500, color: secondary),
+      );
+
+  static InputDecorationTheme _inputTheme({
+    required Color border,
+    required Color bg,
+    required Color hint,
+  }) => InputDecorationTheme(
+        filled: true,
+        fillColor: bg,
+        hintStyle: TextStyle(color: hint, fontSize: 14, height: 1.5),
+        labelStyle: TextStyle(color: hint, fontSize: 14),
+        errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12, height: 1.4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppConstants.radiusField), borderSide: BorderSide(color: border, width: 1)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppConstants.radiusField), borderSide: const BorderSide(color: AppColors.primaryIndigo, width: 1.6)),
+        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppConstants.radiusField), borderSide: const BorderSide(color: AppColors.danger, width: 1.2)),
+        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppConstants.radiusField), borderSide: const BorderSide(color: AppColors.danger, width: 1.4)),
+        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppConstants.radiusField), borderSide: BorderSide(color: border, width: 1)),
+      );
+
+  static ThemeData light() => ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
         scaffoldBackgroundColor: AppColors.lightBackground,
         colorScheme: const ColorScheme.light(
           primary: AppColors.primaryIndigo,
           secondary: AppColors.blue,
-          surface: AppColors.lightCard,
+          surface: AppColors.lightSurface,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
-          onSurface: AppColors.lightMainText,
+          onSurface: AppColors.lightTextPrimary,
           error: AppColors.danger,
           onError: Colors.white,
         ),
+        extensions: const [SpendSmartColors.light],
+        textTheme: _textTheme(AppColors.lightTextPrimary, AppColors.lightTextSecondary),
         cardTheme: CardTheme(
-          color: AppColors.lightCard,
+          color: AppColors.lightSurface,
           elevation: 0,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
             side: BorderSide(color: AppColors.lightBorder, width: 1),
           ),
         ),
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
           backgroundColor: AppColors.lightBackground,
-          foregroundColor: AppColors.lightMainText,
+          foregroundColor: AppColors.lightTextPrimary,
           elevation: 0,
           centerTitle: false,
-          titleTextStyle: TextStyle(
-            color: AppColors.lightMainText,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          titleTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.lightTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
         ),
-        inputDecorationTheme: _inputDecoration(
+        inputDecorationTheme: _inputTheme(
           border: AppColors.lightBorder,
-          bg: AppColors.lightCard,
-          text: AppColors.lightMainText,
-          hint: AppColors.lightSecondaryText,
+          bg: AppColors.lightSurface,
+          hint: AppColors.lightTextSecondary,
         ),
         chipTheme: ChipThemeData(
-          backgroundColor: AppColors.lightCard,
+          backgroundColor: AppColors.lightSurface,
           selectedColor: AppColors.primaryIndigo.withOpacity(0.12),
-          labelStyle: const TextStyle(fontSize: 14, color: AppColors.lightMainText),
-          secondaryLabelStyle: const TextStyle(fontSize: 14, color: AppColors.lightMainText),
+          labelStyle: const TextStyle(fontSize: 14, color: AppColors.lightTextPrimary),
           brightness: Brightness.light,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppConstants.radiusChip),
             side: BorderSide(color: AppColors.lightBorder),
           ),
         ),
-        dividerTheme: DividerThemeData(
-          color: AppColors.lightDivider,
-          thickness: 1,
-          space: 1,
+        dividerTheme: DividerThemeData(color: AppColors.lightDivider, thickness: 1, space: 1),
+        iconTheme: const IconThemeData(color: AppColors.lightTextPrimary, size: 24),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: AppColors.lightTextPrimary,
+          contentTextStyle: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
         ),
-        iconTheme: const IconThemeData(color: AppColors.lightMainText, size: 24),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: AppColors.lightSurface,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+          elevation: 0,
+        ),
+        dialogTheme: DialogTheme(
+          backgroundColor: AppColors.lightSurface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          titleTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.lightTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
+          contentTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.lightTextSecondary, fontSize: 14, height: 1.5),
+        ),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: _FadeUpTransitionsBuilder(),
+            TargetPlatform.iOS: _FadeUpTransitionsBuilder(),
+          },
+        ),
       );
 
-  static ThemeData dark() => _base(Brightness.dark).copyWith(
+  static ThemeData dark() => ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
         scaffoldBackgroundColor: AppColors.darkBackground,
-        colorScheme: const ColorScheme.dark(
+        colorScheme: ColorScheme.dark(
           primary: AppColors.primaryIndigo,
           secondary: AppColors.blue,
-          surface: AppColors.darkCard,
+          surface: AppColors.darkSurface,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
-          onSurface: AppColors.darkMainText,
+          onSurface: AppColors.darkTextPrimary,
           error: AppColors.danger,
           onError: Colors.white,
         ),
+        extensions: const [SpendSmartColors.dark],
+        textTheme: _textTheme(AppColors.darkTextPrimary, AppColors.darkTextSecondary),
         cardTheme: CardTheme(
-          color: AppColors.darkCard,
+          color: AppColors.darkSurface,
           elevation: 0,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppConstants.radiusCard),
             side: BorderSide(color: AppColors.darkBorder, width: 1),
           ),
         ),
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
           backgroundColor: AppColors.darkBackground,
-          foregroundColor: AppColors.darkMainText,
+          foregroundColor: AppColors.darkTextPrimary,
           elevation: 0,
           centerTitle: false,
+          titleTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.darkTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
         ),
-        inputDecorationTheme: _inputDecoration(
+        inputDecorationTheme: _inputTheme(
           border: AppColors.darkBorder,
-          bg: AppColors.darkCard,
-          text: AppColors.darkMainText,
-          hint: AppColors.darkSecondaryText,
+          bg: AppColors.darkSurface,
+          hint: AppColors.darkTextSecondary,
         ),
         chipTheme: ChipThemeData(
-          backgroundColor: AppColors.darkCard,
+          backgroundColor: AppColors.darkSurface,
           selectedColor: AppColors.primaryIndigo.withOpacity(0.18),
-          labelStyle: const TextStyle(fontSize: 14, color: AppColors.darkMainText),
-          secondaryLabelStyle: const TextStyle(fontSize: 14, color: AppColors.darkMainText),
+          labelStyle: const TextStyle(fontSize: 14, color: AppColors.darkTextPrimary),
           brightness: Brightness.dark,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppConstants.radiusChip),
             side: BorderSide(color: AppColors.darkBorder),
           ),
         ),
-        dividerTheme: DividerThemeData(
-          color: AppColors.darkDivider,
-          thickness: 1,
-          space: 1,
-        ),
-        iconTheme: const IconThemeData(color: AppColors.darkMainText, size: 24),
-      );
-
-  static ThemeData _base(Brightness brightness) {
-    final isLight = brightness == Brightness.light;
-    final mainText = isLight ? AppColors.lightMainText : AppColors.darkMainText;
-    final secondary =
-        isLight ? AppColors.lightSecondaryText : AppColors.darkSecondaryText;
-    return ThemeData(
-      useMaterial3: true,
-      brightness: brightness,
-      textTheme: GoogleFonts.plusJakartaSansTextTheme().copyWith(
-        titleLarge: TextStyle(
-          color: mainText,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-        titleMedium: TextStyle(
-          color: mainText,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        bodyLarge: TextStyle(color: mainText, fontSize: 16, height: 1.5),
-        bodyMedium: TextStyle(color: mainText, fontSize: 14, height: 1.5),
-        bodySmall: TextStyle(color: secondary, fontSize: 12, height: 1.4),
-      ),
-      primaryTextTheme: GoogleFonts.plusJakartaSansTextTheme(),
-      splashFactory: InkSparkle.splashFactory,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: _FadeUpTransitionsBuilder(),
-          TargetPlatform.iOS: _FadeUpTransitionsBuilder(),
-        },
-      ),
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: isLight ? AppColors.lightMainText : AppColors.darkElevated,
-        contentTextStyle: TextStyle(
-          color: isLight ? Colors.white : AppColors.darkMainText,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 0,
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.primaryIndigo,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primaryIndigo,
+        dividerTheme: DividerThemeData(color: AppColors.darkDivider, thickness: 1, space: 1),
+        iconTheme: const IconThemeData(color: AppColors.darkTextPrimary, size: 24),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: AppColors.darkSurfaceElevated,
+          contentTextStyle: const TextStyle(color: AppColors.darkTextPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+          behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          side: const BorderSide(color: AppColors.primaryIndigo, width: 1.2),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          elevation: 0,
         ),
-      ),
-      bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: isLight ? AppColors.lightCard : AppColors.darkCard,
-        modalBackgroundColor: isLight ? AppColors.lightCard : AppColors.darkCard,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: AppColors.darkSurface,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+          elevation: 0,
         ),
-        elevation: 0,
-      ),
-      dialogTheme: DialogTheme(
-        backgroundColor: isLight ? AppColors.lightCard : AppColors.darkCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        elevation: 0,
-        titleTextStyle: TextStyle(
-          color: mainText,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+        dialogTheme: DialogTheme(
+          backgroundColor: AppColors.darkSurface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          titleTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.darkTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
+          contentTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.darkTextSecondary, fontSize: 14, height: 1.5),
         ),
-        contentTextStyle: TextStyle(color: secondary, fontSize: 14, height: 1.5),
-      ),
-      sliderTheme: SliderThemeData(
-        activeTrackColor: AppColors.primaryIndigo,
-        inactiveTrackColor: AppColors.primaryIndigo.withOpacity(0.15),
-        thumbColor: AppColors.primaryIndigo,
-        overlayColor: AppColors.primaryIndigo.withOpacity(0.12),
-        trackHeight: 6,
-      ),
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((s) {
-          if (s.contains(WidgetState.selected)) return Colors.white;
-          return isLight ? AppColors.lightSecondaryText : AppColors.darkSecondaryText;
-        }),
-        trackColor: WidgetStateProperty.resolveWith((s) {
-          if (s.contains(WidgetState.selected)) return AppColors.primaryIndigo;
-          return isLight ? AppColors.lightBorder : AppColors.darkBorder;
-        }),
-        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-      ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.primaryIndigo,
-        linearTrackColor: AppColors.primaryIndigo,
-      ),
-      checkboxTheme: CheckboxThemeData(
-        fillColor: WidgetStateProperty.resolveWith((s) {
-          if (s.contains(WidgetState.selected)) return AppColors.primaryIndigo;
-          return Colors.transparent;
-        }),
-        side: BorderSide(color: secondary, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      ),
-      radioTheme: RadioThemeData(
-        fillColor: WidgetStateProperty.resolveWith((s) {
-          if (s.contains(WidgetState.selected)) return AppColors.primaryIndigo;
-          return secondary;
-        }),
-      ),
-      tabBarTheme: TabBarTheme(
-        labelColor: AppColors.primaryIndigo,
-        unselectedLabelColor: secondary,
-        indicator: const UnderlineTabIndicator(
-          borderSide: BorderSide(color: AppColors.primaryIndigo, width: 2.5),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: _FadeUpTransitionsBuilder(),
+            TargetPlatform.iOS: _FadeUpTransitionsBuilder(),
+          },
         ),
-      ),
-      tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(
-          color: isLight ? AppColors.lightMainText : AppColors.darkElevated,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        textStyle: TextStyle(
-          color: isLight ? Colors.white : AppColors.darkMainText,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  static InputDecorationTheme _inputDecoration({
-    required Color border,
-    required Color bg,
-    required Color text,
-    required Color hint,
-  }) {
-    return InputDecorationTheme(
-      filled: true,
-      fillColor: bg,
-      hintStyle: TextStyle(color: hint, fontSize: 14, height: 1.5),
-      labelStyle: TextStyle(color: hint, fontSize: 14),
-      errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12, height: 1.4),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: border, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.primaryIndigo, width: 1.6),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.danger, width: 1.2),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.danger, width: 1.4),
-      ),
-      disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: border, width: 1),
-      ),
-    );
-  }
+      );
 }
 
-/// Premium page transition: subtle slide-up + fade + scale.
-/// Used by all pushed MaterialPageRoute (Android + iOS).
+/// Premium page transition: fade + slide + scale (250ms, easeOutCubic).
 class _FadeUpTransitionsBuilder extends PageTransitionsBuilder {
   const _FadeUpTransitionsBuilder();
 
@@ -306,15 +209,8 @@ class _FadeUpTransitionsBuilder extends PageTransitionsBuilder {
     return FadeTransition(
       opacity: curved,
       child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.06),
-          end: Offset.zero,
-        ).animate(curved),
-        child: ScaleTransition(
-          scale: Tween<double>(begin: 0.98, end: 1.0).animate(curved),
-          alignment: Alignment.topCenter,
-          child: child,
-        ),
+        position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero).animate(curved),
+        child: ScaleTransition(scale: Tween<double>(begin: 0.98, end: 1.0).animate(curved), alignment: Alignment.topCenter, child: child),
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'core/theme/app_colors.dart';
@@ -13,8 +12,6 @@ import 'providers/theme_provider.dart';
 import 'providers/user_provider.dart';
 
 void main() {
-  // Ensure google_fonts doesn't crash if offline — silently fall back.
-  GoogleFonts.config.allowRuntimeFetching = true;
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const _Providers());
 }

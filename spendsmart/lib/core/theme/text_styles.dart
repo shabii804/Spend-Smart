@@ -1,26 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// Typography scale per spec:
-/// H1: 26/600 | H2: 22/600 | H3: 18/600 | Body: 14/400 | Caption: 12/400
-/// Money amounts: 20–28px, w600, tabular figures.
-/// All text uses Plus Jakarta Sans.
-///
-/// When no color is supplied, the text style falls back to a sensible default;
-/// the caller typically wraps it with .copyWith(color: AppColorsOf.mainText(context)).
+// ═══════════════════════════════════════════════════════════════════
+// SpendSmart Typography — Plus Jakarta Sans (bundled locally)
+// Fixes broken "i" glyph that rendered as "m lestone", "Billls", etc.
+//
+// Scale (minimum 12px — never go below):
+//   display   48/40  bold      — hero amounts, splash title
+//   title     22     semibold   — screen titles
+//   section   16     semibold   — section headers
+//   body      14     regular    — default text
+//   caption   12     regular    — small text, labels
+//
+// Money styles always use FontFeature.tabularFigures() for aligned digits.
+// ═══════════════════════════════════════════════════════════════════
+
 class TextStyles {
   TextStyles._();
 
-  static TextStyle h1(BuildContext context, {Color? color}) => GoogleFonts.plusJakartaSans(
-        fontSize: 26,
-        fontWeight: FontWeight.w600,
+  static const _font = 'PlusJakartaSans';
+  static const _tabular = [FontFeature.tabularFigures()];
+
+  // ── DISPLAY (hero amounts, splash) ──
+  static TextStyle display(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
+        fontSize: 48,
+        fontWeight: FontWeight.w700,
         color: color ?? AppColorsOf.mainText(context),
-        height: 1.2,
-        letterSpacing: -0.4,
+        height: 1.1,
+        letterSpacing: -1.0,
       );
 
-  static TextStyle h2(BuildContext context, {Color? color}) => GoogleFonts.plusJakartaSans(
+  static TextStyle displayMedium(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
+        fontSize: 40,
+        fontWeight: FontWeight.w700,
+        color: color ?? AppColorsOf.mainText(context),
+        height: 1.15,
+        letterSpacing: -0.8,
+      );
+
+  // ── TITLE (screen titles, card titles) ──
+  static TextStyle h1(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: color ?? AppColorsOf.mainText(context),
+        height: 1.2,
+        letterSpacing: -0.5,
+      );
+
+  static TextStyle h2(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: color ?? AppColorsOf.mainText(context),
@@ -28,7 +59,8 @@ class TextStyles {
         letterSpacing: -0.3,
       );
 
-  static TextStyle h3(BuildContext context, {Color? color}) => GoogleFonts.plusJakartaSans(
+  static TextStyle h3(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: color ?? AppColorsOf.mainText(context),
@@ -36,53 +68,77 @@ class TextStyles {
         letterSpacing: -0.2,
       );
 
+  // ── SECTION (section headers) ──
+  static TextStyle section(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: color ?? AppColorsOf.mainText(context),
+        height: 1.35,
+      );
+
+  // ── BODY (default text) ──
   static TextStyle body(BuildContext context,
           {Color? color, FontWeight weight = FontWeight.w400}) =>
-      GoogleFonts.plusJakartaSans(
+      TextStyle(
+        fontFamily: _font,
         fontSize: 14,
         fontWeight: weight,
         color: color ?? AppColorsOf.mainText(context),
         height: 1.5,
       );
 
+  // ── CAPTION (small text — minimum 12px) ──
   static TextStyle caption(BuildContext context,
           {Color? color, FontWeight weight = FontWeight.w400}) =>
-      GoogleFonts.plusJakartaSans(
+      TextStyle(
+        fontFamily: _font,
         fontSize: 12,
         fontWeight: weight,
         color: color ?? AppColorsOf.secondaryText(context),
         height: 1.4,
       );
 
-  /// Money label inside small cards (total spent, remaining, etc.)
+  // ── LABEL (field labels, badges — 12px semibold) ──
+  static TextStyle label(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: color ?? AppColorsOf.tertiaryText(context),
+        height: 1.4,
+        letterSpacing: 0.3,
+      );
+
+  // ── MONEY (tabular figures for aligned digits) ──
   static TextStyle money(BuildContext context,
           {Color? color, double size = 22, FontWeight weight = FontWeight.w600}) =>
-      GoogleFonts.plusJakartaSans(
+      TextStyle(
+        fontFamily: _font,
         fontSize: size,
         fontWeight: weight,
         color: color ?? AppColorsOf.mainText(context),
         height: 1.2,
         letterSpacing: -0.3,
-        fontFeatures: const [FontFeature.tabularFigures()],
+        fontFeatures: _tabular,
       );
 
-  /// Hero amount for dashboard hero card.
-  static TextStyle moneyHero(BuildContext context, {Color? color}) =>
-      GoogleFonts.plusJakartaSans(
-        fontSize: 28,
+  static TextStyle moneyHero(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
+        fontSize: 40,
         fontWeight: FontWeight.w700,
         color: color ?? AppColorsOf.mainText(context),
         height: 1.1,
-        letterSpacing: -0.6,
-        fontFeatures: const [FontFeature.tabularFigures()],
+        letterSpacing: -0.8,
+        fontFeatures: _tabular,
       );
 
-  static TextStyle label(BuildContext context, {Color? color}) =>
-      GoogleFonts.plusJakartaSans(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        color: color ?? AppColorsOf.tertiaryText(context),
-        height: 1.4,
-        letterSpacing: 0.4,
+  static TextStyle moneyDisplay(BuildContext context, {Color? color}) => TextStyle(
+        fontFamily: _font,
+        fontSize: 48,
+        fontWeight: FontWeight.w700,
+        color: color ?? AppColorsOf.mainText(context),
+        height: 1.05,
+        letterSpacing: -1.0,
+        fontFeatures: _tabular,
       );
 }

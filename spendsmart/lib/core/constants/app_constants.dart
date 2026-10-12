@@ -18,11 +18,12 @@ class AppConstants {
   static const double screenPaddingH = 20;
 
   // Radius
-  static const double radiusCard = 24;
+  static const double radiusCard = 20;
   static const double radiusButton = 16;
   static const double radiusChip = 12;
   static const double radiusField = 16;
   static const double radiusSmall = 12;
+  static const double radiusPill = 999;
 
   // Animation
   static const Duration durFast = Duration(milliseconds: 200);

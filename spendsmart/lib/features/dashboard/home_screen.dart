@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 28),
                 SectionHeader(
                   title: 'Top Categories',
-                  actionLabel: 'This Month',
+                  actionLabel: 'See All',
                   onAction: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const TransactionsScreen()),
                   ),
@@ -228,37 +228,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.5)),
               const SizedBox(height: 4),
-              Text('Small steps make big progress.',
+              // Date merged into subtitle (replaces date pill)
+              Text('${Formatters.dateShort(DateTime.now())} · Small steps make big progress',
                   style: TextStyles.caption(context)
                       .copyWith(color: AppColorsOf.tertiaryText(context))),
-            ],
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          decoration: BoxDecoration(
-            color: AppColorsOf.card(context),
-            border: Border.all(color: AppColorsOf.border(context)),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: Theme.of(context).brightness == Brightness.light
-                ? [
-                    const BoxShadow(
-                      color: Color(0x14000000),
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.calendar_today_rounded,
-                  color: AppColors.primaryIndigo, size: 14),
-              const SizedBox(width: 6),
-              Text(Formatters.dateShort(DateTime.now()),
-                  style: TextStyles.caption(context,
-                      weight: FontWeight.w700)),
             ],
           ),
         ),
@@ -272,11 +245,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _budgetHero(
       BuildContext context, double spent, double remaining, double percent, double limit) {
     final pctInt = (percent * 100).clamp(0, 999).toInt();
+    // Days left in month + safe-to-spend calculation
+    final now = DateTime.now();
+    final endOfMonth = DateTime(now.year, now.month + 1, 0);
+    final daysLeft = (endOfMonth.day - now.day).clamp(0, 31);
+    final safeToSpend = daysLeft > 0 ? (remaining / daysLeft).clamp(0.0, double.infinity) : remaining;
+    // Ring color: cyan → amber at 80% → red above 100%
+    final ringColor = percent >= 1.0 ? AppColors.danger : percent >= 0.8 ? AppColors.warning : AppColors.cyan;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: AppGradients.heroCard(context),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryIndigo.withOpacity(0.32),
@@ -295,11 +275,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyles.label(context).copyWith(
                         color: Colors.white.withOpacity(0.85))),
                 const SizedBox(height: 8),
+                // 40px display amount
                 AnimatedMoney(
                   amount: limit,
                   style: TextStyles.moneyHero(context, color: Colors.white),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+                // Safe to spend today
+                Text('Safe to spend today: ${Formatters.money(safeToSpend)}',
+                    style: TextStyles.caption(context, weight: FontWeight.w600)
+                        .copyWith(color: Colors.white.withOpacity(0.9))),
+                const SizedBox(height: 4),
+                // Rs. X left, N days to go
+                Text('${Formatters.money(remaining.abs())} left · $daysLeft days to go',
+                    style: TextStyles.caption(context)
+                        .copyWith(color: Colors.white.withOpacity(0.7))),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Column(
@@ -337,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          // Circular donut progress
+          // Circular donut progress — color changes at 80% / 100%
           SizedBox(
             width: 96,
             height: 96,
@@ -351,8 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: percent.clamp(0.0, 1.0),
                     strokeWidth: 8,
                     backgroundColor: Colors.white.withOpacity(0.18),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.cyan),
+                    valueColor: AlwaysStoppedAnimation<Color>(ringColor),
                   ),
                 ),
                 Column(
@@ -380,19 +370,19 @@ class _HomeScreenState extends State<HomeScreen> {
   // ────────────────────────────────────────────────────────────────
   Widget _quickActions(BuildContext context) {
     final tiles = [
-      (AppStrings.addExpense, Icons.add_circle_rounded, AppColors.mint,
+      ('Scan', Icons.document_scanner_rounded, AppColors.mint,
           () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
               )),
-      (AppStrings.voiceEntry, Icons.mic_rounded, AppColors.primaryPurple,
+      ('Voice', Icons.mic_rounded, AppColors.primaryPurple,
           () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const VoiceEntryScreen()),
               )),
-      (AppStrings.analytics, Icons.insights_rounded, AppColors.primaryIndigo,
+      ('Insights', Icons.insights_rounded, AppColors.primaryIndigo,
           () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
               )),
-      (AppStrings.goals, Icons.savings_rounded, AppColors.blue,
+      ('Goals', Icons.savings_rounded, AppColors.blue,
           () => Navigator.of(context).push(
                 MaterialPageRoute(
                     builder: (_) => const SavingsGoalsScreen()),
@@ -427,8 +417,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -441,13 +431,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
-                    child: Icon(t.$2, color: t.$3, size: 22),
+                    child: Icon(t.$2, color: t.$3, size: 28),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     t.$1,
                     style: TextStyles.caption(context, weight: FontWeight.w700)
-                        .copyWith(fontSize: 10.5),
+                        .copyWith(fontSize: 12),
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

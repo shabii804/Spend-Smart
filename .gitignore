@@ -1,25 +1,2 @@
-# Flutter / Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-build/
-ios/Pods/
-android/.gradle/
-
-# IDE
-.idea/
-.vscode/
-*.iml
-*.ipr
-*.iws
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Misc
-*.log
-.flutter/
+skills/
+node_modules/

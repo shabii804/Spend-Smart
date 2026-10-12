@@ -1,0 +1,356 @@
+failed 2 minutes ago in 1m 24s
+Search logs
+2s
+1s
+1m 0s
+8s
+10s
+Run flutter analyze --no-fatal-infos --no-fatal-warnings
+Analyzing Spend-Smart...                                        
+
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/theme/app_gradients.dart:44:59 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal • lib/core/theme/app_gradients.dart:47:17 • prefer_const_literals_to_create_immutables
+  error • The argument type 'CardTheme' can't be assigned to the parameter type 'CardThemeData?'.  • lib/core/theme/app_theme.dart:23:20 • argument_type_not_assignable
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/theme/app_theme.dart:29:19 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/theme/app_theme.dart:51:50 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/theme/app_theme.dart:58:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/theme/app_theme.dart:61:23 • prefer_const_constructors
+  error • The argument type 'CardTheme' can't be assigned to the parameter type 'CardThemeData?'.  • lib/core/theme/app_theme.dart:81:20 • argument_type_not_assignable
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/theme/app_theme.dart:87:19 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/theme/app_theme.dart:104:50 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/theme/app_theme.dart:111:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/theme/app_theme.dart:114:23 • prefer_const_constructors
+  error • The argument type 'DialogTheme' can't be assigned to the parameter type 'DialogThemeData?'.  • lib/core/theme/app_theme.dart:188:20 • argument_type_not_assignable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/theme/app_theme.dart:201:53 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/theme/app_theme.dart:203:47 • deprecated_member_use
+  error • The argument type 'TabBarTheme' can't be assigned to the parameter type 'TabBarThemeData?'.  • lib/core/theme/app_theme.dart:235:20 • argument_type_not_assignable
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/core/theme/text_styles.dart:40:61 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/core/theme/text_styles.dart:49:61 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/core/theme/text_styles.dart:59:79 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/category_chip.dart:36:25 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/confirm_dialog.dart:55:31 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/core/widgets/confirm_dialog.dart:94:18 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/empty_state.dart:33:26 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/empty_state.dart:41:28 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/widgets/floating_nav_bar.dart:29:18 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/floating_nav_bar.dart:49:54 • deprecated_member_use
+   info • Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' • lib/core/widgets/floating_nav_bar.dart:117:5 • prefer_const_declarations
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/floating_nav_bar.dart:144:49 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/widgets/floating_nav_bar.dart:185:25 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/primary_button.dart:67:49 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/primary_button.dart:68:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/primary_button.dart:75:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/progress_bar.dart:33:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/progress_bar.dart:81:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/stat_card.dart:38:60 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/stat_card.dart:98:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/success_overlay.dart:19:34 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/core/widgets/success_overlay.dart:61:28 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/core/widgets/success_overlay.dart:61:60 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/success_overlay.dart:93:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/core/widgets/success_overlay.dart:116:51 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/data/sample_data.dart:193:5 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/data/sample_data.dart:202:5 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/data/sample_data.dart:211:5 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/data/sample_data.dart:220:5 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/advice/smart_advice_screen.dart:43:43 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/advice/smart_advice_screen.dart:48:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/advice/smart_advice_screen.dart:63:51 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/advice/smart_advice_screen.dart:63:67 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/advice/smart_advice_screen.dart:75:42 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/advice/smart_advice_screen.dart:82:57 • require_trailing_commas
+   info • Unnecessary braces in a string interpolation. Try removing the braces • lib/features/advice/smart_advice_screen.dart:113:34 • unnecessary_brace_in_string_interps
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/advice/smart_advice_screen.dart:116:8 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/advice/smart_advice_screen.dart:128:8 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/features/advice/smart_advice_screen.dart:130:15 • prefer_const_constructors
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/advice/smart_advice_screen.dart:135:8 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/advice/smart_advice_screen.dart:150:6 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/advice/smart_advice_screen.dart:162:6 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/advice/smart_advice_screen.dart:197:33 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:56:65 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:59:84 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:231:67 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/analytics/analytics_screen.dart:236:34 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:246:82 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:260:71 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:265:67 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:303:58 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:303:59 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/analytics/analytics_screen.dart:321:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/analytics/analytics_screen.dart:349:50 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:353:61 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:417:90 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/analytics/analytics_screen.dart:467:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/analytics/analytics_screen.dart:468:51 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:551:58 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:551:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:577:8 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/analytics/analytics_screen.dart:587:37 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:621:48 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:680:62 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:689:60 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:690:91 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/analytics/analytics_screen.dart:729:26 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/analytics/analytics_screen.dart:737:28 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:748:80 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/analytics/analytics_screen.dart:751:46 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/features/auth/forgot_password_screen.dart:67:25 • prefer_const_constructors
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/forgot_password_screen.dart:73:46 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/forgot_password_screen.dart:77:44 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/forgot_password_screen.dart:82:58 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/auth/forgot_password_screen.dart:114:35 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/forgot_password_screen.dart:119:46 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/forgot_password_screen.dart:129:58 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/auth/login_screen.dart:80:56 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:88:52 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:92:50 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:96:66 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:96:67 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:118:71 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:138:74 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:138:75 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:142:61 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:146:74 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:146:75 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:174:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:178:67 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:183:56 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/login_screen.dart:205:68 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/register_screen.dart:55:10 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/auth/register_screen.dart:87:56 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/register_screen.dart:95:52 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/register_screen.dart:99:50 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/register_screen.dart:104:64 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/register_screen.dart:163:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/register_screen.dart:167:64 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/auth/register_screen.dart:172:56 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/budgets/budget_overview_screen.dart:66:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/budgets/budget_overview_screen.dart:77:47 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:77:64 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:77:65 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/budgets/budget_overview_screen.dart:90:47 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:112:57 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:115:61 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/features/budgets/budget_overview_screen.dart:122:13 • prefer_const_constructors
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:130:64 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/budgets/budget_overview_screen.dart:149:60 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:154:71 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:160:70 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:160:71 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:165:66 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/budgets/budget_overview_screen.dart:175:49 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:176:36 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:180:28 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/budgets/budget_overview_screen.dart:203:47 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:203:64 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/budget_overview_screen.dart:206:76 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/edit_budget_screen.dart:31:41 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/edit_budget_screen.dart:78:49 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/budgets/edit_budget_screen.dart:111:46 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/budgets/edit_budget_screen.dart:152:58 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:124:44 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:126:74 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:146:67 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:194:46 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:194:47 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:200:42 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:200:43 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:204:74 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:228:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:232:46 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:232:47 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:244:89 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:253:44 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:267:45 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:267:62 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:267:63 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:281:53 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:281:69 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:281:70 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:286:60 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:296:53 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:296:69 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:296:70 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:301:60 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:324:51 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:326:39 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:334:58 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:334:59 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:337:49 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:338:41 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:338:42 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:369:63 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:408:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:409:32 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:445:56 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:480:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:490:40 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:495:54 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:495:94 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:501:44 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:502:52 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:506:86 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:524:58 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:524:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:546:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/home_screen.dart:589:41 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:602:52 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:604:56 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:609:39 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/home_screen.dart:622:75 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/spending_line_chart.dart:90:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/spending_line_chart.dart:91:51 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/features/dashboard/spending_line_chart.dart:112:27 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/weekly_bar_chart.dart:33:37 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/weekly_bar_chart.dart:76:49 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/weekly_bar_chart.dart:94:57 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/weekly_bar_chart.dart:97:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/dashboard/weekly_bar_chart.dart:100:60 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/weekly_bar_chart.dart:123:64 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/weekly_bar_chart.dart:125:64 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/dashboard/weekly_bar_chart.dart:175:51 • require_trailing_commas
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/features/expenses/add_expense_screen.dart:93:18 • use_build_context_synchronously
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/add_expense_screen.dart:246:89 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/add_expense_screen.dart:246:90 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/add_expense_screen.dart:280:58 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/add_expense_screen.dart:312:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/add_expense_screen.dart:327:36 • deprecated_member_use
+   info • Use interpolation to compose strings and values. Try using string interpolation to build the composite string • lib/features/expenses/add_expense_screen.dart:335:40 • prefer_interpolation_to_compose_strings
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/add_expense_screen.dart:365:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/add_expense_screen.dart:368:75 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/features/expenses/add_expense_screen.dart:391:23 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/add_expense_screen.dart:431:35 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/add_expense_screen.dart:439:82 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/category_selection_screen.dart:55:42 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/category_selection_screen.dart:63:50 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/category_selection_screen.dart:64:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/expense_details_screen.dart:52:49 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/expense_details_screen.dart:62:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/expense_details_screen.dart:77:45 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/expense_details_screen.dart:78:48 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/expense_details_screen.dart:93:43 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/expense_details_screen.dart:148:71 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/expense_details_screen.dart:187:30 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/transactions_screen.dart:65:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/transactions_screen.dart:92:46 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/features/expenses/transactions_screen.dart:165:19 • prefer_const_constructors
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/transactions_screen.dart:205:53 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/transactions_screen.dart:227:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/voice_entry_screen.dart:94:44 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/voice_entry_screen.dart:101:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/voice_entry_screen.dart:105:64 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/voice_entry_screen.dart:129:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/voice_entry_screen.dart:138:34 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/voice_entry_screen.dart:189:62 • require_trailing_commas
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/features/expenses/voice_entry_screen.dart:201:32 • prefer_const_constructors
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/voice_entry_screen.dart:230:48 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/voice_entry_screen.dart:230:49 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/expenses/voice_entry_screen.dart:257:32 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/voice_entry_screen.dart:269:77 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/expenses/voice_entry_screen.dart:279:16 • require_trailing_commas
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/features/goals/add_money_screen.dart:54:7 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/add_money_screen.dart:93:52 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/add_money_screen.dart:96:67 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/add_money_screen.dart:107:65 • require_trailing_commas
+341 issues found. (ran in 9.4s)
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/add_money_screen.dart:118:59 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/add_money_screen.dart:126:53 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/add_money_screen.dart:139:28 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/add_money_screen.dart:185:71 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/add_money_screen.dart:216:58 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/create_goal_screen.dart:171:29 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/create_goal_screen.dart:205:79 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/create_goal_screen.dart:243:58 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/goal_details_screen.dart:60:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/goal_details_screen.dart:75:47 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/goal_details_screen.dart:75:63 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/goal_details_screen.dart:84:49 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/goal_details_screen.dart:121:56 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/goal_details_screen.dart:131:56 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/goal_details_screen.dart:131:57 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/goal_details_screen.dart:133:65 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/goal_details_screen.dart:224:26 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/savings_goals_screen.dart:36:65 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/savings_goals_screen.dart:46:58 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/features/goals/savings_goals_screen.dart:61:19 • prefer_const_constructors
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/savings_goals_screen.dart:101:68 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/savings_goals_screen.dart:129:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/savings_goals_screen.dart:130:34 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/savings_goals_screen.dart:142:69 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/savings_goals_screen.dart:148:47 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/savings_goals_screen.dart:155:62 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/savings_goals_screen.dart:159:81 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/savings_goals_screen.dart:168:81 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/savings_goals_screen.dart:183:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/savings_goals_screen.dart:206:37 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/goals/savings_goals_screen.dart:235:54 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/goals/savings_goals_screen.dart:249:62 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/notifications/notifications_screen.dart:30:78 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/notifications/notifications_screen.dart:54:64 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/notifications/notifications_screen.dart:61:48 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/notifications/notifications_screen.dart:77:72 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/notifications/notifications_screen.dart:77:73 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/notifications/notifications_screen.dart:80:77 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/notifications/notifications_screen.dart:85:73 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/onboarding/onboarding_screen.dart:63:77 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/onboarding/onboarding_screen.dart:94:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/onboarding/onboarding_screen.dart:156:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/onboarding/onboarding_screen.dart:161:32 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/onboarding/onboarding_screen.dart:169:46 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/onboarding/onboarding_screen.dart:177:58 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/edit_profile_screen.dart:47:10 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/profile/profile_screen.dart:76:58 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/profile_screen.dart:99:73 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/profile_screen.dart:103:73 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/profile/profile_screen.dart:111:54 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/profile_screen.dart:116:65 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/profile_screen.dart:152:76 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/profile_screen.dart:222:12 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/profile_screen.dart:251:58 • require_trailing_commas
+warning • A value for optional parameter 'isDanger' isn't ever given. Try removing the unused parameter • lib/features/profile/profile_screen.dart:275:10 • unused_element_parameter
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/profile/profile_screen.dart:296:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/profile/profile_screen.dart:297:29 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/profile_screen.dart:320:71 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/profile/profile_screen.dart:328:42 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/profile/profile_screen.dart:330:27 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/profile/profile_screen.dart:354:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/profile/profile_screen.dart:355:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/currency_selection_screen.dart:43:59 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/currency_selection_screen.dart:68:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/currency_selection_screen.dart:69:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/currency_selection_screen.dart:72:75 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/currency_selection_screen.dart:73:75 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/currency_selection_screen.dart:97:64 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/currency_selection_screen.dart:97:65 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/currency_selection_screen.dart:100:71 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/general_settings_screen.dart:65:72 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/general_settings_screen.dart:81:68 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/general_settings_screen.dart:97:78 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/general_settings_screen.dart:185:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/general_settings_screen.dart:186:29 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/general_settings_screen.dart:203:71 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/general_settings_screen.dart:210:69 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/notification_preferences_screen.dart:86:28 • deprecated_member_use
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/theme_settings_screen.dart:117:87 • require_trailing_commas
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/features/settings/theme_settings_screen.dart:138:81 • require_trailing_commas
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/settings/theme_settings_screen.dart:153:22 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/features/splash/splash_screen.dart:43:20 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/features/splash/splash_screen.dart:49:20 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/features/splash/splash_screen.dart:55:20 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/features/splash/splash_screen.dart:61:20 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/features/splash/splash_screen.dart:65:20 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/splash/splash_screen.dart:101:49 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/splash/splash_screen.dart:136:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement • lib/features/splash/splash_screen.dart:152:43 • deprecated_member_use
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/main.dart:44:20 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/main.dart:46:21 • prefer_const_constructors
+   info • The private field _expenses could be 'final'. Try making the field 'final' • lib/providers/expense_provider.dart:13:17 • prefer_final_fields
+   info • Missing a required trailing comma. Try adding a trailing comma • lib/providers/expense_provider.dart:56:67 • require_trailing_commas
+   info • The private field _goals could be 'final'. Try making the field 'final' • lib/providers/goal_provider.dart:6:14 • prefer_final_fields
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/providers/theme_provider.dart:21:25 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/providers/theme_provider.dart:22:29 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/providers/theme_provider.dart:23:10 • curly_braces_in_flow_control_structures
+
+Error: Process completed with exit code 1.
+0s
+0s

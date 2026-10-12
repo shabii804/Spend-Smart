@@ -26,11 +26,13 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _pwdCtrl = TextEditingController();
+  final _confirmPwdCtrl = TextEditingController();
   bool _acceptTerms = false;
   bool _loading = false;
   bool _nameValid = false;
   bool _emailValid = false;
   bool _pwdValid = false;
+  bool _confirmValid = false;
   // Track password text so the strength meter rebuilds on every keystroke
   // (not only when validity changes).
   String _pwdText = '';
@@ -53,30 +55,37 @@ class _RegisterScreenState extends State<RegisterScreen>
       if (v != _emailValid) setState(() => _emailValid = v);
     });
     // Password listener — update validity AND the live strength meter text.
-    // This ensures the PasswordStrengthMeter (StatelessWidget) rebuilds
-    // whenever the password changes, not just when validity crosses the
-    // 8-char threshold.
+    // Also re-evaluate confirm match whenever password changes.
     _pwdCtrl.addListener(() {
       final v = _pwdCtrl.text.length >= 8;
-      if (v != _pwdValid) {
+      final confirmV = _confirmPwdCtrl.text.isNotEmpty &&
+          _confirmPwdCtrl.text == _pwdCtrl.text;
+      if (v != _pwdValid || confirmV != _confirmValid) {
         setState(() {
           _pwdValid = v;
           _pwdText = _pwdCtrl.text;
+          _confirmValid = confirmV;
         });
       } else {
-        // Even if validity didn't change, the meter still needs to rebuild.
         setState(() => _pwdText = _pwdCtrl.text);
       }
     });
+    _confirmPwdCtrl.addListener(() {
+      final v = _confirmPwdCtrl.text.isNotEmpty &&
+          _confirmPwdCtrl.text == _pwdCtrl.text;
+      if (v != _confirmValid) setState(() => _confirmValid = v);
+    });
   }
 
-  bool get _isFormValid => _nameValid && _emailValid && _pwdValid && _acceptTerms;
+  bool get _isFormValid =>
+      _nameValid && _emailValid && _pwdValid && _confirmValid && _acceptTerms;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _pwdCtrl.dispose();
+    _confirmPwdCtrl.dispose();
     _entrance.dispose();
     super.dispose();
   }
@@ -117,7 +126,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     // viewport without scrolling on typical phone screens.
     const gapAboveForm = AuthSpacing.md;
     const gapBelowForm = AuthSpacing.sm;
-    const gapBetweenSocial = AuthSpacing.xs;
     const gapAboveFooter = AuthSpacing.md;
     const gapBelowFooter = AuthSpacing.md;
 
@@ -126,7 +134,8 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ═══ Logo + heading (compact — smaller logo, smaller heading) ═══
+          // ═══ Logo + heading (compact — smaller logo, no subtitle to
+          // save vertical space for the new Confirm Password field) ═══
           AuthStaggerItem(
             controller: _entrance,
             start: 0.05,
@@ -143,19 +152,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Start your smart spending journey.',
-                  style: TextStyles.body(
-                    context,
-                    color: AppColors.darkTextSecondary,
-                  ).copyWith(fontSize: 13),
-                  textAlign: TextAlign.center,
-                ),
               ],
             ),
           ),
-          const SizedBox(height: gapAboveForm),
+          const SizedBox(height: AuthSpacing.sm),
 
           // ═══ Form (compact card — tighter 14px padding) ═══
           AuthStaggerItem(
@@ -195,13 +195,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                     AuthPasswordField(
                       controller: _pwdCtrl,
                       label: 'Password',
-                      textInputAction: TextInputAction.done,
+                      textInputAction: TextInputAction.next,
                     ),
                     // Strength meter — ONLY visible while the user is typing
                     // a password. When the field is empty, the meter fully
-                    // collapses (AnimatedSize → 0px) so the form stays
-                    // compact and the "Too short" label doesn't show until
-                    // the user actually starts typing.
+                    // collapses (AnimatedSize → 0px).
                     AnimatedSize(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOutCubic,
@@ -212,6 +210,24 @@ class _RegisterScreenState extends State<RegisterScreen>
                               child: PasswordStrengthMeter(password: _pwdText),
                             )
                           : const SizedBox.shrink(),
+                    ),
+                    const SizedBox(height: AuthSpacing.sm),
+                    // ── Confirm Password ──
+                    // New field requested by user. Validates that the value
+                    // matches the password field above.
+                    AuthPasswordField(
+                      controller: _confirmPwdCtrl,
+                      label: 'Confirm Password',
+                      textInputAction: TextInputAction.done,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _pwdCtrl.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: AuthSpacing.sm),
                     // Terms checkbox — uses the shared AuthTermsRow widget so
@@ -227,7 +243,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                       onPrivacyTap: () => _demoSnack('Privacy Policy'),
                     ),
                     const SizedBox(height: AuthSpacing.sm),
-                    // Create Account button — DISABLED until form is valid.
+                    // Create Account button — DISABLED until form is valid
+                    // (name + email + password ≥ 8 + confirm matches + terms
+                    // accepted).
                     MorphingLoadingButton(
                       label: 'Create Account',
                       loading: _loading,
@@ -240,26 +258,30 @@ class _RegisterScreenState extends State<RegisterScreen>
           ),
           const SizedBox(height: gapBelowForm),
 
-          // ═══ Social: 2 full-width outlined buttons (matching login) ═══
+          // ═══ Social: compact icon-only circles in a Row ═══
+          // Switched from full-width buttons to compact icon circles so the
+          // new Confirm Password field fits without scrolling.
           AuthStaggerItem(
             controller: _entrance,
             start: 0.24,
-            child: Column(
-              children: [
-                AuthSocialButtonWide(
-                  label: 'Continue with Google',
-                  icon: Icons.g_mobiledata_rounded,
-                  iconColor: const Color(0xFFEA4335),
-                  onTap: () => _demoSnack('Google sign-up'),
-                ),
-                const SizedBox(height: gapBetweenSocial),
-                AuthSocialButtonWide(
-                  label: 'Continue with Apple',
-                  icon: Icons.apple_rounded,
-                  iconColor: AppColors.darkTextPrimary,
-                  onTap: () => _demoSnack('Apple sign-up'),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AuthSocialCircle(
+                    icon: Icons.g_mobiledata_rounded,
+                    color: const Color(0xFFEA4335),
+                    onTap: () => _demoSnack('Google sign-up'),
+                  ),
+                  const SizedBox(width: AuthSpacing.md),
+                  AuthSocialCircle(
+                    icon: Icons.apple_rounded,
+                    color: AppColors.darkTextPrimary,
+                    onTap: () => _demoSnack('Apple sign-up'),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: gapAboveFooter),

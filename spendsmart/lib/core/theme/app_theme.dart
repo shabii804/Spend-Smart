@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_gradients.dart';
-import 'app_constants.dart';
+import '../constants/app_constants.dart';
 
 /// Builds the light + dark Material 3 themes for SpendSmart.
 /// Uses bundled Plus Jakarta Sans (no google_fonts dependency).

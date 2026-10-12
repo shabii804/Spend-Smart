@@ -22,6 +22,7 @@ class AuthSpacing {
 
 /// Glassmorphic container — frosted-glass style card over the bg image.
 /// Used by all 3 auth screens to wrap form fields.
+/// Solid surface card (not see-through glass). Used by all auth screens.
 class AuthGlassContainer extends StatelessWidget {
   final Widget child;
   const AuthGlassContainer({super.key, required this.child});
@@ -31,10 +32,10 @@ class AuthGlassContainer extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.darkSurface,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.18),
+          color: AppColors.darkBorder,
           width: 1,
         ),
         boxShadow: [
@@ -240,7 +241,7 @@ class AuthFloatingLogo extends StatelessWidget {
   const AuthFloatingLogo({
     super.key,
     required this.icon,
-    this.iconColor = AppColors.primaryIndigo,
+    this.iconColor = Colors.white,
     this.size = 36,
   });
 
@@ -250,13 +251,17 @@ class AuthFloatingLogo extends StatelessWidget {
       width: 72,
       height: 72,
       decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primaryIndigo, AppColors.primaryPurple],
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.32),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
+            color: AppColors.primaryIndigo.withOpacity(0.4),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -267,8 +272,8 @@ class AuthFloatingLogo extends StatelessWidget {
 }
 
 /// Full-screen wrapper for ALL auth screens.
-/// Handles: dark theme override, background image, gradient overlay,
-/// SafeArea, scroll, horizontal padding. Guarantees identical structure.
+/// Clean dark gradient (#0B0F1A → #1B1240) + subtle purple glow.
+/// No background image, no watermark text.
 class AuthScreenScaffold extends StatelessWidget {
   final Widget child;
   final bool showBackButton;
@@ -286,25 +291,41 @@ class AuthScreenScaffold extends StatelessWidget {
       data: Theme.of(context).copyWith(brightness: Brightness.dark),
       child: Scaffold(
         body: Container(
+          // Clean dark gradient (no bg image)
           decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/auth_bg.png'),
-              fit: BoxFit.cover,
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF0B0F1A), Color(0xFF1B1240)],
             ),
           ),
-          child: AuthBackgroundOverlay(
-            child: SafeArea(
-              child: Stack(
-                children: [
-                  // Ambient floating shapes behind content
-                  const Positioned.fill(
-                    child: AmbientBackgroundAnimation(),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                // Subtle purple glow behind logo position
+                Positioned(
+                  top: 40,
+                  left: 0,
+                  right: 0,
+                  height: 200,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.primaryIndigo.withOpacity(0.15),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.3, 1.0],
+                      ),
+                    ),
                   ),
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: AuthSpacing.contentMaxWidth),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                ),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: AuthSpacing.contentMaxWidth),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [

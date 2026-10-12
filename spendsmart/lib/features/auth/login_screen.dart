@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
@@ -60,8 +61,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   void _demoSnack(String label) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$label — ${AppStrings.demoOnly}')),
-    );
+      SnackBar(content: Text('$label — ${AppStrings.demoOnly}')));
   }
 
   @override
@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ═══ Logo + heading merged (premium compact) ═══
+          // ═══ Logo + heading ═══
           AuthStaggerItem(controller: _entrance, start: 0.0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -79,17 +79,17 @@ class _LoginScreenState extends State<LoginScreen>
                 const SizedBox(height: AuthSpacing.md),
                 Text('Welcome Back',
                     style: TextStyles.h1(context).copyWith(
-                      color: Colors.white, fontSize: 28, letterSpacing: -0.5)),
+                      color: AppColors.darkTextPrimary, fontSize: 28)),
                 const SizedBox(height: 6),
                 Text('Log in to keep tracking your spending.',
                     style: TextStyles.body(context,
-                        color: Colors.white.withOpacity(0.7))),
+                        color: AppColors.darkTextSecondary)),
               ],
             ),
           ),
           const SizedBox(height: AuthSpacing.lg),
 
-          // ═══ Form (glassmorphic) ═══
+          // ═══ Form (solid surface card) ═══
           AuthStaggerItem(controller: _entrance, start: 0.12,
             child: AuthGlassContainer(
               child: Form(key: _formKey,
@@ -106,10 +106,13 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                   const SizedBox(height: AuthSpacing.md),
                   // Password
-                  AuthPasswordField(controller: _pwdCtrl, label: 'Password',
-                      textInputAction: TextInputAction.done),
-                  const SizedBox(height: 14),
-                  // Remember me + Forgot
+                  AuthPasswordField(
+                    controller: _pwdCtrl,
+                    label: 'Password',
+                    textInputAction: TextInputAction.done,
+                  ),
+                  const SizedBox(height: AuthSpacing.sm),
+                  // Remember me + Forgot password
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     GestureDetector(
                       onTap: () => setState(() => _rememberMe = !_rememberMe),
@@ -121,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen>
                           decoration: BoxDecoration(
                             color: _rememberMe ? AppColors.primaryIndigo : Colors.transparent,
                             border: Border.all(
-                              color: _rememberMe ? AppColors.primaryIndigo : Colors.white.withOpacity(0.3),
+                              color: _rememberMe ? AppColors.primaryIndigo : AppColors.darkBorder,
                               width: 1.5),
                             borderRadius: BorderRadius.circular(6)),
                           alignment: Alignment.center,
@@ -131,15 +134,15 @@ class _LoginScreenState extends State<LoginScreen>
                         const SizedBox(width: 8),
                         Text('Remember me',
                             style: TextStyles.caption(context, weight: FontWeight.w500)
-                                .copyWith(color: Colors.white.withOpacity(0.8))),
+                                .copyWith(color: AppColors.darkTextSecondary)),
                       ]),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
                       style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 0),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        minimumSize: const Size(80, 40),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       child: Text('Forgot Password?',
@@ -148,48 +151,61 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ]),
                   const SizedBox(height: AuthSpacing.lg),
-                  // Login button (primary CTA)
+                  // Log In button
                   MorphingLoadingButton(
                     label: 'Log In', loading: _loading, onPressed: _login),
                 ]),
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AuthSpacing.lg),
 
-          // ═══ Social (icon-only circles — premium) ═══
+          // ═══ Social: 2 full-width outlined buttons (Google + Apple only) ═══
           AuthStaggerItem(controller: _entrance, start: 0.24,
             child: Column(children: [
-              Text('or continue with',
-                  style: TextStyles.caption(context)
-                      .copyWith(color: Colors.white.withOpacity(0.5))),
-              const SizedBox(height: AuthSpacing.md),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                AuthSocialCircle(
-                  icon: Icons.g_mobiledata_rounded,
-                  color: const Color(0xFFEA4335),
-                  onTap: () => _demoSnack('Google sign-in')),
-                const SizedBox(width: 16),
-                AuthSocialCircle(
-                  icon: Icons.apple_rounded,
-                  color: Colors.white,
-                  onTap: () => _demoSnack('Apple sign-in')),
-                const SizedBox(width: 16),
-                AuthSocialCircle(
-                  icon: Icons.facebook_rounded,
-                  color: const Color(0xFF1877F2),
-                  onTap: () => _demoSnack('Facebook sign-in')),
-              ]),
+              _SocialButton(
+                label: 'Continue with Google',
+                icon: Icons.g_mobiledata_rounded,
+                iconColor: const Color(0xFFEA4335),
+                onTap: () => _demoSnack('Google sign-in'),
+              ),
+              const SizedBox(height: AuthSpacing.sm),
+              _SocialButton(
+                label: 'Continue with Apple',
+                icon: Icons.apple_rounded,
+                iconColor: AppColors.darkTextPrimary,
+                onTap: () => _demoSnack('Apple sign-in'),
+              ),
             ]),
           ),
           const SizedBox(height: AuthSpacing.xl),
-          // ═══ Signup CTA (prominent) ═══
+
+          // ═══ Sign up link (simple centered text) ═══
           AuthStaggerItem(controller: _entrance, start: 0.32,
-            child: AuthFooterLink(
-              prompt: "Don't have an account? ",
-              action: 'Sign Up',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const RegisterScreen())),
+            child: Center(
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontFamily: 'PlusJakartaSans',
+                      fontSize: 14,
+                      color: AppColors.darkTextSecondary,
+                    ),
+                    children: [
+                      const TextSpan(text: 'New here? '),
+                      TextSpan(
+                        text: 'Create account',
+                        style: TextStyle(
+                          color: AppColors.primaryIndigo,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: AuthSpacing.lg),
@@ -199,3 +215,49 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
+/// Full-width outlined social login button.
+class _SocialButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color iconColor;
+  final VoidCallback onTap;
+  const _SocialButton({
+    required this.label,
+    required this.icon,
+    required this.iconColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () { HapticFeedback.lightImpact(); onTap(); },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            border: Border.all(color: AppColors.darkBorder, width: 1.5),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20, color: iconColor),
+              const SizedBox(width: 10),
+              Text(label,
+                  style: const TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkTextPrimary,
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

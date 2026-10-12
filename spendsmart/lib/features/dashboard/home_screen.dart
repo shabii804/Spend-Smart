@@ -253,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Ring color: cyan → amber at 80% → red above 100%
     final ringColor = percent >= 1.0 ? AppColors.danger : percent >= 0.8 ? AppColors.warning : AppColors.cyan;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: AppGradients.heroCard(context),
         borderRadius: BorderRadius.circular(20),
@@ -330,14 +330,14 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 12),
           // Circular donut progress — color changes at 80% / 100%
           SizedBox(
-            width: 96,
-            height: 96,
+            width: 72,
+            height: 72,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: 96,
-                  height: 96,
+                  width: 72,
+                  height: 72,
                   child: CircularProgressIndicator(
                     value: percent.clamp(0.0, 1.0),
                     strokeWidth: 8,
@@ -537,7 +537,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _recentList(BuildContext context, List<Expense> items) {
     if (items.isEmpty) {
       return GlassCard(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Text(AppStrings.noTransactions,
             style: TextStyles.body(context,
                 color: AppColorsOf.secondaryText(context))),

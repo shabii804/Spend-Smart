@@ -409,29 +409,42 @@ class AuthTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      obscureText: obscureText,
-      autofillHints: autofillHints,
-      style: TextStyles.body(context).copyWith(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-        floatingLabelStyle:
-            TextStyle(color: AppColors.primaryIndigo.withOpacity(0.9)),
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
-        prefixIcon: prefixIcon != null
-            ? Icon(prefixIcon, size: 20, color: Colors.white.withOpacity(0.5))
-            : null,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Permanent label above (never clips)
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 6),
+          child: Text(label,
+              style: TextStyle(
+                fontFamily: 'PlusJakartaSans',
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withOpacity(0.5),
+              )),
+        ),
+        TextFormField(
+          controller: controller,
+          validator: validator,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          obscureText: obscureText,
+          autofillHints: autofillHints,
+          style: TextStyles.body(context).copyWith(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
+            prefixIcon: prefixIcon != null
+                ? Icon(prefixIcon, size: 20, color: Colors.white.withOpacity(0.5))
+                : null,
         suffixIcon: suffix,
         errorStyle: const TextStyle(color: AppColors.danger, fontSize: 12),
-        contentPadding:
+            contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      ),
+          ),
+        ),
+      ],
     );
   }
 }

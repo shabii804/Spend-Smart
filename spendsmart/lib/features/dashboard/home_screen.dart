@@ -25,6 +25,7 @@ import '../expenses/add_expense_screen.dart';
 import '../expenses/expense_details_screen.dart';
 import '../expenses/transactions_screen.dart';
 import '../expenses/voice_entry_screen.dart';
+import '../expenses/receipt_scanner_screen.dart';
 import '../goals/savings_goals_screen.dart';
 import '../notifications/notifications_screen.dart';
 import 'weekly_bar_chart.dart';
@@ -260,15 +261,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ────────────────────────────────────────────────────────────────
   // Budget hero — gradient card with CIRCULAR donut progress
-  // Compact: removed the redundant "Spent / Remaining" two-column row
-  // (the donut already shows %; spent/remaining are implied by budget +
-  // percent) and the "Safe to spend today" line (now surfaced in the
-  // greeting subtitle). Saves ~50px so the Weekly bar chart fits above
-  // the fold on a typical phone viewport.
+  // Restored Spent + Remaining two-column row (compact, 16px gap) so
+  // users see the breakdown at a glance alongside the donut percent.
   // ────────────────────────────────────────────────────────────────
   Widget _budgetHero(
       BuildContext context, double spent, double remaining, double percent, double limit) {
-    // Days left in month + safe-to-spend calculation
+    // Days left in month
     final now = DateTime.now();
     final endOfMonth = DateTime(now.year, now.month + 1, 0);
     final daysLeft = (endOfMonth.day - now.day).clamp(0, 31);
@@ -297,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyles.label(context).copyWith(
                         color: Colors.white.withOpacity(0.85))),
                 const SizedBox(height: 6),
-                // Display amount
+                // Display amount (hero)
                 AnimatedMoney(
                   amount: limit,
                   style: TextStyles.moneyHero(context, color: Colors.white),
@@ -307,6 +305,46 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text('${Formatters.money(remaining.abs())} left · $daysLeft days to go',
                     style: TextStyles.caption(context, weight: FontWeight.w600)
                         .copyWith(color: Colors.white.withOpacity(0.85))),
+                const SizedBox(height: 10),
+                // ── Spent + Remaining two-column row ──
+                // Restored at user request: explicit breakdown of spent
+                // this month and remaining budget. Compact (16px gap, 14px
+                // amounts) so it doesn't push the chart off the fold.
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(AppStrings.spentThisMonth,
+                            style: TextStyles.label(context).copyWith(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 10)),
+                        const SizedBox(height: 2),
+                        AnimatedMoney(
+                          amount: spent,
+                          style: TextStyles.money(context,
+                              size: 14, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(AppStrings.remaining,
+                            style: TextStyles.label(context).copyWith(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 10)),
+                        const SizedBox(height: 2),
+                        AnimatedMoney(
+                          amount: remaining.abs(),
+                          style: TextStyles.money(context,
+                              size: 14, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -364,9 +402,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _quickActions(BuildContext context) {
     final tiles = [
       ('Scan', Icons.document_scanner_rounded, AppColors.mint,
-          () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
-              )),
+          () async {
+            final Expense? result = await Navigator.of(context).push<Expense>(
+              MaterialPageRoute(builder: (_) => const ReceiptScannerScreen()),
+            );
+            if (result == null) return;
+            if (!context.mounted) return;
+            // Scan completed — open AddExpenseScreen with the pre-fill
+            // (replaces the scanner so back goes Home → AddExpense).
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => AddExpenseScreen(prefill: result),
+              ),
+            );
+          }),
       ('Voice', Icons.mic_rounded, AppColors.primaryPurple,
           () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const VoiceEntryScreen()),

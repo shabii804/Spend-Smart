@@ -13,6 +13,7 @@ import '../../core/widgets/success_overlay.dart';
 import '../../data/sample_data.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
+import 'receipt_scanner_screen.dart';
 import 'voice_entry_screen.dart';
 
 class AddExpenseScreen extends StatefulWidget {
@@ -221,6 +222,38 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
+        // ── Scan Receipt action ──
+        // Opens ReceiptScannerScreen. If a scan completes, the returned
+        // Expense is used to pre-fill the form (only when NOT editing an
+        // existing expense — don't overwrite the loaded expense's data).
+        actions: [
+          if (!_isEdit)
+            IconButton(
+              icon: const Icon(Icons.document_scanner_rounded),
+              tooltip: 'Scan Receipt',
+              onPressed: () async {
+                Haptics.light();
+                final Expense? result = await Navigator.of(context).push<Expense>(
+                  MaterialPageRoute(
+                    builder: (_) => const ReceiptScannerScreen(),
+                  ),
+                );
+                if (result == null) return;
+                if (!mounted) return;
+                // Pre-fill the form with the scanned result. Trigger setState
+                // so the field listeners + button-enabled state refresh.
+                setState(() {
+                  _titleCtrl.text = result.title;
+                  _amountCtrl.text = result.amount == result.amount.roundToDouble()
+                      ? result.amount.toStringAsFixed(0)
+                      : result.amount.toStringAsFixed(2);
+                  _selectedCategoryId = result.categoryId;
+                  _date = result.date;
+                  _noteCtrl.text = result.note ?? '';
+                });
+              },
+            ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

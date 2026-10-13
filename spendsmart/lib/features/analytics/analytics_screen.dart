@@ -616,7 +616,7 @@ class _BreakdownDonutState extends State<_BreakdownDonut> {
       return const SizedBox(
         height: 240,
         child: EmptyState(
-          icon: Icons.pie_chart_outlined,
+          icon: Icons.pie_chart_outline_rounded,
           title: 'No breakdown yet',
           subtitle: 'Add an expense to see your category split.',
         ),

@@ -40,7 +40,9 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     final total = data.fold<double>(0, (s, e) => s + e.value);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 12, 12),
+      // Compact padding so the whole chart fits above the fold on a typical
+      // phone viewport without scrolling. Reduced from 16/16/12/12 to 12/12/8/8.
+      padding: const EdgeInsets.fromLTRB(12, 12, 8, 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -95,9 +97,12 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
             amount: total,
             style: TextStyles.caption(context, weight: FontWeight.w600),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 180,
+            // Chart height reduced from 180 → 150 so the entire chart
+            // (title + total + bars + bottom labels) fits above the fold
+            // on a 700px phone viewport without scrolling.
+            height: 150,
             child: BarChart(
               // Longer swap animation = visible bar-grow entrance
               duration: const Duration(milliseconds: 900),

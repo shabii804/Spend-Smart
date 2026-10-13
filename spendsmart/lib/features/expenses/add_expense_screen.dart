@@ -228,15 +228,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 8),
-              // ═══ Amount HERO (48px centered display) ═══
+              const SizedBox(height: 4),
+              // ═══ Amount HERO (36px centered display) ═══
               _amountHero(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // ═══ Quick Add (directly under amount) ═══
               if (!_isEdit) ...[
                 SizedBox(
-                  height: 44,
+                  height: 40,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: _quickAdd.length,
@@ -282,14 +282,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
               ],
 
               // ═══ Category grid (shortened labels, never truncate) ═══
               _label(context, 'Category'),
               const SizedBox(height: 8),
               _categoryGrid(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // ═══ Date chips (Today / Yesterday / Pick date) ═══
               _label(context, 'Date'),
@@ -310,7 +310,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   child: Text(Formatters.dateTime(_date),
                       style: TextStyles.caption(context)),
                 ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // ═══ Title (optional — defaults to category name) ═══
               _label(context, 'Title (optional)'),
@@ -355,7 +355,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-  // ═══ Amount hero — centered 48px display ═══
+  // ═══ Amount hero — centered 36px display ═══
+  // Reduced from 48px → 36px so the input area is more proportionate and
+  // doesn't visually overwhelm the rest of the form. Prefix "Rs. " matches
+  // the input font size so the cursor aligns naturally.
   Widget _amountHero(BuildContext context) {
     return Column(
       children: [
@@ -367,29 +370,30 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           autofocus: true,
           style: TextStyle(
             fontFamily: 'PlusJakartaSans',
-            fontSize: 48,
+            fontSize: 36,
             fontWeight: FontWeight.w700,
             color: AppColorsOf.mainText(context),
-            height: 1.05,
-            letterSpacing: -1.0,
+            height: 1.1,
+            letterSpacing: -0.8,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
           decoration: InputDecoration(
             prefixText: 'Rs. ',
             prefixStyle: TextStyle(
               fontFamily: 'PlusJakartaSans',
-              fontSize: 48,
+              fontSize: 36,
               fontWeight: FontWeight.w700,
               color: AppColorsOf.secondaryText(context),
-              height: 1.05,
-              letterSpacing: -1.0,
+              height: 1.1,
+              letterSpacing: -0.8,
             ),
             hintText: '0',
             hintStyle: TextStyle(
               fontFamily: 'PlusJakartaSans',
-              fontSize: 48,
+              fontSize: 36,
               fontWeight: FontWeight.w700,
               color: AppColorsOf.tertiaryText(context).withOpacity(0.3),
+              height: 1.1,
             ),
             border: InputBorder.none,
             focusedBorder: InputBorder.none,
@@ -397,8 +401,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           ),
         ),
         // Live formatted preview with subtle scale-pop when amount changes.
-        // This is the "digit roll" feel — the formatted preview pulses
-        // whenever the parsed amount changes, giving visual confirmation.
+        // Bumped from caption (12px) → 14px for readability since this is
+        // the user's confirmation of what they just typed.
         if (_hasAmount)
           TweenAnimationBuilder<double>(
             key: ValueKey(_formattedAmount()),
@@ -408,9 +412,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             builder: (context, v, child) {
               return Transform.scale(scale: v, child: child);
             },
-            child: Text(_formattedAmount(),
-                style: TextStyles.caption(context)
-                    .copyWith(color: AppColorsOf.secondaryText(context))),
+            child: Text(
+              _formattedAmount(),
+              style: TextStyles.caption(context, weight: FontWeight.w600)
+                  .copyWith(color: AppColorsOf.secondaryText(context), fontSize: 14),
+            ),
           ),
       ],
     );

@@ -4,17 +4,13 @@ import 'package:provider/provider.dart';
 import '../../core/motion/app_motion.dart';
 import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
-import '../../core/utils/validators.dart';
 import '../../core/widgets/premium_motion.dart';
-import '../../core/widgets/success_overlay.dart';
 import '../../data/sample_data.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
 import 'receipt_scanner_screen.dart';
-import 'voice_entry_screen.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final Expense? prefill;
@@ -73,6 +69,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         _selectedCategoryId = e.categoryId;
         _date = e.date;
         _noteCtrl.text = e.note ?? '';
+        // Sync the date chip with the loaded date so the chip selection
+        // reflects the actual date (Today / Yesterday / Pick date).
+        _dateChip = _chipForDate(e.date);
       }
     } else if (widget.prefill != null) {
       final e = widget.prefill!;
@@ -83,6 +82,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       _selectedCategoryId = e.categoryId;
       _date = e.date;
       _noteCtrl.text = e.note ?? '';
+      _dateChip = _chipForDate(e.date);
     }
     // Listen to amount changes for live formatting + button state
     _amountCtrl.addListener(() => setState(() {}));
@@ -101,10 +101,32 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     return v != null && v > 0;
   }
 
+  /// Save is enabled only when BOTH amount > 0 AND a category is selected.
+  /// Previously the button was enabled with just amount, then tapping it
+  /// with no category showed a snackbar — confusing UX. Now the disabled
+  /// state itself communicates the requirement.
+  bool get _canSave => _hasAmount && _selectedCategoryId != null;
+
   String _formattedAmount() {
     final v = double.tryParse(_amountCtrl.text.trim());
     if (v == null || v <= 0) return '0';
-    return Formatters.moneyPlain(v);
+    // Use Formatters.money (includes currency symbol) so the preview shows
+    // "Rs. 1,500" instead of just "1,500" — clearer confirmation of the
+    // total the user is about to save.
+    return Formatters.money(v);
+  }
+
+  /// Map a DateTime to the matching quick-chip index (0=Today, 1=Yesterday,
+  /// 2=Pick date). Used when prefilling from a scan or editing an existing
+  /// expense so the chip selection reflects the actual date.
+  int _chipForDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    if (dateOnly == today) return 0;
+    if (dateOnly == yesterday) return 1;
+    return 2;
   }
 
   Future<void> _pickDate() async {
@@ -114,23 +136,33 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       firstDate: DateTime(2025),
       lastDate: DateTime.now().add(const Duration(days: 1)),
     );
-    if (d != null) {
-      final t = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(_date),
-      );
+    // User canceled the date picker — don't change _dateChip, the previous
+    // selection stays active. (Previously _dateChip was set to 2 inside
+    // _selectDateChip BEFORE the picker opened, so canceling left the chip
+    // selected with no date picked — confusing.)
+    if (d == null) return;
+    final t = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_date),
+    );
+    setState(() {
+      _dateChip = 2;
       if (t != null) {
-        setState(() {
-          _date = DateTime(d.year, d.month, d.day, t.hour, t.minute);
-          _dateChip = 2;
-        });
+        _date = DateTime(d.year, d.month, d.day, t.hour, t.minute);
       } else {
-        setState(() { _date = d; _dateChip = 2; });
+        _date = d;
       }
-    }
+    });
   }
 
   void _selectDateChip(int chip) {
+    if (chip == 2) {
+      // Don't pre-set _dateChip = 2 — wait until a date is actually picked.
+      // _pickDate() will set _dateChip = 2 inside setState once a date is
+      // chosen; if the user cancels, the previous chip stays selected.
+      _pickDate();
+      return;
+    }
     setState(() {
       _dateChip = chip;
       final now = DateTime.now();
@@ -138,20 +170,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         _date = now;
       } else if (chip == 1) {
         _date = now.subtract(const Duration(days: 1));
-      } else {
-        _pickDate();
       }
     });
   }
 
   Future<void> _save() async {
-    if (!_hasAmount) return;
-    if (_selectedCategoryId == null) {
-      Haptics.error();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')));
-      return;
-    }
+    if (!_canSave) return;
     setState(() => _saving = true);
     await Future.delayed(const Duration(milliseconds: 350));
     if (!mounted) return;
@@ -181,13 +205,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
     // ── Undo snackbar (only on create, not on edit) ──
     // Shows a snack with an UNDO action that removes the just-added expense.
+    // Duration bumped from 4s → 6s so distracted users have more time to tap.
     if (!_isEdit && mounted) {
       final messenger = ScaffoldMessenger.of(context);
-      // Clear any existing snack first so the new one is visible.
       messenger.clearSnackBars();
       messenger.showSnackBar(SnackBar(
         content: Text('Added ${Formatters.money(amount)} to ${SampleData.categoryById(expense.categoryId).name}'),
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 6),
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'UNDO',
@@ -223,9 +247,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         // ── Scan Receipt action ──
-        // Opens ReceiptScannerScreen. If a scan completes, the returned
-        // Expense is used to pre-fill the form (only when NOT editing an
-        // existing expense — don't overwrite the loaded expense's data).
         actions: [
           if (!_isEdit)
             IconButton(
@@ -240,8 +261,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 );
                 if (result == null) return;
                 if (!mounted) return;
-                // Pre-fill the form with the scanned result. Trigger setState
-                // so the field listeners + button-enabled state refresh.
                 setState(() {
                   _titleCtrl.text = result.title;
                   _amountCtrl.text = result.amount == result.amount.roundToDouble()
@@ -250,6 +269,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   _selectedCategoryId = result.categoryId;
                   _date = result.date;
                   _noteCtrl.text = result.note ?? '';
+                  _dateChip = _chipForDate(result.date);
                 });
               },
             ),
@@ -258,140 +278,226 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 4),
-              // ═══ Amount HERO (36px centered display) ═══
-              _amountHero(context),
-              const SizedBox(height: 12),
+          // Extra bottom padding so the Save button clears the keyboard
+          // comfortably + doesn't sit flush against the screen edge.
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 4),
 
-              // ═══ Quick Add (directly under amount) ═══
-              if (!_isEdit) ...[
-                SizedBox(
-                  height: 40,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _quickAdd.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (_, i) {
-                      final q = _quickAdd[i];
-                      final qSel = _selectedCategoryId == q.$2;
-                      return GestureDetector(
-                        onTap: () {
-                          Haptics.selection();
-                          setState(() {
-                            _selectedCategoryId = q.$2;
-                            if (_titleCtrl.text.isEmpty) _titleCtrl.text = q.$1;
-                          });
-                        },
-                        child: AnimatedScale(
-                          scale: qSel ? 1.06 : 1.0,
-                          duration: AppMotion.base,
-                          curve: AppMotion.celebrate,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: qSel
-                                  ? q.$4.withOpacity(0.18)
-                                  : AppColorsOf.card(context),
-                              border: Border.all(
-                                color: qSel ? q.$4 : AppColorsOf.border(context),
-                                width: qSel ? 1.6 : 1,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(q.$3, size: 14, color: q.$4),
-                                const SizedBox(width: 6),
-                                Text(q.$1,
-                                    style: TextStyles.caption(context, weight: FontWeight.w700)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                // ═══ AMOUNT HERO CARD ═══
+                // Wrapped in a subtle card so the amount has a clear
+                // "input slot" feel — previously the TextField floated
+                // with no border, looking unfinished.
+                _sectionCard(
+                  context,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _label(context, 'Amount'),
+                      const SizedBox(height: 4),
+                      _amountHero(context),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),
-              ],
 
-              // ═══ Category grid (shortened labels, never truncate) ═══
-              _label(context, 'Category'),
-              const SizedBox(height: 8),
-              _categoryGrid(),
-              const SizedBox(height: 12),
-
-              // ═══ Date chips (Today / Yesterday / Pick date) ═══
-              _label(context, 'Date'),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(child: _dateChipBtn(0, 'Today')),
-                  const SizedBox(width: 8),
-                  Expanded(child: _dateChipBtn(1, 'Yesterday')),
-                  const SizedBox(width: 8),
-                  Expanded(child: _dateChipBtn(2, 'Pick date')),
+                // ═══ Quick Add (directly under amount — no card, horizontal scroll) ═══
+                if (!_isEdit) ...[
+                  SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _quickAdd.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (_, i) {
+                        final q = _quickAdd[i];
+                        final qSel = _selectedCategoryId == q.$2;
+                        return GestureDetector(
+                          onTap: () {
+                            Haptics.selection();
+                            setState(() {
+                              _selectedCategoryId = q.$2;
+                              if (_titleCtrl.text.isEmpty) _titleCtrl.text = q.$1;
+                            });
+                          },
+                          child: AnimatedScale(
+                            scale: qSel ? 1.06 : 1.0,
+                            duration: AppMotion.base,
+                            curve: AppMotion.celebrate,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: qSel
+                                    ? q.$4.withOpacity(0.18)
+                                    : AppColorsOf.card(context),
+                                border: Border.all(
+                                  color: qSel ? q.$4 : AppColorsOf.border(context),
+                                  width: qSel ? 1.6 : 1,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(q.$3, size: 14, color: q.$4),
+                                  const SizedBox(width: 6),
+                                  Text(q.$1,
+                                      style: TextStyles.caption(context, weight: FontWeight.w700)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                 ],
-              ),
-              const SizedBox(height: 4),
-              if (_dateChip == 2)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(Formatters.dateTime(_date),
-                      style: TextStyles.caption(context)),
-                ),
-              const SizedBox(height: 12),
 
-              // ═══ Title (optional — defaults to category name) ═══
-              _label(context, 'Title (optional)'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _titleCtrl,
-                style: TextStyles.body(context),
-                decoration: InputDecoration(
-                  hintText: 'e.g. Lunch at cafe',
-                  prefixIcon: const Icon(Icons.edit_rounded, size: 18),
+                // ═══ CATEGORY + DATE CARD (grouped — both relate to
+                // "what kind of expense" and "when") ═══
+                _sectionCard(
+                  context,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _label(context, 'Category'),
+                      const SizedBox(height: 8),
+                      _categoryGrid(),
+                      const SizedBox(height: 16),
+                      // Subtle divider between category and date sections
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: AppColorsOf.divider(context),
+                      ),
+                      const SizedBox(height: 16),
+                      _label(context, 'Date'),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(child: _dateChipBtn(0, 'Today')),
+                          const SizedBox(width: 8),
+                          Expanded(child: _dateChipBtn(1, 'Yesterday')),
+                          const SizedBox(width: 8),
+                          Expanded(child: _dateChipBtn(2, 'Pick date')),
+                        ],
+                      ),
+                      if (_dateChip == 2) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          Formatters.dateTime(_date),
+                          style: TextStyles.caption(context)
+                              .copyWith(color: AppColorsOf.secondaryText(context)),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-              // ═══ Note (optional) ═══
-              _label(context, 'Note (optional)'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _noteCtrl,
-                maxLines: 2,
-                maxLength: 80,
-                style: TextStyles.body(context),
-                decoration: InputDecoration(
-                  hintText: 'What was this expense for?',
-                  counterText: '',
+                // ═══ DETAILS CARD (Title + Note grouped as "textual details") ═══
+                _sectionCard(
+                  context,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _label(context, 'Title (optional)'),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _titleCtrl,
+                        style: TextStyles.body(context),
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          hintText: 'e.g. Lunch at cafe',
+                          // Better semantic icon — 'title' not 'edit'.
+                          prefixIcon: const Icon(Icons.title_rounded, size: 18),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      _label(context, 'Note (optional)'),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _noteCtrl,
+                        maxLines: 2,
+                        maxLength: 80,
+                        style: TextStyles.body(context),
+                        textInputAction: TextInputAction.done,
+                        decoration: InputDecoration(
+                          hintText: 'What was this expense for?',
+                          counterText: '',
+                          // Prefix icon for consistency with Title field.
+                          prefixIcon: const Icon(Icons.notes_rounded, size: 18),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-              // ═══ Save button (DISABLED until amount > 0) ═══
-              MorphingLoadingButton(
-                label: _isEdit ? 'Save' : 'Save Expense',
-                icon: _isEdit ? Icons.save_rounded : Icons.check_circle_rounded,
-                loading: _saving,
-                onPressed: _hasAmount ? _save : null,
-              ),
-              const SizedBox(height: 16),
-            ],
+                // ═══ Save button ═══
+                // Disabled until BOTH amount > 0 AND a category is selected.
+                // Hint text below explains what's missing when disabled.
+                MorphingLoadingButton(
+                  label: _isEdit ? 'Save Changes' : 'Save Expense',
+                  icon: _isEdit ? Icons.save_rounded : Icons.check_circle_rounded,
+                  loading: _saving,
+                  onPressed: _canSave ? _save : null,
+                ),
+                if (!_canSave && !_saving)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      _hasAmount
+                          ? 'Pick a category to enable Save'
+                          : 'Enter an amount to enable Save',
+                      textAlign: TextAlign.center,
+                      style: TextStyles.caption(context)
+                          .copyWith(color: AppColorsOf.tertiaryText(context)),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // ═══ Amount hero — centered 36px display ═══
-  // Reduced from 48px → 36px so the input area is more proportionate and
-  // doesn't visually overwhelm the rest of the form. Prefix "Rs. " matches
-  // the input font size so the cursor aligns naturally.
+  /// Section card — subtle bg + border + 14px padding. Groups related form
+  /// fields together so the form has clear visual hierarchy instead of
+  /// being one long undifferentiated list.
+  Widget _sectionCard(BuildContext context, {required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColorsOf.card(context),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColorsOf.border(context)),
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [
+                const BoxShadow(
+                  color: Color(0x08000000),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ]
+            : null,
+      ),
+      child: child,
+    );
+  }
+
+  // ═══ Amount hero — centered 36px display inside the section card ═══
+  // Uses Formatters.currencySymbol instead of hardcoded 'Rs. ' so the
+  // prefix adapts when the user changes currency via Settings.
+  // Autofocus is disabled when prefilling (scan result or edit) so the
+  // keyboard doesn't pop up over the pre-filled data on screen mount.
   Widget _amountHero(BuildContext context) {
     return Column(
       children: [
@@ -400,7 +506,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
           textAlign: TextAlign.center,
-          autofocus: true,
+          // Only autofocus on a fresh add (no prefill, no edit) so the
+          // keyboard doesn't cover scanned data or edited values on mount.
+          autofocus: widget.prefill == null && widget.expenseId == null,
+          textInputAction: TextInputAction.done,
           style: TextStyle(
             fontFamily: 'PlusJakartaSans',
             fontSize: 36,
@@ -411,7 +520,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
           decoration: InputDecoration(
-            prefixText: 'Rs. ',
+            // Currency symbol adapts to the user's selected currency.
+            prefixText: '${Formatters.currencySymbol} ',
             prefixStyle: TextStyle(
               fontFamily: 'PlusJakartaSans',
               fontSize: 36,
@@ -425,17 +535,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               fontFamily: 'PlusJakartaSans',
               fontSize: 36,
               fontWeight: FontWeight.w700,
-              color: AppColorsOf.tertiaryText(context).withOpacity(0.3),
+              // Bumped opacity 0.3 → 0.5 — 0.3 was nearly invisible,
+              // especially in light mode.
+              color: AppColorsOf.tertiaryText(context).withOpacity(0.5),
               height: 1.1,
             ),
             border: InputBorder.none,
             focusedBorder: InputBorder.none,
             enabledBorder: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 4),
           ),
         ),
         // Live formatted preview with subtle scale-pop when amount changes.
-        // Bumped from caption (12px) → 14px for readability since this is
-        // the user's confirmation of what they just typed.
+        // Now shows full currency formatting: "Rs. 1,500" instead of "1,500".
         if (_hasAmount)
           TweenAnimationBuilder<double>(
             key: ValueKey(_formattedAmount()),
@@ -447,7 +559,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             },
             child: Text(
               _formattedAmount(),
-              style: TextStyles.caption(context, weight: FontWeight.w600)
+              style: TextStyles.caption(context, weight: FontWeight.w700)
                   .copyWith(color: AppColorsOf.secondaryText(context), fontSize: 14),
             ),
           ),
@@ -494,18 +606,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 0.92,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        // Taller ratio (0.92 → 0.85) so the icon + label has more
+        // breathing room — previously the items felt squat/cramped.
+        childAspectRatio: 1.0,
       ),
       itemCount: SampleData.categories.length,
       itemBuilder: (ctx, i) {
         final c = SampleData.categories[i];
         final sel = _selectedCategoryId == c.id;
         final shortName = _shortLabels[c.id] ?? c.name;
-        // ── Scale pop on selection ──
-        // Selected items scale up to 1.06 with an easeOutBack curve for a
-        // delightful pop. Unselected items scale to 1.0 (default).
         return GestureDetector(
           onTap: () {
             Haptics.selection();
@@ -524,14 +635,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   color: sel ? c.color : AppColorsOf.border(context),
                   width: sel ? 1.6 : 1,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Stack(
                 children: [
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // ── Icon also pops (scales up when selected) ──
                       AnimatedScale(
                         scale: sel ? 1.12 : 1.0,
                         duration: AppMotion.base,
@@ -553,7 +663,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           maxLines: 1),
                     ],
                   ),
-                  // Check mark when selected (drawn in with scale)
                   if (sel)
                     Positioned(
                       top: 6, right: 6,

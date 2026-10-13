@@ -13,6 +13,7 @@ import '../goals/add_money_screen.dart';
 import '../goals/create_goal_screen.dart';
 import '../goals/goal_details_screen.dart';
 import '../goals/savings_goals_screen.dart';
+import '../more/more_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../profile/profile_screen.dart';
@@ -24,8 +25,9 @@ import '../expenses/transactions_screen.dart';
 import '../dev/motion_debug_screen.dart';
 import 'home_screen.dart';
 
-/// Main app shell — IndexedStack of Home / Transactions / Goals / Profile
-/// with floating bottom nav and central FAB that opens Add Expense.
+/// Main app shell — bottom nav has 4 tabs: Home / Activity / Analytics / More.
+/// Profile is accessed via the avatar tap on the home header (pushed route,
+/// not a tab). Goals moved into the More tab. The central FAB opens Add Expense.
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -39,41 +41,44 @@ class _MainShellState extends State<MainShell> {
   @override
   void initState() {
     super.initState();
-    // Allow deep-linking via ?tab=<home|activity|goals|profile>
+    // Allow deep-linking via ?tab=<home|activity|analytics|more>
     // for preview/test purposes. Defaults to Home.
     final uri = Uri.base;
     final tab = uri.queryParameters['tab'];
     _index = switch (tab) {
       'activity' => 1,
-      'goals' => 2,
-      'profile' => 3,
+      'analytics' => 2,
+      'more' => 3,
       _ => 0,
     };
-    // Allow pushing a sub-route via ?route=<analytics|addExpense|budgets|advice|notifications>
+    // Allow pushing a sub-route via ?route=<addExpense|budgets|advice|notifications|profile|...>
     _pendingRoute = uri.queryParameters['route'];
   }
 
   String? _pendingRoute;
 
-  /// Switch to a tab programmatically — used by the Home's profile avatar
-  /// to switch to the Profile tab (index 3) instead of pushing a new route.
-  void _switchTab(int i) {
+  /// Push the Profile screen — used by the home header's avatar tap.
+  /// Profile is no longer a bottom-nav tab; it's a pushed route so the
+  /// bottom nav has room for Analytics + More.
+  void _openProfile() {
     HapticFeedback.selectionClick();
-    setState(() => _index = i);
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+    );
   }
 
   /// Build the screen for the current tab. Built dynamically so we can pass
-  /// callbacks (e.g. HomeScreen's onAvatarTap that switches to Profile tab).
+  /// callbacks (e.g. HomeScreen's onAvatarTap that pushes ProfileScreen).
   Widget _buildScreen(int index) {
     switch (index) {
       case 0:
-        return HomeScreen(onAvatarTap: () => _switchTab(3));
+        return HomeScreen(onAvatarTap: _openProfile);
       case 1:
         return const TransactionsScreen();
       case 2:
-        return const SavingsGoalsScreen();
+        return const AnalyticsScreen();
       case 3:
-        return const ProfileScreen();
+        return const MoreScreen();
       default:
         return const SizedBox.shrink();
     }
@@ -109,6 +114,10 @@ class _MainShellState extends State<MainShell> {
             break;
           case 'editProfile':
             target = const EditProfileScreen();
+            break;
+          case 'profile':
+            // Profile is now a pushed route (was a bottom-nav tab).
+            target = const ProfileScreen();
             break;
           case 'generalSettings':
             target = const GeneralSettingsScreen();

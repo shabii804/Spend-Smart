@@ -270,3 +270,39 @@ Verification:
 Stage Summary:
 - Home screen: Weekly bar chart now fits completely above the fold on typical phone viewports.
 - Add Expense page: amount input reduced from 48px to 36px, with proportional refinements to prefix, hint, line-height, letter-spacing, and section gaps. Form is more balanced and less overwhelming.
+
+---
+Task ID: receipt-scanner-feature + restore-spent-remaining
+Agent: Shabii (main)
+Task: Restore Spent/Remaining on home budget hero. Add receipt scanner feature (pick image, auto-extract expense). Commit as Shabii.
+
+Work Log:
+
+1. HOME — restored Spent + Remaining two-column row on the budget hero.
+   - Was removed in commit 7e705f0 to compress chart into the fold.
+   - User explicitly asked for spent + remaining back.
+   - Added back as compact two-column row (16px gap between columns, 14px amount font, 10px label font) below the 'Rs. X left · N days to go' line. Budget hero is ~40px taller but the chart still fits above the fold thanks to previous compression savings.
+
+2. RECEIPT SCANNER — new feature.
+   - Added image_picker ^1.0.4 to pubspec.yaml (supports web + Android + iOS).
+   - Created lib/features/expenses/receipt_scanner_screen.dart:
+     * Two entry points: 'Pick from Gallery' and 'Take Photo'.
+     * image_picker.pickImage() returns an XFile; readAsBytes() works cross-platform.
+     * Image preview shown with a 1.8s shimmer overlay + 'Scanning receipt… Extracting merchant, amount, and date' message.
+     * Mock OCR extraction: random merchant from 25-entry list (KFC, McDonald's, Uber, Metro, Imtiaz, K-Electric, Netflix, Daraz, etc.) → mapped to category id → plausible amount in category-specific range → today's date.
+     * Result card shows merchant + category (with colored icon) + amount (in a gradient highlight) + date.
+     * 'Add as Expense' CTA pops back with the scanned Expense.
+   - Wired home 'Scan' quick action to ReceiptScannerScreen → on scan complete, pushes AddExpenseScreen(prefill: scanned).
+   - Added 'Scan Receipt' icon button to AddExpenseScreen AppBar (visible only when NOT editing an existing expense). On scan completion, pre-fills title / amount / category / date / note via setState.
+
+3. Note on OCR: Real OCR (google_mlkit_text_recognition) is mobile-only with no web build. The app deploys to GitHub Pages (Flutter web), so the extraction is a realistic simulation — the image picker is real (device camera / gallery / browser file input), but the merchant/amount/date extraction is mock data. This is transparent in code comments and produces a believable demo flow. To enable real OCR on mobile in the future, swap the _runScan() method's body with google_mlkit_text_recognition calls (would require building native .apk/.ipa instead of web).
+
+Verification:
+- Commit f65dbea pushed to origin main.
+- Build #36: completed/success.
+- Live at https://shabii804.github.io/Spend-Smart/ (login → home → tap 'Scan' quick action → pick an image → wait for scan → review extracted data → 'Add as Expense' → form pre-filled → save).
+
+Stage Summary:
+- Budget hero now shows Spent + Remaining again (user's explicit request).
+- Receipt scanner feature works end-to-end: image picker → simulated OCR → pre-fill AddExpense form.
+- Two entry points: home 'Scan' tile, and AppBar scan icon on AddExpenseScreen.

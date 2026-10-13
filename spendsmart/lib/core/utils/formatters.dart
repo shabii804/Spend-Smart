@@ -81,4 +81,21 @@ class Formatters {
     if (diff.inDays < 7) return '${diff.inDays}d ago';
     return dateShort(d);
   }
+
+  /// Relative date + time for transaction tiles:
+  /// "Today 8:45 AM", "Yesterday 9:13 AM", "Mon 10:00 AM", "10 Oct 11:30 AM".
+  /// Compact so it doesn't overflow on narrow screens.
+  static String relativeDateTime(DateTime d, {DateTime? now}) {
+    final n = now ?? DateTime.now();
+    final today = DateTime(n.year, n.month, n.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dateOnly = DateTime(d.year, d.month, d.day);
+    final timeStr = DateFormat('h:mm a').format(d);
+    if (dateOnly == today) return 'Today $timeStr';
+    if (dateOnly == yesterday) return 'Yesterday $timeStr';
+    if (n.difference(d).inDays < 7) {
+      return '${DateFormat('EEE').format(d)} $timeStr';
+    }
+    return '${DateFormat('d MMM').format(d)} $timeStr';
+  }
 }

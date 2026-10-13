@@ -14,7 +14,12 @@ import '../../providers/expense_provider.dart';
 import 'expense_details_screen.dart';
 
 class TransactionsScreen extends StatefulWidget {
-  const TransactionsScreen({super.key});
+  /// Optional initial category filter (e.g. 'food', 'transport').
+  /// Set when navigating from "Top Categories" on the home screen so the
+  /// user lands directly on the filtered list instead of "All".
+  final String? initialFilter;
+
+  const TransactionsScreen({super.key, this.initialFilter});
 
   @override
   State<TransactionsScreen> createState() => _TransactionsScreenState();
@@ -23,7 +28,7 @@ class TransactionsScreen extends StatefulWidget {
 class _TransactionsScreenState extends State<TransactionsScreen> {
   final _searchCtrl = TextEditingController();
   String _search = '';
-  String _filter = AppStrings.all;
+  late String _filter;
 
   static const _filters = [
     AppStrings.all,
@@ -37,6 +42,18 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     AppStrings.others,
   ];
 
+  // Reverse map: categoryId → display label (for resolving initialFilter).
+  static const _catIdToLabel = {
+    'food': AppStrings.food,
+    'transport': AppStrings.transport,
+    'groceries': AppStrings.groceries,
+    'bills': AppStrings.bills,
+    'entertainment': 'Entertainment',
+    'internet': 'Internet',
+    'shopping': 'Shopping',
+    'others': AppStrings.others,
+  };
+
   static const _filterCatIds = {
     AppStrings.all: null,
     AppStrings.food: 'food',
@@ -48,6 +65,17 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     'Shopping': 'shopping',
     AppStrings.others: 'others',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    // Resolve initialFilter (a category id) to its display label.
+    // If the id isn't recognised, fall back to 'All'.
+    _filter = (widget.initialFilter != null &&
+            _catIdToLabel.containsKey(widget.initialFilter))
+        ? _catIdToLabel[widget.initialFilter!]!
+        : AppStrings.all;
+  }
 
   @override
   void dispose() {

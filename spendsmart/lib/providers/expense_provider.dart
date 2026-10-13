@@ -149,6 +149,38 @@ class ExpenseProvider extends ChangeNotifier {
     return out;
   }
 
+  /// Last 4 weeks of spend (oldest → newest) for the Analytics weekly view.
+  /// Each week runs Mon–Sun; the most-recent week is the current week
+  /// (even if incomplete). Labels are short date ranges like "Sep 29–Oct 5".
+  List<MapEntry<String, double>> last4Weeks() {
+    final out = <MapEntry<String, double>>[];
+    final now = DateTime.now();
+    // Find the Monday of the current week (DateTime.weekday returns 1=Mon..7=Sun).
+    final daysFromMonday = now.weekday - 1;
+    final thisMonday = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: daysFromMonday));
+    for (int i = 3; i >= 0; i--) {
+      final weekStart = thisMonday.subtract(Duration(days: 7 * i));
+      final weekEnd = weekStart.add(const Duration(days: 6));
+      double sum = 0;
+      for (int d = 0; d < 7; d++) {
+        final day = weekStart.add(Duration(days: d));
+        if (day.isAfter(now)) break; // don't count future days
+        final key = '${day.year}-${day.month}-${day.day}';
+        sum += dailyTotals[key] ?? 0;
+      }
+      // Label: "Sep 29–Oct 5" — compact date range.
+      final label = '${_shortMonth(weekStart)} ${weekStart.day}'
+          '–${_shortMonth(weekEnd)} ${weekEnd.day}';
+      out.add(MapEntry(label, sum));
+    }
+    return out;
+  }
+
+  /// Total number of transactions for the current month. Used by the
+  /// Profile screen's stats row.
+  int get transactionCount => _monthExpenses.length;
+
   /// Per-category totals for a given list of categories (e.g. top 4).
   List<MapEntry<AppCategory, double>> topCategories(int n) {
     final totals = categoryTotals;
@@ -165,6 +197,13 @@ class ExpenseProvider extends ChangeNotifier {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return days[d.weekday - 1];
   }
+
+  /// Short month name (Jan, Feb, …, Dec) — used by last4Weeks() labels.
+  static const _monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  String _shortMonth(DateTime d) => _monthNames[d.month - 1];
 
   String _weekKey(DateTime d) {
     // ISO week approximation (good enough for demo charts)

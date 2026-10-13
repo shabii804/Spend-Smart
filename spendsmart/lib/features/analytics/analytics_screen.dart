@@ -1,15 +1,19 @@
 import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/animated_money.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/screen_entrance.dart';
+import '../../data/sample_data.dart';
 import '../../providers/expense_provider.dart';
 
 enum AnalyticsPeriod { daily, weekly, monthly }
@@ -32,6 +36,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final highest = expenses.highestSpendingDay;
     final top = expenses.topCategories(8);
     final dailyMap = expenses.dailyTotals;
+    final last7 = expenses.last7Days();
+    final last4Weeks = expenses.last4Weeks();
 
     return Scaffold(
       appBar: AppBar(
@@ -40,109 +46,135 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: GestureDetector(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColorsOf.card(context),
-                  border: Border.all(color: AppColorsOf.border(context)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.calendar_today_rounded,
-                        color: AppColors.primaryIndigo, size: 14),
-                    const SizedBox(width: 6),
-                    Text('This Month',
-                        style: TextStyles.caption(context, weight: FontWeight.w700)),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.keyboard_arrow_down_rounded, size: 14),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+        // ── Removed the broken "This Month" pill button ──
+        // It had NO onTap handler (only a GestureDetector with no callback),
+        // so tapping it did nothing. The period toggle below handles all
+        // period selection. The AppBar is now clean.
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-          children: [
-            // Segmented control
-            _periodToggle(),
-            const SizedBox(height: 20),
-            // Two summary cards
-            Row(
-              children: [
-                Expanded(
-                  child: _SummaryCard(
-                    label: 'Total Spending',
-                    amount: total,
-                    delta: '+12%',
-                    deltaPositive: true,
-                    deltaText: 'vs last month',
-                    icon: Icons.trending_up_rounded,
-                    color: AppColors.primaryIndigo,
+        // Pull-to-refresh — manually refresh the analytics data.
+        child: RefreshIndicator(
+          color: AppColors.primaryIndigo,
+          backgroundColor: AppColorsOf.card(context),
+          onRefresh: () async {
+            Haptics.selection();
+            await Future.delayed(const Duration(milliseconds: 600));
+            if (!context.mounted) return;
+            setState(() {});
+          },
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            children: [
+              // Segmented control — now actually switches the chart view.
+              _periodToggle(),
+              const SizedBox(height: 20),
+              // Two summary cards — deltas removed (were hardcoded "+12%"
+              // and "+8%" fake values). Now shows a clean "this month" label
+              // instead of misleading the user with fake percentages.
+              Row(
+                children: [
+                  Expanded(
+                    child: _SummaryCard(
+                      label: 'Total Spending',
+                      amount: total,
+                      deltaText: 'this month',
+                      icon: Icons.trending_up_rounded,
+                      color: AppColors.primaryIndigo,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _SummaryCard(
-                    label: 'Average Daily',
-                    amount: avg,
-                    delta: '+8%',
-                    deltaPositive: true,
-                    deltaText: 'vs last month',
-                    icon: Icons.calendar_today_rounded,
-                    color: AppColors.primaryPurple,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _SummaryCard(
+                      label: 'Average Daily',
+                      amount: avg,
+                      deltaText: 'this month',
+                      icon: Icons.calendar_today_rounded,
+                      color: AppColors.primaryPurple,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // Spending Overview — smooth area chart
-            ChartEntrance(
-              child: _SpendingAreaChart(dailyMap: dailyMap, total: total),
-            ),
-            const SizedBox(height: 20),
-            // Spending Breakdown — donut + right legend
-            ChartEntrance(
-              delay: const Duration(milliseconds: 160),
-              child: _BreakdownDonut(total: total, items: top),
-            ),
-            const SizedBox(height: 20),
-            // Two insight cards at bottom
-            Row(
-              children: [
-                Expanded(
-                  child: _InsightCard(
-                    label: 'Highest Spending Day',
-                    value: highest == null ? '-' : Formatters.money(highest.value),
-                    sub: highest == null ? '-' : Formatters.date(highest.key),
-                    icon: Icons.event_rounded,
-                    color: AppColors.blue,
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Spending chart — switches between Daily (bar 7d),
+              // Weekly (bar 4w), and Monthly (line) based on _period.
+              ChartEntrance(
+                child: _buildPeriodChart(expenses, dailyMap, total, last7, last4Weeks),
+              ),
+              const SizedBox(height: 20),
+              // Spending Breakdown — donut + right legend
+              ChartEntrance(
+                delay: const Duration(milliseconds: 160),
+                child: _BreakdownDonut(total: total, items: top),
+              ),
+              const SizedBox(height: 20),
+              // Two insight cards at bottom
+              Row(
+                children: [
+                  Expanded(
+                    child: _InsightCard(
+                      label: 'Highest Spending Day',
+                      value: highest == null ? '-' : Formatters.money(highest.value),
+                      sub: highest == null ? '-' : Formatters.dateShort(highest.key),
+                      icon: Icons.event_rounded,
+                      color: AppColors.blue,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _InsightCard(
-                    label: 'Top Category',
-                    value: top.isEmpty ? '-' : '${((top.first.value / (total == 0 ? 1 : total)) * 100).toInt()}%',
-                    sub: top.isEmpty ? '-' : top.first.key.name,
-                    icon: Icons.emoji_events_rounded,
-                    color: AppColors.catBills,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _InsightCard(
+                      label: 'Top Category',
+                      value: top.isEmpty
+                          ? '-'
+                          : '${((top.first.value / (total == 0 ? 1 : total)) * 100).round()}%',
+                      sub: top.isEmpty ? '-' : top.first.key.name,
+                      icon: Icons.emoji_events_rounded,
+                      // Use the actual top category's color (was hardcoded
+                      // to AppColors.catBills which is for the Bills category,
+                      // not for "Top Category" in general).
+                      color: top.isEmpty ? AppColors.primaryIndigo : top.first.key.color,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  /// Build the chart widget matching the selected period.
+  /// - Daily: vertical bar chart of last 7 days.
+  /// - Weekly: vertical bar chart of last 4 weeks.
+  /// - Monthly: smooth line/area chart across the current month.
+  Widget _buildPeriodChart(
+    ExpenseProvider expenses,
+    Map<String, double> dailyMap,
+    double total,
+    List<MapEntry<String, double>> last7,
+    List<MapEntry<String, double>> last4Weeks,
+  ) {
+    switch (_period) {
+      case AnalyticsPeriod.daily:
+        return _PeriodBarChart(
+          data: last7,
+          total: last7.fold(0.0, (s, e) => s + e.value),
+          title: 'Daily Spending',
+          subtitle: 'Last 7 days',
+          icon: Icons.bar_chart_rounded,
+        );
+      case AnalyticsPeriod.weekly:
+        return _PeriodBarChart(
+          data: last4Weeks,
+          total: last4Weeks.fold(0.0, (s, e) => s + e.value),
+          title: 'Weekly Spending',
+          subtitle: 'Last 4 weeks',
+          icon: Icons.view_week_rounded,
+          isWeekly: true,
+        );
+      case AnalyticsPeriod.monthly:
+        return _SpendingAreaChart(dailyMap: dailyMap, total: total);
+    }
   }
 
   Widget _periodToggle() {
@@ -158,7 +190,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           for (final p in AnalyticsPeriod.values)
             Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => _period = p),
+                onTap: () {
+                  Haptics.selection();
+                  setState(() => _period = p);
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOutCubic,
@@ -199,12 +234,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 }
 
 // ----------------------------------------------------------------
-// Summary card — value + green delta%. Equal-height via fixed column.
+// Summary card — value + optional "this month" label (no fake deltas).
+// Removed the hardcoded "+12%" / "+8%" delta parameters that were
+// misleading the user. Now shows a clean subtitle instead.
 // ----------------------------------------------------------------
 class _SummaryCard extends StatelessWidget {
   final String label;
-  final String delta;
-  final bool deltaPositive;
   final String deltaText;
   final IconData icon;
   final Color color;
@@ -213,8 +248,6 @@ class _SummaryCard extends StatelessWidget {
   const _SummaryCard({
     required this.label,
     required this.amount,
-    required this.delta,
-    required this.deltaPositive,
     required this.deltaText,
     required this.icon,
     required this.color,
@@ -225,7 +258,7 @@ class _SummaryCard extends StatelessWidget {
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       child: SizedBox(
-        height: 110,
+        height: 100,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -253,28 +286,10 @@ class _SummaryCard extends StatelessWidget {
               style: TextStyles.money(context, size: 18)
                   .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
             ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Icon(
-                  deltaPositive
-                      ? Icons.arrow_upward_rounded
-                      : Icons.arrow_downward_rounded,
-                  size: 11,
-                  color: AppColors.mint,
-                ),
-                const SizedBox(width: 3),
-                Text(delta,
-                    style: TextStyles.caption(context, weight: FontWeight.w700)
-                        .copyWith(color: AppColors.mint, fontSize: 11)),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(deltaText,
-                      style: TextStyles.caption(context).copyWith(fontSize: 9),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                ),
-              ],
-            ),
+            const SizedBox(height: 4),
+            Text(deltaText,
+                style: TextStyles.caption(context)
+                    .copyWith(color: AppColorsOf.tertiaryText(context), fontSize: 10)),
           ],
         ),
       ),
@@ -321,11 +336,16 @@ class _SpendingAreaChartState extends State<_SpendingAreaChart> {
     });
 
     if (series.every((e) => e.value == 0)) {
-      return GlassCard(
-        padding: const EdgeInsets.all(20),
-        child: Text(AppStrings.noDataYet,
-            style: TextStyles.body(context,
-                color: AppColorsOf.secondaryText(context))),
+      // Empty state — was previously a plain GlassCard with text.
+      // Now uses the shared EmptyState widget (animated medallion entrance)
+      // for consistency with Transactions + Goals screens.
+      return const SizedBox(
+        height: 240,
+        child: EmptyState(
+          icon: Icons.bar_chart_outlined,
+          title: 'No spending data yet',
+          subtitle: 'Add an expense to see your monthly trend.',
+        ),
       );
     }
 
@@ -513,8 +533,13 @@ class _SpendingAreaChartState extends State<_SpendingAreaChart> {
                       return spots.map((s) {
                         final i = s.x.toInt();
                         final day = (i >= 0 && i < series.length) ? series[i].day : (i + 1);
+                        // Build a proper date for the tooltip label.
+                        // Was "Day 12: 1500" — now "12 Oct: Rs. 1,500" (full
+                        // currency formatting, includes symbol).
+                        final date = DateTime(anchor.year, anchor.month, day);
+                        final dateLabel = Formatters.dateShort(date);
                         return LineTooltipItem(
-                          'Day $day: ${Formatters.moneyPlain(s.y)}',
+                          '$dateLabel: ${Formatters.money(s.y)}',
                           const TextStyle(
                             color: Colors.white,
                             fontSize: 11,
@@ -588,11 +613,13 @@ class _BreakdownDonutState extends State<_BreakdownDonut> {
   @override
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) {
-      return GlassCard(
-        padding: const EdgeInsets.all(20),
-        child: Text(AppStrings.noDataYet,
-            style: TextStyles.body(context,
-                color: AppColorsOf.secondaryText(context))),
+      return const SizedBox(
+        height: 240,
+        child: EmptyState(
+          icon: Icons.pie_chart_outlined,
+          title: 'No breakdown yet',
+          subtitle: 'Add an expense to see your category split.',
+        ),
       );
     }
     final safeTotal = widget.total == 0 ? 1.0 : widget.total;
@@ -730,11 +757,24 @@ class _BreakdownDonutState extends State<_BreakdownDonut> {
                                 ),
                               ),
                               const SizedBox(width: 8),
+                              // Amount now shown next to the percentage —
+                              // was previously only the percentage, which
+                              // made it hard to gauge actual category spend
+                              // (e.g. "Food 32%" — but 32% of what?).
                               Text(
-                                '$pctVal%',
+                                Formatters.moneyPlain(e.value),
                                 style: TextStyles.caption(context,
                                     weight: FontWeight.w700).copyWith(
-                                        fontFeatures: const [FontFeature.tabularFigures()]),
+                                        fontFeatures: const [FontFeature.tabularFigures()],
+                                        fontSize: 11),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$pctVal%',
+                                style: TextStyles.caption(context).copyWith(
+                                    color: AppColorsOf.tertiaryText(context),
+                                    fontSize: 10,
+                                    fontFeatures: const [FontFeature.tabularFigures()]),
                               ),
                             ],
                           ),
@@ -799,5 +839,263 @@ class _InsightCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ----------------------------------------------------------------
+// _PeriodBarChart — vertical bar chart used by the Daily + Weekly
+// views of the Analytics screen. Each bar represents one day (Daily
+// view) or one week (Weekly view). The active bar (highest value) is
+// highlighted in indigo; others use a translucent indigo fill.
+//
+// Premium polish:
+//   • Bars grow from 0 to their final height on first render (1100ms
+//     easeOutCubic) — same easing as the donut + line chart.
+//   • Y-axis labels use compact money formatting ("2k", "5k").
+//   • Active bar (the highest) shows a tooltip with the exact amount.
+//   • Card chrome matches the Spending Overview card: subtle indigo
+//     gradient bg + border + optional light-mode shadow.
+// ----------------------------------------------------------------
+class _PeriodBarChart extends StatefulWidget {
+  final List<MapEntry<String, double>> data;
+  final double total;
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool isWeekly;
+
+  const _PeriodBarChart({
+    required this.data,
+    required this.total,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    this.isWeekly = false,
+  });
+
+  @override
+  State<_PeriodBarChart> createState() => _PeriodBarChartState();
+}
+
+class _PeriodBarChartState extends State<_PeriodBarChart> {
+  bool _showData = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Trigger bar grow-in animation after first frame.
+    Future.delayed(const Duration(milliseconds: 120), () {
+      if (mounted) setState(() => _showData = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // All-zero empty state.
+    if (widget.data.every((e) => e.value == 0)) {
+      return SizedBox(
+        height: 240,
+        child: EmptyState(
+          icon: Icons.bar_chart_outlined,
+          title: widget.isWeekly ? 'No weekly data yet' : 'No daily data yet',
+          subtitle: 'Add an expense to see your trend.',
+        ),
+      );
+    }
+
+    final maxVal = widget.data.fold<double>(0, (m, e) => e.value > m ? e.value : m);
+    final safeMax = _niceMax(maxVal);
+    final activeIdx = widget.data.indexWhere((e) => e.value == maxVal);
+    final safeActiveIdx = activeIdx < 0 ? 0 : activeIdx;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 12, 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primaryIndigo.withOpacity(0.06),
+            AppColorsOf.card(context),
+            AppColorsOf.card(context),
+          ],
+          stops: const [0.0, 0.45, 1.0],
+        ),
+        border: Border.all(color: AppColorsOf.border(context)),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [
+                const BoxShadow(
+                  color: Color(0x10000000),
+                  blurRadius: 14,
+                  offset: Offset(0, 6),
+                ),
+              ]
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(widget.title, style: TextStyles.h3(context)),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryIndigo.withOpacity(0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(widget.icon,
+                    color: AppColors.primaryIndigo, size: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${Formatters.money(widget.total)} · ${widget.subtitle}',
+            style: TextStyles.caption(context),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: BarChart(
+              duration: const Duration(milliseconds: 1100),
+              curve: Curves.easeOutCubic,
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: safeMax,
+                minY: 0,
+                barGroups: [
+                  for (int i = 0; i < widget.data.length; i++)
+                    BarChartGroupData(
+                      x: i,
+                      barRods: [
+                        BarChartRodData(
+                          // 0 on first render, real value after _showData flips.
+                          toY: _showData ? widget.data[i].value : 0,
+                          color: i == safeActiveIdx && maxVal > 0
+                              ? AppColors.primaryIndigo
+                              : AppColors.primaryIndigo.withOpacity(0.32),
+                          width: widget.isWeekly ? 36 : 28,
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(8)),
+                          backDrawRodData: BackgroundBarChartRodData(
+                            toY: safeMax,
+                            color: AppColors.primaryIndigo.withOpacity(0.05),
+                            show: true,
+                          ),
+                        ),
+                      ],
+                      showingTooltipIndicators:
+                          i == safeActiveIdx && maxVal > 0 && _showData
+                              ? [0]
+                              : [],
+                    ),
+                ],
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  drawHorizontalLine: true,
+                  horizontalInterval: safeMax / 4,
+                  getDrawingHorizontalLine: (v) => FlLine(
+                    color: AppColorsOf.divider(context),
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 36,
+                      interval: safeMax / 4,
+                      getTitlesWidget: (v, _) {
+                        if (v == 0 || v == safeMax) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: Text(
+                            Formatters.moneyCompact(v),
+                            style: TextStyles.caption(context)
+                                .copyWith(fontSize: 10),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: widget.isWeekly ? 36 : 24,
+                      interval: 1,
+                      getTitlesWidget: (v, _) {
+                        final i = v.toInt();
+                        if (i < 0 || i >= widget.data.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            widget.data[i].key,
+                            style: TextStyles.caption(context).copyWith(
+                              fontSize: widget.isWeekly ? 9 : 10,
+                              fontWeight: i == safeActiveIdx
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
+                              color: i == safeActiveIdx
+                                  ? AppColors.primaryIndigo
+                                  : AppColorsOf.secondaryText(context),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (group) => AppColors.primaryIndigo,
+                    tooltipRoundedRadius: 6,
+                    tooltipPadding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        Formatters.money(rod.toY),
+                        const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Round up to a "nice" maximum for the y-axis: 1k, 2k, 5k, etc.
+  double _niceMax(double v) {
+    if (v <= 0) return 1000;
+    if (v <= 500) return 500;
+    if (v <= 1000) return 1000;
+    if (v <= 2000) return 2000;
+    if (v <= 3000) return 3000;
+    if (v <= 5000) return 5000;
+    if (v <= 10000) return 10000;
+    final pow10 = math.pow(10, (math.log(v) / math.log(10)).ceil());
+    return (v / pow10).ceil() * pow10.toDouble();
   }
 }

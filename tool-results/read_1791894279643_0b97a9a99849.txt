@@ -1,0 +1,763 @@
+     1→import 'package:flutter/material.dart';
+     2→import 'package:flutter/services.dart';
+     3→import 'package:provider/provider.dart';
+     4→import '../../core/constants/app_strings.dart';
+     5→import '../../core/motion/app_motion.dart';
+     6→import '../../core/theme/app_colors.dart';
+     7→import '../../core/theme/app_gradients.dart';
+     8→import '../../core/theme/text_styles.dart';
+     9→import '../../core/utils/formatters.dart';
+    10→import '../../core/widgets/glass_card.dart';
+    11→import '../../core/widgets/animated_money.dart';
+    12→import '../../core/widgets/screen_entrance.dart';
+    13→import '../../core/widgets/section_header.dart';
+    14→import '../../core/widgets/staggered_entrance.dart';
+    15→import '../../data/sample_data.dart';
+    16→import '../../models/category.dart';
+    17→import '../../models/expense.dart';
+    18→import '../../providers/budget_provider.dart';
+    19→import '../../providers/expense_provider.dart';
+    20→import '../../providers/goal_provider.dart';
+    21→import '../../providers/notification_provider.dart';
+    22→import '../../providers/user_provider.dart';
+    23→import '../analytics/analytics_screen.dart';
+    24→import '../expenses/add_expense_screen.dart';
+    25→import '../expenses/expense_details_screen.dart';
+    26→import '../expenses/transactions_screen.dart';
+    27→import '../expenses/voice_entry_screen.dart';
+    28→import '../goals/savings_goals_screen.dart';
+    29→import '../notifications/notifications_screen.dart';
+    30→import 'weekly_bar_chart.dart';
+    31→
+    32→class HomeScreen extends StatefulWidget {
+    33→  const HomeScreen({super.key});
+    34→
+    35→  @override
+    36→  State<HomeScreen> createState() => _HomeScreenState();
+    37→}
+    38→
+    39→class _HomeScreenState extends State<HomeScreen> {
+    40→  @override
+    41→  Widget build(BuildContext context) {
+    42→    final expenses = context.watch<ExpenseProvider>();
+    43→    final budget = context.watch<BudgetProvider>();
+    44→    context.watch<GoalProvider>();
+    45→    final notif = context.watch<NotificationProvider>();
+    46→    final user = context.watch<UserProvider>().user;
+    47→
+    48→    final hour = DateTime.now().hour;
+    49→    final greeting = hour < 12
+    50→        ? 'Good Morning,'
+    51→        : hour < 17
+    52→            ? 'Good Afternoon,'
+    53→            : 'Good Evening,';
+    54→
+    55→    final limit = budget.monthlyLimit;
+    56→    final spent = expenses.totalSpent;
+    57→    final remaining = limit - spent;
+    58→    final percent = limit == 0 ? 0.0 : spent / limit;
+    59→
+    60→    final recent = expenses.recentTransactions(5);
+    61→    final top = expenses.topCategories(4);
+    62→    final weekly = expenses.last7Days();
+    63→
+    64→    return SafeArea(
+    65→      bottom: false,
+    66→      child: CustomScrollView(
+    67→        physics: const BouncingScrollPhysics(
+    68→          parent: AlwaysScrollableScrollPhysics(),
+    69→        ),
+    70→        slivers: [
+    71→          SliverPadding(
+    72→            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+    73→            sliver: SliverList(
+    74→              delegate: SliverChildListDelegate([
+    75→                _appHeader(context, notif.unreadCount),
+    76→                const SizedBox(height: 20),
+    77→                _greetingRow(context, greeting, user.fullName),
+    78→              ]),
+    79→            ),
+    80→          ),
+    81→          // Budget hero with parallax — translates slower than scroll
+    82→          SliverToBoxAdapter(
+    83→            child: _ParallaxHero(
+    84→              child: Padding(
+    85→                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+    86→                child: _budgetHero(context, spent, remaining, percent, limit),
+    87→              ),
+    88→            ),
+    89→          ),
+    90→          SliverPadding(
+    91→            padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+    92→            sliver: SliverList(
+    93→              delegate: SliverChildListDelegate([
+    94→                _quickActions(context),
+    95→                const SizedBox(height: 28),
+    96→                ChartEntrance(
+    97→                  child: WeeklyBarChart(data: weekly),
+    98→                ),
+    99→                const SizedBox(height: 28),
+   100→                SectionHeader(
+   101→                  title: 'Top Categories',
+   102→                  actionLabel: 'See All',
+   103→                  onAction: () => Navigator.of(context).push(
+   104→                    MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+   105→                  ),
+   106→                ),
+   107→                const SizedBox(height: 12),
+   108→                _topCategoriesScroll(context, top),
+   109→                const SizedBox(height: 28),
+   110→                SectionHeader(
+   111→                  title: AppStrings.recentTransactions,
+   112→                  actionLabel: AppStrings.viewAll,
+   113→                  onAction: () => Navigator.of(context).push(
+   114→                    MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+   115→                  ),
+   116→                ),
+   117→                const SizedBox(height: 12),
+   118→                _recentList(context, recent),
+   119→              ]),
+   120→            ),
+   121→          ),
+   122→        ],
+   123→      ),
+   124→    );
+   125→  }
+   126→
+   127→  // ────────────────────────────────────────────────────────────────
+   128→  // App header — logo + SpendSmart + tagline | bell + avatar
+   129→  // ────────────────────────────────────────────────────────────────
+   130→  Widget _appHeader(BuildContext context, int unread) {
+   131→    return Row(
+   132→      children: [
+   133→        Container(
+   134→          width: 36,
+   135→          height: 36,
+   136→          decoration: const BoxDecoration(
+   137→            gradient: AppGradients.primaryButton,
+   138→            shape: BoxShape.circle,
+   139→          ),
+   140→          alignment: Alignment.center,
+   141→          child: const Icon(Icons.insights_rounded, color: Colors.white, size: 20),
+   142→        ),
+   143→        const SizedBox(width: 10),
+   144→        Column(
+   145→          crossAxisAlignment: CrossAxisAlignment.start,
+   146→          mainAxisSize: MainAxisSize.min,
+   147→          children: [
+   148→            Text('SpendSmart',
+   149→                style: TextStyles.body(context, weight: FontWeight.w700)
+   150→                    .copyWith(fontSize: 16)),
+   151→            Text('Track. Plan. Achieve.',
+   152→                style: TextStyles.caption(context).copyWith(fontSize: 10)),
+   153→          ],
+   154→        ),
+   155→        const Spacer(),
+   156→        _BellButton(
+   157→          unread: unread,
+   158→          onTap: () => Navigator.of(context).push(
+   159→            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+   160→          ),
+   161→        ),
+   162→        const SizedBox(width: 8),
+   163→        Container(
+   164→          width: 40,
+   165→          height: 40,
+   166→          decoration: const BoxDecoration(
+   167→            gradient: AppGradients.primaryButton,
+   168→            shape: BoxShape.circle,
+   169→          ),
+   170→          alignment: Alignment.center,
+   171→          child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
+   172→        ),
+   173→      ],
+   174→    );
+   175→  }
+   176→
+   177→  // ────────────────────────────────────────────────────────────────
+   178→  // Greeting row — BIG name, light subtitle (clear hierarchy)
+   179→  // ────────────────────────────────────────────────────────────────
+   180→  Widget _greetingRow(BuildContext context, String greeting, String fullName) {
+   181→    final firstName = fullName.split(' ').first;
+   182→    return Row(
+   183→      crossAxisAlignment: CrossAxisAlignment.center,
+   184→      children: [
+   185→        Expanded(
+   186→          child: Column(
+   187→            crossAxisAlignment: CrossAxisAlignment.start,
+   188→            children: [
+   189→              Text(greeting,
+   190→                  style: TextStyles.body(context,
+   191→                      color: AppColorsOf.secondaryText(context),
+   192→                      weight: FontWeight.w500)),
+   193→              const SizedBox(height: 2),
+   194→              Text('$firstName!',
+   195→                  style: TextStyles.h1(context).copyWith(
+   196→                      fontSize: 26,
+   197→                      fontWeight: FontWeight.w700,
+   198→                      letterSpacing: -0.5)),
+   199→              const SizedBox(height: 4),
+   200→              // Date merged into subtitle (replaces date pill)
+   201→              Text('${Formatters.dateShort(DateTime.now())} · Small steps make big progress',
+   202→                  style: TextStyles.caption(context)
+   203→                      .copyWith(color: AppColorsOf.tertiaryText(context))),
+   204→            ],
+   205→          ),
+   206→        ),
+   207→      ],
+   208→    );
+   209→  }
+   210→
+   211→  // ────────────────────────────────────────────────────────────────
+   212→  // Budget hero — gradient card with CIRCULAR donut progress
+   213→  // ────────────────────────────────────────────────────────────────
+   214→  Widget _budgetHero(
+   215→      BuildContext context, double spent, double remaining, double percent, double limit) {
+   216→    final pctInt = (percent * 100).clamp(0, 999).toInt();
+   217→    // Days left in month + safe-to-spend calculation
+   218→    final now = DateTime.now();
+   219→    final endOfMonth = DateTime(now.year, now.month + 1, 0);
+   220→    final daysLeft = (endOfMonth.day - now.day).clamp(0, 31);
+   221→    final safeToSpend = daysLeft > 0 ? (remaining / daysLeft).clamp(0.0, double.infinity) : remaining;
+   222→    // Ring color: cyan → amber at 80% → red above 100%
+   223→    final ringColor = percent >= 1.0 ? AppColors.danger : percent >= 0.8 ? AppColors.warning : AppColors.cyan;
+   224→    return Container(
+   225→      padding: const EdgeInsets.all(16),
+   226→      decoration: BoxDecoration(
+   227→        gradient: AppGradients.heroCard(context),
+   228→        borderRadius: BorderRadius.circular(20),
+   229→        boxShadow: [
+   230→          BoxShadow(
+   231→            color: AppColors.primaryIndigo.withOpacity(0.32),
+   232→            blurRadius: 28,
+   233→            offset: const Offset(0, 14),
+   234→          ),
+   235→        ],
+   236→      ),
+   237→      child: Row(
+   238→        children: [
+   239→          Expanded(
+   240→            child: Column(
+   241→              crossAxisAlignment: CrossAxisAlignment.start,
+   242→              children: [
+   243→                Text(AppStrings.monthlyBudget,
+   244→                    style: TextStyles.label(context).copyWith(
+   245→                        color: Colors.white.withOpacity(0.85))),
+   246→                const SizedBox(height: 8),
+   247→                // 40px display amount
+   248→                AnimatedMoney(
+   249→                  amount: limit,
+   250→                  style: TextStyles.moneyHero(context, color: Colors.white),
+   251→                ),
+   252→                const SizedBox(height: 12),
+   253→                // Safe to spend today
+   254→                Text('Safe to spend today: ${Formatters.money(safeToSpend)}',
+   255→                    style: TextStyles.caption(context, weight: FontWeight.w600)
+   256→                        .copyWith(color: Colors.white.withOpacity(0.9))),
+   257→                const SizedBox(height: 4),
+   258→                // Rs. X left, N days to go
+   259→                Text('${Formatters.money(remaining.abs())} left · $daysLeft days to go',
+   260→                    style: TextStyles.caption(context)
+   261→                        .copyWith(color: Colors.white.withOpacity(0.7))),
+   262→                const SizedBox(height: 12),
+   263→                Row(
+   264→                  children: [
+   265→                    Column(
+   266→                      crossAxisAlignment: CrossAxisAlignment.start,
+   267→                      children: [
+   268→                        Text(AppStrings.spentThisMonth,
+   269→                            style: TextStyles.label(context).copyWith(
+   270→                                color: Colors.white.withOpacity(0.7))),
+   271→                        const SizedBox(height: 2),
+   272→                        AnimatedMoney(
+   273→                          amount: spent,
+   274→                          style: TextStyles.money(context,
+   275→                              size: 16, color: Colors.white),
+   276→                        ),
+   277→                      ],
+   278→                    ),
+   279→                    const SizedBox(width: 24),
+   280→                    Column(
+   281→                      crossAxisAlignment: CrossAxisAlignment.start,
+   282→                      children: [
+   283→                        Text(AppStrings.remaining,
+   284→                            style: TextStyles.label(context).copyWith(
+   285→                                color: Colors.white.withOpacity(0.7))),
+   286→                        const SizedBox(height: 2),
+   287→                        AnimatedMoney(
+   288→                          amount: remaining.abs(),
+   289→                          style: TextStyles.money(context,
+   290→                              size: 16, color: Colors.white),
+   291→                        ),
+   292→                      ],
+   293→                    ),
+   294→                  ],
+   295→                ),
+   296→              ],
+   297→            ),
+   298→          ),
+   299→          const SizedBox(width: 12),
+   300→          // Circular donut progress — color changes at 80% / 100%
+   301→          SizedBox(
+   302→            width: 72,
+   303→            height: 72,
+   304→            child: Stack(
+   305→              alignment: Alignment.center,
+   306→              children: [
+   307→                SizedBox(
+   308→                  width: 72,
+   309→                  height: 72,
+   310→                  child: CircularProgressIndicator(
+   311→                    value: percent.clamp(0.0, 1.0),
+   312→                    strokeWidth: 8,
+   313→                    backgroundColor: Colors.white.withOpacity(0.18),
+   314→                    valueColor: AlwaysStoppedAnimation<Color>(ringColor),
+   315→                  ),
+   316→                ),
+   317→                Column(
+   318→                  mainAxisSize: MainAxisSize.min,
+   319→                  children: [
+   320→                    Text('$pctInt%',
+   321→                        style: TextStyles.money(context,
+   322→                            size: 22, color: Colors.white)),
+   323→                    Text('used',
+   324→                        style: TextStyles.caption(context).copyWith(
+   325→                            color: Colors.white.withOpacity(0.7),
+   326→                            fontSize: 10)),
+   327→                  ],
+   328→                ),
+   329→              ],
+   330→            ),
+   331→          ),
+   332→        ],
+   333→      ),
+   334→    );
+   335→  }
+   336→
+   337→  // ────────────────────────────────────────────────────────────────
+   338→  // Quick actions — premium rounded-square tiles with subtle shadow
+   339→  // ────────────────────────────────────────────────────────────────
+   340→  Widget _quickActions(BuildContext context) {
+   341→    final tiles = [
+   342→      ('Scan', Icons.document_scanner_rounded, AppColors.mint,
+   343→          () => Navigator.of(context).push(
+   344→                MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+   345→              )),
+   346→      ('Voice', Icons.mic_rounded, AppColors.primaryPurple,
+   347→          () => Navigator.of(context).push(
+   348→                MaterialPageRoute(builder: (_) => const VoiceEntryScreen()),
+   349→              )),
+   350→      ('Insights', Icons.insights_rounded, AppColors.primaryIndigo,
+   351→          () => Navigator.of(context).push(
+   352→                MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
+   353→              )),
+   354→      ('Goals', Icons.savings_rounded, AppColors.blue,
+   355→          () => Navigator.of(context).push(
+   356→                MaterialPageRoute(
+   357→                    builder: (_) => const SavingsGoalsScreen()),
+   358→              )),
+   359→    ];
+   360→    return Row(
+   361→      children: tiles.map((t) {
+   362→        return Expanded(
+   363→          child: GestureDetector(
+   364→            onTap: () {
+   365→              HapticFeedback.lightImpact();
+   366→              t.$4();
+   367→            },
+   368→            child: Container(
+   369→              margin: const EdgeInsets.symmetric(horizontal: 4),
+   370→              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+   371→              decoration: BoxDecoration(
+   372→                color: AppColorsOf.card(context),
+   373→                border: Border.all(color: AppColorsOf.border(context)),
+   374→                borderRadius: BorderRadius.circular(18),
+   375→                boxShadow: Theme.of(context).brightness == Brightness.light
+   376→                    ? [
+   377→                        const BoxShadow(
+   378→                          color: Color(0x10000000),
+   379→                          blurRadius: 14,
+   380→                          offset: Offset(0, 6),
+   381→                        ),
+   382→                      ]
+   383→                    : null,
+   384→              ),
+   385→              child: Column(
+   386→                mainAxisSize: MainAxisSize.min,
+   387→                children: [
+   388→                  Container(
+   389→                    width: 48,
+   390→                    height: 48,
+   391→                    decoration: BoxDecoration(
+   392→                      gradient: LinearGradient(
+   393→                        begin: Alignment.topLeft,
+   394→                        end: Alignment.bottomRight,
+   395→                        colors: [
+   396→                          t.$3.withOpacity(0.22),
+   397→                          t.$3.withOpacity(0.10),
+   398→                        ],
+   399→                      ),
+   400→                      shape: BoxShape.circle,
+   401→                    ),
+   402→                    alignment: Alignment.center,
+   403→                    child: Icon(t.$2, color: t.$3, size: 28),
+   404→                  ),
+   405→                  const SizedBox(height: 8),
+   406→                  Text(
+   407→                    t.$1,
+   408→                    style: TextStyles.caption(context, weight: FontWeight.w700)
+   409→                        .copyWith(fontSize: 12),
+   410→                    textAlign: TextAlign.center,
+   411→                    maxLines: 1,
+   412→                    overflow: TextOverflow.ellipsis,
+   413→                  ),
+   414→                ],
+   415→              ),
+   416→            ),
+   417→          ),
+   418→        );
+   419→      }).toList(),
+   420→    );
+   421→  }
+   422→
+   423→  // ────────────────────────────────────────────────────────────────
+   424→  // Top categories — horizontal scroll of small cards
+   425→  // ────────────────────────────────────────────────────────────────
+   426→  Widget _topCategoriesScroll(BuildContext context, List<MapEntry<Category, double>> items) {
+   427→    if (items.isEmpty) {
+   428→      return GlassCard(
+   429→        padding: const EdgeInsets.all(16),
+   430→        child: Text(
+   431→          AppStrings.noDataYet,
+   432→          style: TextStyles.body(context,
+   433→              color: AppColorsOf.secondaryText(context)),
+   434→        ),
+   435→      );
+   436→    }
+   437→    // Use total spent as the denominator so the percentages reflect each
+   438→    // category's share of overall spending (not of the top category).
+   439→    final totalSpent = items.fold<double>(0.0, (s, e) => s + e.value);
+   440→    final safeTotal = totalSpent == 0 ? 1.0 : totalSpent;
+   441→    return SizedBox(
+   442→      height: 120,
+   443→      child: ListView.separated(
+   444→        scrollDirection: Axis.horizontal,
+   445→        itemCount: items.length,
+   446→        separatorBuilder: (_, __) => const SizedBox(width: 12),
+   447→        itemBuilder: (_, i) {
+   448→          final c = items[i].key;
+   449→          final amt = items[i].value;
+   450→          final pct = ((amt / safeTotal) * 100).round();
+   451→          return Container(
+   452→            width: 168,
+   453→            padding: const EdgeInsets.all(14),
+   454→            decoration: BoxDecoration(
+   455→              color: AppColorsOf.card(context),
+   456→              border: Border.all(color: AppColorsOf.border(context)),
+   457→              borderRadius: BorderRadius.circular(20),
+   458→            ),
+   459→            child: Column(
+   460→              crossAxisAlignment: CrossAxisAlignment.start,
+   461→              children: [
+   462→                Row(
+   463→                  children: [
+   464→                    Container(
+   465→                      width: 36,
+   466→                      height: 36,
+   467→                      decoration: BoxDecoration(
+   468→                        color: c.color.withOpacity(0.14),
+   469→                        shape: BoxShape.circle,
+   470→                      ),
+   471→                      alignment: Alignment.center,
+   472→                      child: Icon(c.icon, color: c.color, size: 18),
+   473→                    ),
+   474→                    const Spacer(),
+   475→                    Container(
+   476→                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+   477→                      decoration: BoxDecoration(
+   478→                        color: c.color.withOpacity(0.14),
+   479→                        borderRadius: BorderRadius.circular(8),
+   480→                      ),
+   481→                      child: Text('$pct%',
+   482→                          style: TextStyles.caption(context,
+   483→                              weight: FontWeight.w700).copyWith(color: c.color, fontSize: 11)),
+   484→                    ),
+   485→                  ],
+   486→                ),
+   487→                const Spacer(),
+   488→                Text(c.name, style: TextStyles.body(context,
+   489→                    weight: FontWeight.w600), maxLines: 1,
+   490→                    overflow: TextOverflow.ellipsis),
+   491→                const SizedBox(height: 2),
+   492→                Text(Formatters.money(amt),
+   493→                    style: TextStyles.body(context, weight: FontWeight.w700)
+   494→                        .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+   495→              ],
+   496→            ),
+   497→          );
+   498→        },
+   499→      ),
+   500→    );
+   501→  }
+   502→
+   503→  // ────────────────────────────────────────────────────────────────
+   504→  // Recent transactions — list with RED negative amounts
+   505→  // ────────────────────────────────────────────────────────────────
+   506→  Widget _recentList(BuildContext context, List<Expense> items) {
+   507→    if (items.isEmpty) {
+   508→      return GlassCard(
+   509→        padding: const EdgeInsets.all(16),
+   510→        child: Text(AppStrings.noTransactions,
+   511→            style: TextStyles.body(context,
+   512→                color: AppColorsOf.secondaryText(context))),
+   513→      );
+   514→    }
+   515→    return GlassCard(
+   516→      padding: const EdgeInsets.symmetric(vertical: 4),
+   517→      child: Column(
+   518→        children: [
+   519→          for (int i = 0; i < items.length; i++) ...[
+   520→            StaggeredEntrance(
+   521→              index: i,
+   522→              child: _TransactionTile(
+   523→                expense: items[i],
+   524→                category: SampleData.categoryById(items[i].categoryId),
+   525→                onTap: () => Navigator.of(context).push(
+   526→                  MaterialPageRoute(
+   527→                    builder: (_) => ExpenseDetailsScreen(expenseId: items[i].id),
+   528→                  ),
+   529→                ),
+   530→              ),
+   531→            ),
+   532→            if (i != items.length - 1)
+   533→              Divider(height: 1, indent: 12, endIndent: 12,
+   534→                  color: AppColorsOf.divider(context)),
+   535→          ],
+   536→        ],
+   537→      ),
+   538→    );
+   539→  }
+   540→}
+   541→
+   542→class _TransactionTile extends StatelessWidget {
+   543→  final Expense expense;
+   544→  final Category category;
+   545→  final VoidCallback onTap;
+   546→
+   547→  const _TransactionTile({
+   548→    required this.expense,
+   549→    required this.category,
+   550→    required this.onTap,
+   551→  });
+   552→
+   553→  @override
+   554→  Widget build(BuildContext context) {
+   555→    return Material(
+   556→      color: Colors.transparent,
+   557→      child: InkWell(
+   558→        onTap: onTap,
+   559→        child: Padding(
+   560→          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+   561→          child: Row(
+   562→            children: [
+   563→              // Category-colored left accent bar — premium polish
+   564→              Container(
+   565→                width: 3,
+   566→                height: 40,
+   567→                decoration: BoxDecoration(
+   568→                  color: category.color,
+   569→                  borderRadius: BorderRadius.circular(2),
+   570→                ),
+   571→              ),
+   572→              const SizedBox(width: 10),
+   573→              Container(
+   574→                width: 40,
+   575→                height: 40,
+   576→                decoration: BoxDecoration(
+   577→                  color: category.color.withOpacity(0.14),
+   578→                  shape: BoxShape.circle,
+   579→                ),
+   580→                alignment: Alignment.center,
+   581→                child: Icon(category.icon, color: category.color, size: 20),
+   582→              ),
+   583→              const SizedBox(width: 12),
+   584→              Expanded(
+   585→                child: Column(
+   586→                  crossAxisAlignment: CrossAxisAlignment.start,
+   587→                  children: [
+   588→                    Text(expense.title,
+   589→                        style: TextStyles.body(context,
+   590→                            weight: FontWeight.w600),
+   591→                        maxLines: 1,
+   592→                        overflow: TextOverflow.ellipsis),
+   593→                    const SizedBox(height: 2),
+   594→                    Text(
+   595→                      '${category.name} · ${Formatters.dateTime(expense.date)}',
+   596→                      style: TextStyles.caption(context).copyWith(
+   597→                          fontSize: 11),
+   598→                      maxLines: 1,
+   599→                      overflow: TextOverflow.ellipsis,
+   600→                    ),
+   601→                  ],
+   602→                ),
+   603→              ),
+   604→              const SizedBox(width: 8),
+   605→              Text(
+   606→                '-${Formatters.money(expense.amount)}',
+   607→                style: TextStyles.body(context, weight: FontWeight.w700)
+   608→                    .copyWith(
+   609→                        color: AppColors.danger,
+   610→                        fontFeatures: const [FontFeature.tabularFigures()]),
+   611→              ),
+   612→            ],
+   613→          ),
+   614→        ),
+   615→      ),
+   616→    );
+   617→  }
+   618→}
+   619→
+   620→/// Parallax wrapper — translates child slower than scroll for depth effect.
+   621→/// Uses NotificationListener to track scroll without managing a controller.
+   622→class _ParallaxHero extends StatefulWidget {
+   623→  final Widget child;
+   624→  const _ParallaxHero({required this.child});
+   625→
+   626→  @override
+   627→  State<_ParallaxHero> createState() => _ParallaxHeroState();
+   628→}
+   629→
+   630→class _ParallaxHeroState extends State<_ParallaxHero> {
+   631→  double _offset = 0.0;
+   632→
+   633→  @override
+   634→  Widget build(BuildContext context) {
+   635→    return NotificationListener<ScrollNotification>(
+   636→      onNotification: (notification) {
+   637→        if (notification is ScrollUpdateNotification) {
+   638→          final pixels = notification.metrics.pixels;
+   639→          if (pixels >= 0) {
+   640→            setState(() {
+   641→              // Parallax depth: hero moves up at 25% of scroll speed
+   642→              _offset = (pixels * 0.25).clamp(0.0, 120.0);
+   643→            });
+   644→          }
+   645→        }
+   646→        return false;
+   647→      },
+   648→      child: Transform.translate(
+   649→        offset: Offset(0, -_offset),
+   650→        child: widget.child,
+   651→      ),
+   652→    );
+   653→  }
+   654→}
+   655→
+   656→/// Notifications bell button that wiggles periodically when there are
+   657→/// unread notifications. Red dot badge appears with a scale pop.
+   658→/// Respects reduce-motion (renders static, no wiggle).
+   659→class _BellButton extends StatefulWidget {
+   660→  final int unread;
+   661→  final VoidCallback onTap;
+   662→
+   663→  const _BellButton({required this.unread, required this.onTap});
+   664→
+   665→  @override
+   666→  State<_BellButton> createState() => _BellButtonState();
+   667→}
+   668→
+   669→class _BellButtonState extends State<_BellButton>
+   670→    with SingleTickerProviderStateMixin {
+   671→  late final AnimationController _wiggle;
+   672→
+   673→  @override
+   674→  void initState() {
+   675→    super.initState();
+   676→    _wiggle = AnimationController(
+   677→      vsync: this,
+   678→      duration: const Duration(milliseconds: 600),
+   679→    );
+   680→    // Schedule the first wiggle after 800ms, then repeat every 4 seconds.
+   681→    // Only wiggles when there are unread notifications (checked in _scheduleNext).
+   682→    _scheduleNext(const Duration(milliseconds: 800));
+   683→  }
+   684→
+   685→  void _scheduleNext(Duration delay) {
+   686→    Future.delayed(delay, () {
+   687→      if (!mounted) return;
+   688→      if (widget.unread > 0 && !AppMotion.reduceMotion(context)) {
+   689→        _wiggle.forward(from: 0);
+   690→      }
+   691→      _scheduleNext(const Duration(seconds: 4));
+   692→    });
+   693→  }
+   694→
+   695→  @override
+   696→  void dispose() {
+   697→    _wiggle.dispose();
+   698→    super.dispose();
+   699→  }
+   700→
+   701→  @override
+   702→  Widget build(BuildContext context) {
+   703→    return Semantics(
+   704→      label: 'Notifications${widget.unread > 0 ? ', ${widget.unread} unread' : ''}',
+   705→      button: true,
+   706→      child: GestureDetector(
+   707→        onTap: () {
+   708→          HapticFeedback.selectionClick();
+   709→          widget.onTap();
+   710→        },
+   711→        child: Container(
+   712→          width: 44,
+   713→          height: 44,
+   714→          decoration: BoxDecoration(
+   715→            color: AppColorsOf.card(context),
+   716→            shape: BoxShape.circle,
+   717→            border: Border.all(color: AppColorsOf.border(context)),
+   718→          ),
+   719→          child: Stack(
+   720→            alignment: Alignment.center,
+   721→            children: [
+   722→              // ── Bell icon (rotates back and forth when wiggle fires) ──
+   723→              AnimatedBuilder(
+   724→                animation: _wiggle,
+   725→                builder: (context, child) {
+   726→                  // 3 oscillations, ±15°, damped sin wave
+   727→                  final t = _wiggle.value;
+   728→                  final angle = (t * 6 * 3.14159) * (1 - t) * 0.26;
+   729→                  return Transform.rotate(angle: angle, child: child);
+   730→                },
+   731→                child: Icon(Icons.notifications_none_rounded,
+   732→                    color: AppColorsOf.mainText(context), size: 20),
+   733→              ),
+   734→              // ── Unread badge (scales in when unread > 0) ──
+   735→              if (widget.unread > 0)
+   736→                Positioned(
+   737→                  top: 8,
+   738→                  right: 9,
+   739→                  child: TweenAnimationBuilder<double>(
+   740→                    tween: Tween(begin: 0.0, end: 1.0),
+   741→                    duration: AppMotion.base,
+   742→                    curve: AppMotion.celebrate,
+   743→                    builder: (context, v, child) {
+   744→                      return Transform.scale(scale: v, child: child);
+   745→                    },
+   746→                    child: Container(
+   747→                      width: 8,
+   748→                      height: 8,
+   749→                      decoration: const BoxDecoration(
+   750→                        color: AppColors.danger,
+   751→                        shape: BoxShape.circle,
+   752→                      ),
+   753→                    ),
+   754→                  ),
+   755→                ),
+   756→            ],
+   757→          ),
+   758→        ),
+   759→      ),
+   760→    );
+   761→  }
+   762→}
+   763→

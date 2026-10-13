@@ -73,16 +73,16 @@ class FloatingNavBar extends StatelessWidget {
                       SizedBox(width: AppConstants.fabSize + 8),
                       Expanded(
                         child: _NavSlot(
-                          label: 'Goals',
-                          icon: Icons.savings_rounded,
+                          label: 'Analytics',
+                          icon: Icons.insights_rounded,
                           selected: currentIndex == 2,
                           onTap: () => onTabSelected(2),
                         ),
                       ),
                       Expanded(
                         child: _NavSlot(
-                          label: 'Profile',
-                          icon: Icons.person_rounded,
+                          label: 'More',
+                          icon: Icons.more_horiz_rounded,
                           selected: currentIndex == 3,
                           onTap: () => onTabSelected(3),
                         ),

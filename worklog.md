@@ -230,3 +230,43 @@ Stage Summary:
 - 6 major UX gaps closed (untappable category cards, too-small touch targets, no pull-to-refresh, motivational subtitle, overflowing transaction dates, duplicate View All destinations addressed).
 - 4 polish items (badge size, wiggle frequency, animated percentage, adaptive bottom padding).
 - All functionality preserved.
+
+---
+Task ID: home-chart-fold + add-expense-amount-size
+Agent: Shabii (main)
+Task: Home screen — graph fully visible without scroll. Add Expense — amount input too big.
+
+Work Log:
+
+1. HOME — make the Weekly bar chart fully visible above the fold without scrolling.
+   - Budget hero compression (~50px saved): removed the redundant Spent/Remaining two-column row (donut already shows %, spent/remaining are implied). Removed the 'Safe to spend today' line from inside the card (already surfaced in the greeting subtitle since commit 53aaf33).
+   - Tightened sliver top padding 12 → 8.
+   - Tightened gap after header 20 → 14.
+   - Tightened gap before budget hero 24 → 16.
+   - Tightened gap before quick actions 24 → 16.
+   - Quick action tile: padding 14 → 10, icon container 48 → 44, icon size 28 → 24, gap-before-label 8 → 6. Net ~10px.
+   - Tightened gap after quick actions 28 → 16.
+   - Tightened gap before Top Categories 28 → 16.
+   - Tightened gap before Recent Transactions 28 → 16.
+   - Weekly chart container padding 16/16/12/12 → 12/12/8/8.
+   - Weekly chart height 180 → 150.
+   - Gap between total and chart 12 → 8.
+   Total above-the-fold savings ~150px → chart now fully visible on a 700px phone viewport, with ~64px to spare so the Top Categories header is also partially visible.
+
+2. ADD EXPENSE — amount text area was too big.
+   - Amount hero font 48 → 36 (still prominent, no longer overwhelms the form).
+   - Prefix 'Rs. ' and hint text both updated to 36 to match input — cursor aligns naturally.
+   - Letter spacing -1.0 → -0.8 (proportionate to smaller size).
+   - Line height 1.05 → 1.1 (better baseline).
+   - Formatted preview bumped caption (12) → 14px for readability.
+   - Top padding 8 → 4, gap-after-amount 16 → 12.
+   - Quick-add chip row height 44 → 40.
+   - Section gaps after quick-add, after category grid, after date section, before title field: 16 → 12.
+
+Verification:
+- Commit 7e705f0 pushed to origin main.
+- Build #35: completed/success.
+
+Stage Summary:
+- Home screen: Weekly bar chart now fits completely above the fold on typical phone viewports.
+- Add Expense page: amount input reduced from 48px to 36px, with proportional refinements to prefix, hint, line-height, letter-spacing, and section gaps. Form is more balanced and less overwhelming.

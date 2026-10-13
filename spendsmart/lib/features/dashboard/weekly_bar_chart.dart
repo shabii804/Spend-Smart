@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/animated_money.dart';
+import '../analytics/analytics_screen.dart';
 
 /// Vertical bar chart for weekly spending on the home dashboard.
 /// Bars grow from 0 to their final height on first render (animated entrance).
@@ -71,10 +72,12 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
             children: [
               Text('Weekly Spending', style: TextStyles.h3(context)),
               TextButton(
-                onPressed: () {},
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
+                ),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primaryIndigo,
-                  minimumSize: const Size(0, 0),
+                  minimumSize: const Size(44, 44),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

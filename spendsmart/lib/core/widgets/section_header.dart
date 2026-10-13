@@ -26,8 +26,11 @@ class SectionHeader extends StatelessWidget {
             onPressed: onAction,
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primaryIndigo,
+              // Minimum 44×44 touch target (Apple HIG + Material spec) while
+              // keeping the visual text small. shrinkWrap prevents Material
+              // from inflating the visual size to 44px.
+              minimumSize: const Size(44, 44),
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              minimumSize: const Size(0, 0),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(

@@ -36,13 +36,6 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   late int _index;
 
-  late final List<Widget> _screens = const [
-    HomeScreen(),
-    TransactionsScreen(),
-    SavingsGoalsScreen(),
-    ProfileScreen(),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -61,6 +54,30 @@ class _MainShellState extends State<MainShell> {
   }
 
   String? _pendingRoute;
+
+  /// Switch to a tab programmatically — used by the Home's profile avatar
+  /// to switch to the Profile tab (index 3) instead of pushing a new route.
+  void _switchTab(int i) {
+    HapticFeedback.selectionClick();
+    setState(() => _index = i);
+  }
+
+  /// Build the screen for the current tab. Built dynamically so we can pass
+  /// callbacks (e.g. HomeScreen's onAvatarTap that switches to Profile tab).
+  Widget _buildScreen(int index) {
+    switch (index) {
+      case 0:
+        return HomeScreen(onAvatarTap: () => _switchTab(3));
+      case 1:
+        return const TransactionsScreen();
+      case 2:
+        return const SavingsGoalsScreen();
+      case 3:
+        return const ProfileScreen();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -138,40 +155,61 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     // Touch user provider so greeting updates after profile edit
     context.watch<UserProvider>();
-    return Scaffold(
-      backgroundColor: AppColorsOf.background(context),
-      extendBody: true,
-      // Smooth fade+slide between tabs (instead of IndexedStack which
-      // doesn't animate). Each tab swap crossfades over 280ms with a
-      // subtle slide-up.
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 320),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        transitionBuilder: (child, anim) {
-          return FadeTransition(
-            opacity: anim,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.04),
-                end: Offset.zero,
-              ).animate(anim),
-              child: child,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Adapt system status bar to the app theme. Fixes the "dark icons on
+      // dark background" bug on Home / Transactions / Goals / Profile tabs
+      // (the same fix we applied to auth screens in commit 8b716ae).
+      value: isDark
+          ? const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light, // Android
+              statusBarBrightness: Brightness.dark, // iOS — light icons
+              systemNavigationBarColor: Color(0xFF0B0F1A),
+              systemNavigationBarIconBrightness: Brightness.light,
+            )
+          : const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark, // Android
+              statusBarBrightness: Brightness.light, // iOS — dark icons
+              systemNavigationBarColor: Colors.white,
+              systemNavigationBarIconBrightness: Brightness.dark,
             ),
-          );
-        },
-        child: KeyedSubtree(
-          key: ValueKey(_index),
-          child: _screens[_index],
+      child: Scaffold(
+        backgroundColor: AppColorsOf.background(context),
+        extendBody: true,
+        // Smooth fade+slide between tabs (instead of IndexedStack which
+        // doesn't animate). Each tab swap crossfades over 280ms with a
+        // subtle slide-up.
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 320),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, anim) {
+            return FadeTransition(
+              opacity: anim,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.04),
+                  end: Offset.zero,
+                ).animate(anim),
+                child: child,
+              ),
+            );
+          },
+          child: KeyedSubtree(
+            key: ValueKey(_index),
+            child: _buildScreen(_index),
+          ),
         ),
-      ),
-      bottomNavigationBar: FloatingNavBar(
-        currentIndex: _index,
-        onTabSelected: (i) {
-          HapticFeedback.selectionClick();
-          setState(() => _index = i);
-        },
-        onFabPressed: _openAddExpense,
+        bottomNavigationBar: FloatingNavBar(
+          currentIndex: _index,
+          onTabSelected: (i) {
+            HapticFeedback.selectionClick();
+            setState(() => _index = i);
+          },
+          onFabPressed: _openAddExpense,
+        ),
       ),
     );
   }

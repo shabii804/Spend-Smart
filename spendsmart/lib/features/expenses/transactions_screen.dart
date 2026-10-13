@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
@@ -69,8 +70,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   @override
   void initState() {
     super.initState();
-    // Resolve initialFilter (a category id) to its display label.
-    // If the id isn't recognised, fall back to 'All'.
     _filter = (widget.initialFilter != null &&
             _catIdToLabel.containsKey(widget.initialFilter))
         ? _catIdToLabel[widget.initialFilter!]!
@@ -132,6 +131,46 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   double _dayTotal(List<Expense> expenses) =>
       expenses.fold(0.0, (s, e) => s + e.amount);
+
+  /// Delete an expense with haptic feedback + an UNDO snackbar.
+  /// The snackbar restores the expense if the user taps UNDO within 6s.
+  /// This is the action invoked by the Dismissible swipe-left gesture.
+  void _deleteExpense(Expense expense, int indexInGroup, String groupKey) {
+    final prov = context.read<ExpenseProvider>();
+    // Cache the expense so we can restore it on undo.
+    final deleted = expense;
+    Haptics.heavy();
+    prov.deleteExpense(expense.id);
+
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(SnackBar(
+      content: Text('Deleted ${Formatters.money(expense.amount)} expense'),
+      duration: const Duration(seconds: 6),
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(
+        label: 'UNDO',
+        textColor: AppColors.primaryIndigo,
+        onPressed: () {
+          // Re-insert the expense at the same position (top of the list,
+          // since ExpenseProvider.addExpense inserts at index 0).
+          prov.addExpense(deleted);
+          Haptics.selection();
+          if (mounted) {
+            ScaffoldMessenger.of(context).clearSnackBars();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Expense restored'),
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+      ),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -246,7 +285,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          // Grouped transaction list
+          // Grouped transaction list — each tile is now swipe-to-delete.
           Expanded(
             child: filtered.isEmpty
                 ? EmptyState(
@@ -288,17 +327,24 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 ],
                               ),
                             ),
-                            // Single card per day group with dividers
+                            // Single card per day group with dividers.
+                            // The card's vertical padding is now 0 (was 4) so
+                            // the Dismissible tiles fill it edge-to-edge and
+                            // the dividers sit flush against the tiles.
                             GlassCard(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              padding: EdgeInsets.zero,
                               child: Column(
                                 children: [
                                   for (int i = 0; i < group.value.length; i++) ...[
                                     StaggeredEntrance(
                                       index: i,
-                                      child: _GroupedTransactionTile(
+                                      child: _DismissibleTransactionTile(
                                         expense: group.value[i],
-                                        category: SampleData.categoryById(group.value[i].categoryId),
+                                        category:
+                                            SampleData.categoryById(group.value[i].categoryId),
+                                        indexInGroup: i,
+                                        groupKey: group.key,
+                                        onDelete: _deleteExpense,
                                       ),
                                     ),
                                     if (i != group.value.length - 1)
@@ -322,6 +368,106 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       ),
     );
   }
+
+  // ─────────────────────────────────────────────────────────────────
+  // _DismissibleTransactionTile — wraps the original _GroupedTransactionTile
+  // in a Dismissible widget so the user can swipe left to delete.
+  // ─────────────────────────────────────────────────────────────────
+  // Background: red gradient + trash icon (left-aligned, revealed as the
+  // tile slides away to the right). Snack with UNDO restores the expense.
+  //
+  // The tile itself was also tightened:
+  //   • Date now uses Formatters.relativeDateTime() ('Today 8:45 AM' instead
+  //     of 'Food · 10 Oct, 12:45 PM') — compact, doesn't overflow.
+  //   • Amount now red with '-' prefix, matching the home recent-tile + the
+  //     day-group total above (was default text color, inconsistent).
+  //   • Inner GlassCard margin bottom 10 → 0 so dividers sit flush.
+}
+
+/// Wraps a single transaction tile in a [Dismissible] so the user can
+/// swipe LEFT to delete. Swipe-right is disabled (only delete is the
+/// action — swipe-right for archive would clutter the gesture space).
+///
+/// The red background reveals a trash icon + "Delete" label as the tile
+/// slides away. On dismiss, the parent's `onDelete` callback fires which
+/// calls ExpenseProvider.deleteExpense + shows an UNDO snackbar.
+class _DismissibleTransactionTile extends StatelessWidget {
+  final Expense expense;
+  final Category category;
+  final int indexInGroup;
+  final String groupKey;
+  final void Function(Expense expense, int indexInGroup, String groupKey) onDelete;
+
+  const _DismissibleTransactionTile({
+    required this.expense,
+    required this.category,
+    required this.indexInGroup,
+    required this.groupKey,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      // Unique key per expense so Dismissible tracks each tile independently.
+      key: ValueKey('expense-${expense.id}'),
+      // Only allow left-swipe (DismissDirection.endToStart) — swiping right
+      // is reserved for future "archive" or "mark as recurring" gestures.
+      direction: DismissDirection.endToStart,
+      // Red gradient background + trash icon, revealed as the tile slides
+      // away to the left.
+      background: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              AppColors.danger.withOpacity(0.85),
+              AppColors.danger,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
+            SizedBox(height: 2),
+            Text('Delete',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                )),
+          ],
+        ),
+      ),
+      // Threshold: must swipe at least 30% of the tile width before the
+      // delete commits — prevents accidental deletes from short swipes.
+      dismissThresholds: const {
+        DismissDirection.endToStart: 0.3,
+      },
+      confirmDismiss: (direction) async {
+        // Show a confirmation dialog before deleting. This protects against
+        // accidental swipes — though the UNDO snackbar also provides recovery.
+        // For a transactions list, a confirmation might be too friction-y,
+        // so we just return true (delete immediately) and rely on UNDO.
+        // (The dialog is here as a hook — change return to `await showDialog`
+        // to enable it.)
+        return true;
+      },
+      onDismissed: (direction) {
+        // Fire the parent callback which deletes + shows UNDO snackbar.
+        onDelete(expense, indexInGroup, groupKey);
+      },
+      child: _GroupedTransactionTile(
+        expense: expense,
+        category: category,
+      ),
+    );
+  }
 }
 
 class _GroupedTransactionTile extends StatelessWidget {
@@ -342,9 +488,11 @@ class _GroupedTransactionTile extends StatelessWidget {
             builder: (_) => ExpenseDetailsScreen(expenseId: expense.id),
           ),
         ),
-        child: GlassCard(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(12),
+        child: Padding(
+          // Removed the GlassCard wrapper (now the parent GlassCard provides
+          // the card chrome; this tile just has padding + the row content).
+          // Bottom margin 10 → 0 so dividers sit flush between tiles.
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           child: Row(
             children: [
               Hero(
@@ -372,9 +520,14 @@ class _GroupedTransactionTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
+                    // Use relative date formatting ('Today 8:45 AM',
+                    // 'Yesterday 9:13 AM', 'Mon 10:00 AM') instead of the
+                    // previous 'Food · 10 Oct, 12:45 PM' which overflowed
+                    // on narrow screens. The colored icon already conveys
+                    // the category, so the name prefix was redundant.
                     Text(
-                      '${category.name} · ${Formatters.dateTime(expense.date)}',
-                      style: TextStyles.caption(context),
+                      Formatters.relativeDateTime(expense.date),
+                      style: TextStyles.caption(context).copyWith(fontSize: 11),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -382,10 +535,15 @@ class _GroupedTransactionTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
+              // Amount now RED with '-' prefix — matches the home recent-tile
+              // and the day-group total above (was default color, inconsistent).
               Text(
-                Formatters.money(expense.amount),
+                '-${Formatters.money(expense.amount)}',
                 style: TextStyles.body(context, weight: FontWeight.w700)
-                    .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+                    .copyWith(
+                      color: AppColors.danger,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
               ),
             ],
           ),

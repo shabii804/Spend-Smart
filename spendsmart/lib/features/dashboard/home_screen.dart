@@ -92,11 +92,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   _appHeader(context, notif.unreadCount),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   _greetingRow(context, greeting, user.fullName, spent, safeToSpend),
                 ]),
               ),
@@ -107,22 +107,22 @@ class _HomeScreenState extends State<HomeScreen> {
             // the offset stayed at 0 forever).
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: _budgetHero(context, spent, remaining, percent, limit),
               ),
             ),
             SliverPadding(
               // Bottom padding adapts to the device's home-indicator inset +
               // 100px so the last item clears the floating bottom nav.
-              padding: EdgeInsets.fromLTRB(20, 24, 20, MediaQuery.paddingOf(context).bottom + 100),
+              padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.paddingOf(context).bottom + 100),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   _quickActions(context),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 16),
                   ChartEntrance(
                     child: WeeklyBarChart(data: weekly),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 16),
                   SectionHeader(
                     title: 'Top Categories',
                     actionLabel: 'See All',
@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   _topCategoriesScroll(context, top),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 16),
                   SectionHeader(
                     title: AppStrings.recentTransactions,
                     actionLabel: AppStrings.viewAll,
@@ -260,6 +260,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ────────────────────────────────────────────────────────────────
   // Budget hero — gradient card with CIRCULAR donut progress
+  // Compact: removed the redundant "Spent / Remaining" two-column row
+  // (the donut already shows %; spent/remaining are implied by budget +
+  // percent) and the "Safe to spend today" line (now surfaced in the
+  // greeting subtitle). Saves ~50px so the Weekly bar chart fits above
+  // the fold on a typical phone viewport.
   // ────────────────────────────────────────────────────────────────
   Widget _budgetHero(
       BuildContext context, double spent, double remaining, double percent, double limit) {
@@ -267,7 +272,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final now = DateTime.now();
     final endOfMonth = DateTime(now.year, now.month + 1, 0);
     final daysLeft = (endOfMonth.day - now.day).clamp(0, 31);
-    final safeToSpend = daysLeft > 0 ? (remaining / daysLeft).clamp(0.0, double.infinity) : remaining;
     // Ring color: cyan → amber at 80% → red above 100%
     final ringColor = percent >= 1.0 ? AppColors.danger : percent >= 0.8 ? AppColors.warning : AppColors.cyan;
     return Container(
@@ -292,56 +296,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(AppStrings.monthlyBudget,
                     style: TextStyles.label(context).copyWith(
                         color: Colors.white.withOpacity(0.85))),
-                const SizedBox(height: 8),
-                // 40px display amount
+                const SizedBox(height: 6),
+                // Display amount
                 AnimatedMoney(
                   amount: limit,
                   style: TextStyles.moneyHero(context, color: Colors.white),
                 ),
-                const SizedBox(height: 12),
-                // Safe to spend today
-                Text('Safe to spend today: ${Formatters.money(safeToSpend)}',
-                    style: TextStyles.caption(context, weight: FontWeight.w600)
-                        .copyWith(color: Colors.white.withOpacity(0.9))),
-                const SizedBox(height: 4),
-                // Rs. X left, N days to go
+                const SizedBox(height: 8),
+                // Rs. X left, N days to go — single compact line
                 Text('${Formatters.money(remaining.abs())} left · $daysLeft days to go',
-                    style: TextStyles.caption(context)
-                        .copyWith(color: Colors.white.withOpacity(0.7))),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(AppStrings.spentThisMonth,
-                            style: TextStyles.label(context).copyWith(
-                                color: Colors.white.withOpacity(0.7))),
-                        const SizedBox(height: 2),
-                        AnimatedMoney(
-                          amount: spent,
-                          style: TextStyles.money(context,
-                              size: 16, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 24),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(AppStrings.remaining,
-                            style: TextStyles.label(context).copyWith(
-                                color: Colors.white.withOpacity(0.7))),
-                        const SizedBox(height: 2),
-                        AnimatedMoney(
-                          amount: remaining.abs(),
-                          style: TextStyles.money(context,
-                              size: 16, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                    style: TextStyles.caption(context, weight: FontWeight.w600)
+                        .copyWith(color: Colors.white.withOpacity(0.85))),
               ],
             ),
           ),
@@ -426,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
               decoration: BoxDecoration(
                 color: AppColorsOf.card(context),
                 border: Border.all(color: AppColorsOf.border(context)),
@@ -445,8 +410,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -459,9 +424,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
-                    child: Icon(t.$2, color: t.$3, size: 28),
+                    child: Icon(t.$2, color: t.$3, size: 24),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     t.$1,
                     style: TextStyles.caption(context, weight: FontWeight.w700)

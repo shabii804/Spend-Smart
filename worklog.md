@@ -187,3 +187,46 @@ Stage Summary:
 - Typed text is now visible in all auth fields (dark text on dark surface via AppTheme.dark()).
 - All three auth screens anchor content to the top of the SafeArea — no more empty space on top or "starts from middle".
 - Register now has a Confirm Password field with matching validator; Create Account button stays disabled until password + confirm match.
+
+---
+Task ID: home-ui-ux-deep-fix
+Agent: Shabii (main)
+Task: Deep UI/UX fixes on Home page — bugs + tappable elements + status bar + actionable data
+
+Work Log:
+- Confirmed bugs and UX issues from previous analysis, then implemented fixes in 6 files.
+
+CRITICAL bug fixes:
+1. weekly_bar_chart.dart line 74: `onPressed: () {}` (empty) → navigate to AnalyticsScreen. Also fixed touch target from Size(0,0) to Size(44,44).
+2. home_screen.dart _appHeader: profile avatar was plain Container with no GestureDetector → wrapped in GestureDetector with behavior: HitTestBehavior.opaque, calls widget.onAvatarTap (passed from MainShell).
+3. home_screen.dart: removed _ParallaxHero class entirely — NotificationListener inside a sliver doesn't catch the parent CustomScrollView's scroll notifications (notifications bubble UP from Scrollable, not down to descendants), so _offset stayed at 0 forever. The wrapper was dead code.
+4. main_shell.dart: wrapped Scaffold in AnnotatedRegion<SystemUiOverlayStyle> that adapts to Theme.brightness — dark mode gets light icons + dark navbar; light mode gets dark icons + light navbar. Same fix we applied to auth screens in commit 8b716ae.
+
+MAJOR UX improvements:
+5. transactions_screen.dart: added `String? initialFilter` parameter + _catIdToLabel reverse map; initState() resolves the category id to its display label and pre-sets `_filter`.
+6. home_screen.dart _topCategoriesScroll: each card now wrapped in GestureDetector that pushes TransactionsScreen(initialFilter: c.id).
+7. section_header.dart: TextButton styleFrom `minimumSize: Size(0,0)` → `Size(44,44)` (Apple HIG + Material minimum touch target). Visual text stays small via shrinkWrap.
+8. home_screen.dart: wrapped CustomScrollView in RefreshIndicator — pull-to-refresh now works (was missing entirely).
+9. home_screen.dart _greetingRow: replaced 'Small steps make big progress' with 'Rs. X safe to spend today' — actionable data instead of motivational fluff. Computed safeToSpend in build() so both greeting and budget hero share the value.
+10. formatters.dart: added `relativeDateTime(d, {now})` helper returning 'Today 8:45 AM' / 'Yesterday 9:13 AM' / 'Mon 10:00 AM' / '10 Oct 11:30 AM'.
+11. home_screen.dart _TransactionTile: switched from `'${category.name} · ${Formatters.dateTime(expense.date)}'` to `Formatters.relativeDateTime(expense.date)` — compact, doesn't overflow on narrow screens, drops the redundant category-name prefix (colored icon already conveys category).
+
+MODERATE polish:
+12. home_screen.dart _BellButton: unread badge 8×8 → 16×16 with 2px white ring matching container bg; repositioned top:4/right:4.
+13. home_screen.dart _BellButton: removed _scheduleNext(4-second infinite loop). Now wiggles once on mount (if unread > 0) and re-wiggles only when unread count INCREASES — implemented via didUpdateWidget tracking _lastUnread.
+14. home_screen.dart _budgetHero: replaced static `Text('$pctInt%')` with TweenAnimationBuilder<double> rolling 0 → final percent in sync with CircularProgressIndicator ring (900ms easeOutCubic).
+15. home_screen.dart: magic number `120` bottom padding → `MediaQuery.paddingOf(context).bottom + 100` (adapts to home-indicator inset).
+
+MainShell refactor:
+- Replaced `late final List<Widget> _screens = const [...]` (which couldn't accept callbacks) with dynamic `_buildScreen(int index)` switch statement. HomeScreen now receives `onAvatarTap: () => _switchTab(3)` where `_switchTab` is a new method that calls setState.
+
+Verification:
+- Commit 53aaf33 pushed to origin main.
+- Build #34: completed/success.
+- Live at https://shabii804.github.io/Spend-Smart/ (login with muhammad@gmail.com / demo1234 → tap avatar to switch to Profile; tap a Top Category card → TransactionsScreen filtered by that category; pull down on home → refresh spinner).
+
+Stage Summary:
+- 4 critical bugs fixed (View All empty, untappable avatar, dead parallax, missing system UI overlay).
+- 6 major UX gaps closed (untappable category cards, too-small touch targets, no pull-to-refresh, motivational subtitle, overflowing transaction dates, duplicate View All destinations addressed).
+- 4 polish items (badge size, wiggle frequency, animated percentage, adaptive bottom padding).
+- All functionality preserved.

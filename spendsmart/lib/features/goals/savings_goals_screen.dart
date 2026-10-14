@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
@@ -7,11 +6,12 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/confetti_burst.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/premium_motion.dart';
-import '../../core/widgets/progress_bar.dart';
+import '../../core/widgets/staggered_entrance.dart';
 import '../../models/goal.dart';
 import '../../providers/goal_provider.dart';
 import 'create_goal_screen.dart';
@@ -121,79 +121,87 @@ class SavingsGoalsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final goals = context.watch<GoalProvider>().goals;
-    return SafeArea(
-      bottom: false,
-      child: Column(
-        children: [
+    // Show back button only when this screen is pushed as a route (not when
+    // it's accessed some other way). ModalRoute.of(context)?.canPop is true
+    // only for pushed routes.
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Savings Goals'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (canPop) {
+              Navigator.of(context).maybePop();
+            }
+          },
+        ),
+        actions: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Savings Goals', style: TextStyles.h1(context)),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const CreateGoalScreen()),
-                  ),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      gradient: AppGradients.primaryButton,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryIndigo.withOpacity(0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CreateGoalScreen()),
+              ),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: AppGradients.primaryButton,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryIndigo.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
                     ),
-                    child: const Icon(Icons.add_rounded, color: Colors.white),
-                  ),
+                  ],
                 ),
-              ],
+                child: const Icon(Icons.add_rounded, color: Colors.white),
+              ),
             ),
           ),
-
-          // ═══ OVERVIEW HERO CARD WITH DONUT CHART ═══
-          // Premium visualization at the top: donut chart showing overall
-          // saved vs remaining across all goals + breakdown legend listing
-          // each goal's share. Replaces the plain summary strip.
-          if (goals.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            _GoalsOverviewCard(goals: goals),
-          ],
-
-          const SizedBox(height: 8),
-          Expanded(
-            child: goals.isEmpty
-                ? EmptyState(
-                    icon: Icons.savings_outlined,
-                    title: AppStrings.noGoals,
-                    subtitle: AppStrings.noGoalsSubtitle,
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
-                    itemCount: goals.length,
-                    itemBuilder: (_, i) {
-                      final g = goals[i];
-                      return _DismissibleGoalCard(
-                        goal: g,
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => GoalDetailsScreen(goalId: g.id),
-                          ),
-                        ),
-                        onAdd: () {
-                          _showAddMoneySheet(context, g.id, g.name);
-                        },
-                      );
-                    },
-                  ),
-          ),
         ],
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // ═══ OVERVIEW HERO CARD WITH DONUT CHART ═══
+            if (goals.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _GoalsOverviewCard(goals: goals),
+            ],
+            const SizedBox(height: 8),
+            Expanded(
+              child: goals.isEmpty
+                  ? EmptyState(
+                      icon: Icons.savings_outlined,
+                      title: AppStrings.noGoals,
+                      subtitle: AppStrings.noGoalsSubtitle,
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                      itemCount: goals.length,
+                      itemBuilder: (_, i) {
+                        final g = goals[i];
+                        return _ExpandableGoalCard(
+                          goal: g,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => GoalDetailsScreen(goalId: g.id),
+                            ),
+                          ),
+                          onAdd: () {
+                            _showAddMoneySheet(context, g.id, g.name);
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -270,101 +278,61 @@ class _GoalsOverviewCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Donut chart with animated percent text in center
+                // Donut chart — reduced from 110→80px to save vertical space.
+                // Uses CircularProgressIndicator (always renders full circle — no gaps).
                 SizedBox(
-                  width: 110,
-                  height: 110,
+                  width: 80,
+                  height: 80,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       SizedBox(
-                        width: 110,
-                        height: 110,
-                        child: PieChart(
-                          duration: const Duration(milliseconds: 1100),
-                          curve: Curves.easeOutCubic,
-                          PieChartData(
-                            sectionsSpace: 2,
-                            centerSpaceRadius: 38,
-                            // Two sections: filled (mint→blue gradient
-                            // approximation via solid mint) + remaining
-                            // (subtle white/translucent).
-                            sections: [
-                              PieChartSectionData(
-                                color: AppColors.mint,
-                                value: overallPct == 0
-                                    ? 0.0001
-                                    : overallPct,
-                                title: '',
-                                radius: 26,
-                                borderSide: BorderSide(
-                                  color: AppColorsOf.card(context),
-                                  width: 1.5,
-                                ),
-                              ),
-                              PieChartSectionData(
-                                color: AppColorsOf.tertiaryText(context)
-                                    .withOpacity(0.18),
-                                value: overallPct == 0
-                                    ? 0.9999
-                                    : (1.0 - overallPct),
-                                title: '',
-                                radius: 26,
-                                borderSide: BorderSide(
-                                  color: AppColorsOf.card(context),
-                                  width: 1.5,
-                                ),
-                              ),
-                            ],
-                          ),
+                        width: 80,
+                        height: 80,
+                        child: CircularProgressIndicator(
+                          value: overallPct.clamp(0.0, 1.0),
+                          strokeWidth: 8,
+                          backgroundColor:
+                              AppColorsOf.tertiaryText(context).withOpacity(0.18),
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mint),
                         ),
                       ),
-                      // Center text animates 0 → final % in sync with the
-                      // ring sweep (900ms easeOutCubic, same easing as the
-                      // chart's own animation).
                       TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0.0, end: overallPct),
-                        duration: const Duration(milliseconds: 900),
+                        duration: const Duration(milliseconds: 1000),
                         curve: Curves.easeOutCubic,
                         builder: (context, v, _) {
                           final pct = (v * 100).clamp(0, 100).toInt();
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('$pct%',
-                                  style: TextStyles.money(context,
-                                      size: 22, color: AppColors.mint)),
-                              Text('saved',
-                                  style: TextStyles.caption(context)
-                                      .copyWith(fontSize: 9, color: AppColorsOf.tertiaryText(context))),
-                            ],
-                          );
+                          return Text('$pct%',
+                              style: TextStyle(
+                                fontFamily: 'PlusJakartaSans',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.mint,
+                                fontFeatures: const [FontFeature.tabularFigures()],
+                              ));
                         },
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                // ── Right column: total saved / target / remaining ──
+                const SizedBox(width: 14),
+                // ── Right column: total saved / remaining (simplified) ──
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Total saved',
-                          style: TextStyles.caption(context)
-                              .copyWith(color: AppColorsOf.tertiaryText(context))),
-                      const SizedBox(height: 2),
                       Text(Formatters.money(totalSaved),
                           style: TextStyles.money(context, size: 18, color: AppColors.mint)
                               .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
-                      const SizedBox(height: 6),
-                      Text('of ${Formatters.money(totalTarget)} target',
+                      const SizedBox(height: 2),
+                      Text('of ${Formatters.money(totalTarget)}',
                           style: TextStyles.caption(context)
                               .copyWith(color: AppColorsOf.secondaryText(context))),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text('${Formatters.money(remaining)} to go',
                           style: TextStyles.caption(context, weight: FontWeight.w700)
-                              .copyWith(color: AppColors.primaryIndigo)),
+                              .copyWith(color: AppColors.primaryIndigo, fontSize: 11)),
                     ],
                   ),
                 ),
@@ -445,120 +413,80 @@ class _GoalsOverviewCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// _DismissibleGoalCard — wraps _GoalCard in a Dismissible so the user
-// can swipe LEFT to delete a goal. Shows a confirmation dialog first
-// since deleting a goal is destructive (saved money is "lost" from
-// the app's tracking perspective). Includes an UNDO snackbar after.
+// _ExpandableGoalCard — TAP TO REVEAL Delete + Edit + Details buttons.
+// Matches the transactions screen's tap-to-expand pattern. Consistent
+// UX across both screens. NO SWIPE needed.
 // ═══════════════════════════════════════════════════════════════════
-class _DismissibleGoalCard extends StatelessWidget {
+class _ExpandableGoalCard extends StatefulWidget {
   final Goal goal;
   final VoidCallback onTap;
   final VoidCallback onAdd;
 
-  const _DismissibleGoalCard({
+  const _ExpandableGoalCard({
     required this.goal,
     required this.onTap,
     required this.onAdd,
   });
 
-  Future<bool> _confirmDelete(BuildContext context) async {
-    // Show a destructive-action confirmation dialog. Deleting a goal
-    // is more serious than deleting an expense — the saved-amount
-    // metadata is lost — so we require explicit confirmation.
-    return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Delete goal?'),
-            content: Text(
-              'Delete "${goal.name}"? You\'ve saved ${Formatters.money(goal.savedAmount)} '
-              'toward this goal. This action can\'t be undone from within the app.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text('Delete',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+  @override
+  State<_ExpandableGoalCard> createState() => _ExpandableGoalCardState();
+}
+
+class _ExpandableGoalCardState extends State<_ExpandableGoalCard> {
+  bool _isExpanded = false;
+
+  void _toggle() {
+    Haptics.selection();
+    setState(() => _isExpanded = !_isExpanded);
   }
 
-  void _showUndo(BuildContext context, GoalProvider provider) {
-    if (!context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
-    messenger.showSnackBar(SnackBar(
-      content: Text('Deleted "${goal.name}"'),
-      duration: const Duration(seconds: 6),
-      behavior: SnackBarBehavior.floating,
-      action: SnackBarAction(
-        label: 'UNDO',
-        textColor: AppColors.primaryIndigo,
-        onPressed: () {
-          // Re-insert the goal at the top of the list (matches addGoal).
-          provider.addGoal(goal);
-          Haptics.selection();
-        },
-      ),
-    ));
+  Future<void> _confirmDelete() async {
+    final ok = await ConfirmDialog.show(
+      context,
+      title: 'Delete goal?',
+      body: 'Delete "${widget.goal.name}"? You\'ve saved ${Formatters.money(widget.goal.savedAmount)} '
+          'toward this goal. This action can\'t be undone from within the app.',
+      confirmLabel: 'Delete',
+      danger: true,
+      icon: Icons.delete_outline_rounded,
+    );
+    if (ok == true && context.mounted) {
+      final provider = context.read<GoalProvider>();
+      Haptics.heavy();
+      provider.deleteGoal(widget.goal.id);
+      if (!context.mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.clearSnackBars();
+      messenger.showSnackBar(SnackBar(
+        content: Text('Deleted "${widget.goal.name}"'),
+        duration: const Duration(seconds: 6),
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'UNDO',
+          textColor: AppColors.primaryIndigo,
+          onPressed: () {
+            provider.addGoal(widget.goal);
+            Haptics.selection();
+          },
+        ),
+      ));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: ValueKey('goal-${goal.id}'),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              AppColors.danger.withOpacity(0.85),
-              AppColors.danger,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 24),
-        child: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.delete_outline_rounded, color: Colors.white, size: 26),
-            SizedBox(height: 4),
-            Text('Delete',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                )),
-          ],
+    return _GoalCard(
+      goal: widget.goal,
+      onTap: _toggle,
+      onAdd: widget.onAdd,
+      isExpanded: _isExpanded,
+      onEdit: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => GoalDetailsScreen(goalId: widget.goal.id),
         ),
       ),
-      dismissThresholds: const {
-        DismissDirection.endToStart: 0.4, // higher threshold than txns — goals are destructive
-      },
-      confirmDismiss: (direction) async => _confirmDelete(context),
-      onDismissed: (direction) {
-        final provider = context.read<GoalProvider>();
-        Haptics.heavy();
-        provider.deleteGoal(goal.id);
-        _showUndo(context, provider);
-      },
-      child: _GoalCard(
-        goal: goal,
-        onTap: onTap,
-        onAdd: onAdd,
-      ),
+      onDelete: _confirmDelete,
+      onDetails: widget.onTap,
     );
   }
 }
@@ -567,9 +495,20 @@ class _GoalCard extends StatelessWidget {
   final Goal goal;
   final VoidCallback onTap;
   final VoidCallback onAdd;
+  final bool isExpanded;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  final VoidCallback? onDetails;
 
-  const _GoalCard(
-      {required this.goal, required this.onTap, required this.onAdd});
+  const _GoalCard({
+    required this.goal,
+    required this.onTap,
+    required this.onAdd,
+    this.isExpanded = false,
+    this.onEdit,
+    this.onDelete,
+    this.onDetails,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -581,17 +520,17 @@ class _GoalCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         onTap: onTap,
         child: GlassCard(
-          margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ─── HEADER (icon + name + % / Achieved badge) ───
+              // ─── HEADER (icon + name + circular ring / Achieved badge) ───
               Row(
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -601,16 +540,28 @@ class _GoalCard extends StatelessWidget {
                           accent.withOpacity(0.10),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     alignment: Alignment.center,
-                    child: Icon(goal.icon, color: accent, size: 22),
+                    child: Icon(goal.icon, color: accent, size: 20),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
-                    child: Text(goal.name,
-                        style: TextStyles.body(context, weight: FontWeight.w700),
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(goal.name,
+                            style: TextStyles.body(context, weight: FontWeight.w700),
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${Formatters.money(goal.savedAmount)} of ${Formatters.money(goal.targetAmount)}',
+                          style: TextStyles.caption(context)
+                              .copyWith(fontSize: 10, color: AppColorsOf.secondaryText(context)),
+                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                   if (goal.isComplete)
                     Container(
@@ -632,141 +583,53 @@ class _GoalCard extends StatelessWidget {
                       ),
                     )
                   else
-                    Text(
-                      '${(pct * 100).round()}%',
-                      style: TextStyles.body(context, weight: FontWeight.w700)
-                          .copyWith(color: accent,
-                              fontFeatures: const [FontFeature.tabularFigures()]),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // ─── STATUS GROUP: saved + target ───
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('You\'ve saved',
-                          style: TextStyles.caption(context)
-                              .copyWith(fontSize: 10)),
-                      const SizedBox(height: 2),
-                      Text(
-                        Formatters.money(goal.savedAmount),
-                        style: TextStyles.money(context, size: 18)
-                            .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    'of ${Formatters.money(goal.targetAmount)}',
-                    style: TextStyles.caption(context)
-                        .copyWith(color: AppColorsOf.secondaryText(context)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // ─── PROGRESS BAR WITH MILESTONE DOTS ───
-              // Milestone dots at 25% / 50% / 75% / 100% positions —
-              // gives the user a visual sense of which milestones they've
-              // passed (and which are still ahead). Dots fill with the
-              // accent color when crossed, otherwise translucent.
-              Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: accent.withOpacity(0.15),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: ProgressBarFraction(
-                      percent: pct,
-                      height: 10,
-                      gradient: LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: goal.isComplete
-                            ? [AppColors.mint, AppColors.blue]
-                            : [accent, AppColors.primaryPurple],
-                      ),
-                    ),
-                  ),
-                  // Milestone dots — positioned at 25%, 50%, 75%.
-                  // The 100% mark is implied by the bar's right edge.
-                  for (final m in [0.25, 0.50, 0.75])
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      right: 0,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          // ProgressBarFraction fills its parent's width,
-                          // so we use constraints.maxWidth to position dots.
-                          final dotX = constraints.maxWidth * m;
-                          final crossed = pct >= m;
-                          return SizedBox(
-                            height: 10,
-                            child: Stack(
-                              children: [
-                                Positioned(
-                                  left: dotX - 5,
-                                  top: 0,
-                                  child: Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(
-                                      color: crossed
-                                          ? Colors.white
-                                          : AppColorsOf.card(context),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: crossed
-                                            ? accent
-                                            : AppColorsOf.tertiaryText(context).withOpacity(0.4),
-                                        width: 1.5,
-                                      ),
-                                      boxShadow: crossed
-                                          ? [
-                                              BoxShadow(
-                                                color: accent.withOpacity(0.4),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ]
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                    // ── CIRCULAR PROGRESS RING per goal ──
+                    // This is the ONLY progress visualization per goal.
+                    // Removed the redundant linear progress bar + milestone dots
+                    // that were below — they showed the same info as the ring.
+                    SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: CircularProgressIndicator(
+                              value: pct.clamp(0.0, 1.0),
+                              strokeWidth: 4,
+                              backgroundColor: accent.withOpacity(0.15),
+                              valueColor: AlwaysStoppedAnimation<Color>(accent),
                             ),
-                          );
-                        },
+                          ),
+                          Text(
+                            '${(pct * 100).round()}%',
+                            style: TextStyle(
+                              fontFamily: 'PlusJakartaSans',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: accent,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],
               ),
-              const SizedBox(height: 16),
-
-              // ─── ACTION GROUP: "Rs. X to go - on track for MMM YYYY" + Add ───
+              const SizedBox(height: 10),
+              // ─── ACTION ROW: remaining + Add button (more prominent) ───
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       goal.isComplete
                           ? 'Goal achieved!'
-                          : '${Formatters.money(goal.remaining)} to go · on track for ${Formatters.date(goal.targetDate)}',
+                          : '${Formatters.money(goal.remaining)} to go',
                       style: TextStyles.caption(context).copyWith(
                           color: goal.isComplete ? AppColors.mint : null,
-                          fontWeight: FontWeight.w500),
+                          fontWeight: FontWeight.w600, fontSize: 11),
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -774,27 +637,117 @@ class _GoalCard extends StatelessWidget {
                     GestureDetector(
                       onTap: onAdd,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                         decoration: BoxDecoration(
-                          color: AppColorsOf.card(context),
-                          border: Border.all(color: AppColorsOf.border(context)),
+                          gradient: AppGradients.primaryButton,
                           borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryIndigo.withOpacity(0.25),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.add_rounded, size: 14),
+                            const Icon(Icons.add_rounded, size: 14, color: Colors.white),
                             const SizedBox(width: 4),
-                            Text('Add',
-                                style: TextStyles.caption(context, weight: FontWeight.w700)),
+                            Text('Add Money',
+                                style: TextStyles.caption(context, weight: FontWeight.w700)
+                                    .copyWith(color: Colors.white, fontSize: 11)),
                           ],
                         ),
                       ),
                     ),
                 ],
               ),
+              // ─── EXPANDED ACTION BUTTONS (tap-to-reveal) ───
+              AnimatedSize(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                child: isExpanded
+                    ? Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          Divider(height: 1, color: AppColorsOf.divider(context)),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _inlineAction(
+                                  icon: Icons.edit_outlined,
+                                  label: 'Edit',
+                                  color: AppColors.primaryIndigo,
+                                  onTap: onEdit,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _inlineAction(
+                                  icon: Icons.visibility_outlined,
+                                  label: 'Details',
+                                  color: AppColors.blue,
+                                  onTap: onDetails,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _inlineAction(
+                                  icon: Icons.delete_outline_rounded,
+                                  label: 'Delete',
+                                  color: AppColors.danger,
+                                  onTap: onDelete,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _inlineAction({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Haptics.selection();
+        onTap?.call();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          border: Border.all(color: color.withOpacity(0.20), width: 1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 14),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'PlusJakartaSans',
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ],
         ),
       ),
     );

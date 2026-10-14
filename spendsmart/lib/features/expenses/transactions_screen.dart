@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/staggered_entrance.dart';
@@ -12,12 +14,10 @@ import '../../data/sample_data.dart';
 import '../../models/category.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
+import 'edit_expense_screen.dart';
 import 'expense_details_screen.dart';
 
 class TransactionsScreen extends StatefulWidget {
-  /// Optional initial category filter (e.g. 'food', 'transport').
-  /// Set when navigating from "Top Categories" on the home screen so the
-  /// user lands directly on the filtered list instead of "All".
   final String? initialFilter;
 
   const TransactionsScreen({super.key, this.initialFilter});
@@ -43,7 +43,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     AppStrings.others,
   ];
 
-  // Reverse map: categoryId → display label (for resolving initialFilter).
   static const _catIdToLabel = {
     'food': AppStrings.food,
     'transport': AppStrings.transport,
@@ -100,7 +99,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     return out;
   }
 
-  /// Group expenses by date for sticky headers.
   List<MapEntry<String, List<Expense>>> _groupByDate(List<Expense> expenses) {
     final groups = <String, List<Expense>>{};
     for (final e in expenses) {
@@ -119,7 +117,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   String _dateLabel(String key) {
     final parts = key.split('-');
-    final date = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+    final date =
+        DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
@@ -132,12 +131,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   double _dayTotal(List<Expense> expenses) =>
       expenses.fold(0.0, (s, e) => s + e.amount);
 
-  /// Delete an expense with haptic feedback + an UNDO snackbar.
-  /// The snackbar restores the expense if the user taps UNDO within 6s.
-  /// This is the action invoked by the Dismissible swipe-left gesture.
-  void _deleteExpense(Expense expense, int indexInGroup, String groupKey) {
+  void _deleteExpense(Expense expense) {
     final prov = context.read<ExpenseProvider>();
-    // Cache the expense so we can restore it on undo.
     final deleted = expense;
     Haptics.heavy();
     prov.deleteExpense(expense.id);
@@ -153,20 +148,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         label: 'UNDO',
         textColor: AppColors.primaryIndigo,
         onPressed: () {
-          // Re-insert the expense at the same position (top of the list,
-          // since ExpenseProvider.addExpense inserts at index 0).
           prov.addExpense(deleted);
           Haptics.selection();
-          if (mounted) {
-            ScaffoldMessenger.of(context).clearSnackBars();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Expense restored'),
-                duration: Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
         },
       ),
     ));
@@ -179,303 +162,312 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     final filtered = _applyFilters(all);
     final grouped = _groupByDate(filtered);
     final monthTotal = expenses.totalSpent;
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
 
-    return SafeArea(
-      bottom: false,
-      child: Column(
-        children: [
-          // Header
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Transactions'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (canPop) {
+              Navigator.of(context).maybePop();
+            }
+          },
+        ),
+        // Trailing: compact item count badge
+        actions: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Transactions', style: TextStyles.h1(context)),
-                Text(
-                  '${filtered.length} ${filtered.length == 1 ? 'item' : 'items'}',
-                  style: TextStyles.caption(context, weight: FontWeight.w600),
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryIndigo.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(999),
                 ),
-              ],
-            ),
-          ),
-          // Month summary strip
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.primaryIndigo.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primaryIndigo.withOpacity(0.12)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.trending_down_rounded,
-                      size: 16, color: AppColors.danger),
-                  const SizedBox(width: 8),
-                  Text('This month: ${Formatters.money(monthTotal)} spent',
-                      style: TextStyles.caption(context, weight: FontWeight.w700)),
-                  const Spacer(),
-                  Text('${grouped.length} ${grouped.length == 1 ? 'day' : 'days'}',
-                      style: TextStyles.caption(context)
-                          .copyWith(color: AppColorsOf.tertiaryText(context))),
-                ],
+                child: Text(
+                  '${filtered.length}',
+                  style: TextStyles.caption(context, weight: FontWeight.w700)
+                      .copyWith(color: AppColors.primaryIndigo),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TextField(
-              controller: _searchCtrl,
-              onChanged: (v) => setState(() => _search = v),
-              style: TextStyles.body(context),
-              decoration: InputDecoration(
-                hintText: 'Search transactions',
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                suffixIcon: _search.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _search = '');
-                        },
-                      )
-                    : null,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          // Filter chips
-          SizedBox(
-            height: 40,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _filters.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (_, i) {
-                final f = _filters[i];
-                final sel = _filter == f;
-                return GestureDetector(
-                  onTap: () => setState(() => _filter = f),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: sel
-                          ? AppColors.primaryIndigo
-                          : AppColorsOf.card(context),
-                      border: Border.all(
-                        color: sel ? AppColors.primaryIndigo : AppColorsOf.border(context),
-                      ),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      f,
-                      style: TextStyles.caption(context, weight: FontWeight.w600)
-                          .copyWith(
-                            color: sel ? Colors.white : AppColorsOf.secondaryText(context),
-                          ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Grouped transaction list — each tile is now swipe-to-delete.
-          Expanded(
-            child: filtered.isEmpty
-                ? EmptyState(
-                    icon: Icons.search_off_rounded,
-                    title: 'No transactions found',
-                    subtitle: 'Try a different search or filter.',
-                  )
-                : RefreshIndicator(
-                    color: AppColors.primaryIndigo,
-                    backgroundColor: AppColorsOf.card(context),
-                    onRefresh: () async {
-                      await Future.delayed(const Duration(milliseconds: 600));
-                      setState(() {});
-                    },
-                    child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
-                      itemCount: grouped.length,
-                      itemBuilder: (_, gi) {
-                        final group = grouped[gi];
-                        final label = _dateLabel(group.key);
-                        final total = _dayTotal(group.value);
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Date header + daily total
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12, bottom: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(label,
-                                      style: TextStyles.caption(context, weight: FontWeight.w700)
-                                          .copyWith(color: AppColorsOf.secondaryText(context))),
-                                  Text('-${Formatters.money(total)}',
-                                      style: TextStyles.caption(context, weight: FontWeight.w700)
-                                          .copyWith(
-                                            color: AppColors.danger,
-                                            fontFeatures: const [FontFeature.tabularFigures()])),
-                                ],
-                              ),
-                            ),
-                            // Single card per day group with dividers.
-                            // The card's vertical padding is now 0 (was 4) so
-                            // the Dismissible tiles fill it edge-to-edge and
-                            // the dividers sit flush against the tiles.
-                            GlassCard(
-                              padding: EdgeInsets.zero,
-                              child: Column(
-                                children: [
-                                  for (int i = 0; i < group.value.length; i++) ...[
-                                    StaggeredEntrance(
-                                      index: i,
-                                      child: _DismissibleTransactionTile(
-                                        expense: group.value[i],
-                                        category:
-                                            SampleData.categoryById(group.value[i].categoryId),
-                                        indexInGroup: i,
-                                        groupKey: group.key,
-                                        onDelete: _deleteExpense,
-                                      ),
-                                    ),
-                                    if (i != group.value.length - 1)
-                                      Divider(
-                                        height: 1,
-                                        indent: 12,
-                                        endIndent: 12,
-                                        color: AppColorsOf.divider(context),
-                                      ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
           ),
         ],
       ),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // ═══ COMPACT SUMMARY STRIP ═══
+            // Merged item count + month total + day count into ONE row.
+            // Was previously 2 separate rows (~80px). Now ~40px — saves 40px.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryIndigo.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppColors.primaryIndigo.withOpacity(0.10)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.trending_down_rounded,
+                        size: 14, color: AppColors.danger),
+                    const SizedBox(width: 6),
+                    Text(
+                        '${Formatters.money(monthTotal)} this month',
+                        style: TextStyles.caption(context,
+                            weight: FontWeight.w700)),
+                    const Spacer(),
+                    Text(
+                      '${grouped.length} ${grouped.length == 1 ? 'day' : 'days'}',
+                      style: TextStyles.caption(context).copyWith(
+                          color: AppColorsOf.tertiaryText(context), fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // ═══ SEARCH BAR (compact) ═══
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                height: 44,
+                child: TextField(
+                  controller: _searchCtrl,
+                  onChanged: (v) => setState(() => _search = v),
+                  style: TextStyles.body(context).copyWith(fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Search transactions',
+                    hintStyle: TextStyle(fontSize: 13),
+                    prefixIcon:
+                        const Icon(Icons.search_rounded, size: 18),
+                    prefixIconConstraints:
+                        const BoxConstraints(minWidth: 36),
+                    isDense: true,
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 8),
+                    suffixIcon: _search.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 16),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () {
+                              _searchCtrl.clear();
+                              setState(() => _search = '');
+                            },
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // ═══ FILTER CHIPS (compact, 36px height) ═══
+            SizedBox(
+              height: 36,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: _filters.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 6),
+                itemBuilder: (_, i) {
+                  final f = _filters[i];
+                  final sel = _filter == f;
+                  return GestureDetector(
+                    onTap: () {
+                      Haptics.selection();
+                      setState(() => _filter = f);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: sel
+                            ? AppColors.primaryIndigo
+                            : AppColorsOf.card(context),
+                        border: Border.all(
+                          color: sel
+                              ? AppColors.primaryIndigo
+                              : AppColorsOf.border(context),
+                        ),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        f,
+                        style: TextStyle(
+                          fontFamily: 'PlusJakartaSans',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: sel
+                              ? Colors.white
+                              : AppColorsOf.secondaryText(context),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 6),
+            // ═══ TRANSACTION LIST ═══
+            // Each tile is now TAP-TO-EXPAND — tap to reveal Delete + Edit
+            // buttons inline. Much more discoverable than swipe.
+            Expanded(
+              child: filtered.isEmpty
+                  ? EmptyState(
+                      icon: Icons.search_off_rounded,
+                      title: 'No transactions found',
+                      subtitle: 'Try a different search or filter.',
+                    )
+                  : RefreshIndicator(
+                      color: AppColors.primaryIndigo,
+                      backgroundColor: AppColorsOf.card(context),
+                      onRefresh: () async {
+                        Haptics.selection();
+                        await Future.delayed(
+                            const Duration(milliseconds: 600));
+                        setState(() {});
+                      },
+                      child: ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
+                        itemCount: grouped.length,
+                        itemBuilder: (_, gi) {
+                          final group = grouped[gi];
+                          final label = _dateLabel(group.key);
+                          final total = _dayTotal(group.value);
+                          return Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.stretch,
+                            children: [
+                              // Date header + daily total
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 10, bottom: 6),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(label,
+                                        style: TextStyles.caption(context,
+                                                weight: FontWeight.w700)
+                                            .copyWith(
+                                                color: AppColorsOf
+                                                    .secondaryText(context))),
+                                    Text(
+                                        '-${Formatters.money(total)}',
+                                        style: TextStyles.caption(context,
+                                                weight: FontWeight.w700)
+                                            .copyWith(
+                                              color: AppColors.danger,
+                                              fontFeatures: const [
+                                                FontFeature.tabularFigures()
+                                              ],
+                                            )),
+                                  ],
+                                ),
+                              ),
+                              // Day group card with tap-to-expand tiles
+                              GlassCard(
+                                padding: EdgeInsets.zero,
+                                child: Column(
+                                  children: [
+                                    for (int i = 0;
+                                        i < group.value.length;
+                                        i++) ...[
+                                      StaggeredEntrance(
+                                        index: i,
+                                        child: _ExpandableTransactionTile(
+                                          expense: group.value[i],
+                                          category: SampleData.categoryById(
+                                              group.value[i].categoryId),
+                                          onDelete: _deleteExpense,
+                                        ),
+                                      ),
+                                      if (i !=
+                                          group.value.length - 1)
+                                        Divider(
+                                          height: 1,
+                                          indent: 12,
+                                          endIndent: 12,
+                                          color: AppColorsOf.divider(context),
+                                        ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
-
-  // ─────────────────────────────────────────────────────────────────
-  // _DismissibleTransactionTile — wraps the original _GroupedTransactionTile
-  // in a Dismissible widget so the user can swipe left to delete.
-  // ─────────────────────────────────────────────────────────────────
-  // Background: red gradient + trash icon (left-aligned, revealed as the
-  // tile slides away to the right). Snack with UNDO restores the expense.
-  //
-  // The tile itself was also tightened:
-  //   • Date now uses Formatters.relativeDateTime() ('Today 8:45 AM' instead
-  //     of 'Food · 10 Oct, 12:45 PM') — compact, doesn't overflow.
-  //   • Amount now red with '-' prefix, matching the home recent-tile + the
-  //     day-group total above (was default text color, inconsistent).
-  //   • Inner GlassCard margin bottom 10 → 0 so dividers sit flush.
 }
 
-/// Wraps a single transaction tile in a [Dismissible] so the user can
-/// swipe LEFT to delete. Swipe-right is disabled (only delete is the
-/// action — swipe-right for archive would clutter the gesture space).
-///
-/// The red background reveals a trash icon + "Delete" label as the tile
-/// slides away. On dismiss, the parent's `onDelete` callback fires which
-/// calls ExpenseProvider.deleteExpense + shows an UNDO snackbar.
-class _DismissibleTransactionTile extends StatelessWidget {
+// ═══════════════════════════════════════════════════════════════════
+// _ExpandableTransactionTile — TAP TO REVEAL Delete + Edit buttons.
+//
+// Default state: shows icon + title + date + amount (same as before).
+// Expanded state (after tap): shows a divider + Edit + Delete buttons
+// below the tile content. Tap again to collapse.
+//
+// This replaces the SwipeToRevealActions pattern which was not
+// discoverable — the user didn't know they could swipe. Tapping is
+// the natural interaction.
+// ═══════════════════════════════════════════════════════════════════
+class _ExpandableTransactionTile extends StatefulWidget {
   final Expense expense;
   final Category category;
-  final int indexInGroup;
-  final String groupKey;
-  final void Function(Expense expense, int indexInGroup, String groupKey) onDelete;
+  final void Function(Expense expense) onDelete;
 
-  const _DismissibleTransactionTile({
+  const _ExpandableTransactionTile({
     required this.expense,
     required this.category,
-    required this.indexInGroup,
-    required this.groupKey,
     required this.onDelete,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Dismissible(
-      // Unique key per expense so Dismissible tracks each tile independently.
-      key: ValueKey('expense-${expense.id}'),
-      // Only allow left-swipe (DismissDirection.endToStart) — swiping right
-      // is reserved for future "archive" or "mark as recurring" gestures.
-      direction: DismissDirection.endToStart,
-      // Red gradient background + trash icon, revealed as the tile slides
-      // away to the left.
-      background: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              AppColors.danger.withOpacity(0.85),
-              AppColors.danger,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
-            SizedBox(height: 2),
-            Text('Delete',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                )),
-          ],
-        ),
-      ),
-      // Threshold: must swipe at least 30% of the tile width before the
-      // delete commits — prevents accidental deletes from short swipes.
-      dismissThresholds: const {
-        DismissDirection.endToStart: 0.3,
-      },
-      confirmDismiss: (direction) async {
-        // Show a confirmation dialog before deleting. This protects against
-        // accidental swipes — though the UNDO snackbar also provides recovery.
-        // For a transactions list, a confirmation might be too friction-y,
-        // so we just return true (delete immediately) and rely on UNDO.
-        // (The dialog is here as a hook — change return to `await showDialog`
-        // to enable it.)
-        return true;
-      },
-      onDismissed: (direction) {
-        // Fire the parent callback which deletes + shows UNDO snackbar.
-        onDelete(expense, indexInGroup, groupKey);
-      },
-      child: _GroupedTransactionTile(
-        expense: expense,
-        category: category,
-      ),
-    );
-  }
+  State<_ExpandableTransactionTile> createState() =>
+      _ExpandableTransactionTileState();
 }
 
-class _GroupedTransactionTile extends StatelessWidget {
-  final Expense expense;
-  final Category category;
+class _ExpandableTransactionTileState
+    extends State<_ExpandableTransactionTile> {
+  bool _isExpanded = false;
 
-  const _GroupedTransactionTile(
-      {required this.expense, required this.category});
+  void _toggle() {
+    Haptics.selection();
+    setState(() => _isExpanded = !_isExpanded);
+  }
+
+  Future<void> _confirmDelete() async {
+    final ok = await ConfirmDialog.show(
+      context,
+      title: 'Delete expense?',
+      body:
+          'Delete "${widget.expense.title}" (${Formatters.money(widget.expense.amount)})? '
+          'This can be undone via the snackbar.',
+      confirmLabel: 'Delete',
+      danger: true,
+      icon: Icons.delete_outline_rounded,
+    );
+    if (ok == true) {
+      widget.onDelete(widget.expense);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -483,72 +475,218 @@ class _GroupedTransactionTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ExpenseDetailsScreen(expenseId: expense.id),
-          ),
-        ),
-        child: Padding(
-          // Removed the GlassCard wrapper (now the parent GlassCard provides
-          // the card chrome; this tile just has padding + the row content).
-          // Bottom margin 10 → 0 so dividers sit flush between tiles.
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          child: Row(
-            children: [
-              Hero(
-                tag: 'expense-icon-${expense.id}',
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: category.color.withOpacity(0.14),
-                    borderRadius: BorderRadius.circular(12),
+        onTap: _toggle,
+        child: Column(
+          children: [
+            // ─── Tile content (always visible) ───
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  // Category icon
+                  Hero(
+                    tag: 'expense-icon-${widget.expense.id}',
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color:
+                            widget.category.color.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(widget.category.icon,
+                          color: widget.category.color, size: 20),
+                    ),
                   ),
-                  alignment: Alignment.center,
-                  child: Icon(category.icon, color: category.color, size: 22),
-                ),
+                  const SizedBox(width: 10),
+                  // Title + date
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.expense.title,
+                          style: TextStyles.body(context,
+                              weight: FontWeight.w600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          Formatters.relativeDateTime(
+                              widget.expense.date),
+                          style: TextStyles.caption(context)
+                              .copyWith(fontSize: 10),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Amount (red with - prefix)
+                  Text(
+                    '-${Formatters.money(widget.expense.amount)}',
+                    style: TextStyles.body(context, weight: FontWeight.w700)
+                        .copyWith(
+                      color: AppColors.danger,
+                      fontFeatures: const [
+                        FontFeature.tabularFigures()
+                      ],
+                    ),
+                  ),
+                  // Expand/collapse chevron
+                  const SizedBox(width: 4),
+                  AnimatedRotation(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    turns: _isExpanded ? 0.5 : 0,
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColorsOf.tertiaryText(context),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
+            ),
+            // ─── Expanded action buttons (animated) ───
+            AnimatedCrossCross(
+              show: _isExpanded,
+              child: _buildActionButtons(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Action buttons row (Edit + Delete) ───
+  Widget _buildActionButtons(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 12, right: 12, bottom: 10),
+      child: Column(
+        children: [
+          Divider(
+            height: 1,
+            color: AppColorsOf.divider(context),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              // ── Edit button ──
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      expense.title,
-                      style: TextStyles.body(context, weight: FontWeight.w600),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    // Use relative date formatting ('Today 8:45 AM',
-                    // 'Yesterday 9:13 AM', 'Mon 10:00 AM') instead of the
-                    // previous 'Food · 10 Oct, 12:45 PM' which overflowed
-                    // on narrow screens. The colored icon already conveys
-                    // the category, so the name prefix was redundant.
-                    Text(
-                      Formatters.relativeDateTime(expense.date),
-                      style: TextStyles.caption(context).copyWith(fontSize: 11),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                child: _inlineActionButton(
+                  icon: Icons.edit_outlined,
+                  label: 'Edit',
+                  color: AppColors.primaryIndigo,
+                  onTap: () {
+                    Haptics.selection();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            EditExpenseScreen(expenseId: widget.expense.id),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 8),
-              // Amount now RED with '-' prefix — matches the home recent-tile
-              // and the day-group total above (was default color, inconsistent).
-              Text(
-                '-${Formatters.money(expense.amount)}',
-                style: TextStyles.body(context, weight: FontWeight.w700)
-                    .copyWith(
-                      color: AppColors.danger,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
+              // ── Delete button ──
+              Expanded(
+                child: _inlineActionButton(
+                  icon: Icons.delete_outline_rounded,
+                  label: 'Delete',
+                  color: AppColors.danger,
+                  onTap: _confirmDelete,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // ── View Details button ──
+              Expanded(
+                child: _inlineActionButton(
+                  icon: Icons.visibility_outlined,
+                  label: 'Details',
+                  color: AppColors.blue,
+                  onTap: () {
+                    Haptics.selection();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ExpenseDetailsScreen(
+                            expenseId: widget.expense.id),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _inlineActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          border: Border.all(color: color.withOpacity(0.20), width: 1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 14),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'PlusJakartaSans',
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AnimatedCrossCross — smoothly shows/hides a child widget with a
+// crossfade + height animation. Used by _ExpandableTransactionTile.
+// ═══════════════════════════════════════════════════════════════════
+class AnimatedCrossCross extends StatelessWidget {
+  final bool show;
+  final Widget child;
+
+  const AnimatedCrossCross({
+    super.key,
+    required this.show,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: show
+          ? child
+          : const SizedBox.shrink(),
     );
   }
 }

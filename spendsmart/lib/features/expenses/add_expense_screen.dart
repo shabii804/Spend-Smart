@@ -11,6 +11,7 @@ import '../../data/sample_data.dart';
 import '../../models/expense.dart';
 import '../../providers/expense_provider.dart';
 import 'receipt_scanner_screen.dart';
+import 'voice_entry_screen.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   final Expense? prefill;
@@ -241,45 +242,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEdit ? 'Edit Expense' : 'Add Expense'),
+        // Title removed — saves vertical space so the form fits on screen.
+        title: const SizedBox.shrink(),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        // ── Scan Receipt action ──
-        actions: [
-          if (!_isEdit)
-            IconButton(
-              icon: const Icon(Icons.document_scanner_rounded),
-              tooltip: 'Scan Receipt',
-              onPressed: () async {
-                Haptics.light();
-                final Expense? result = await Navigator.of(context).push<Expense>(
-                  MaterialPageRoute(
-                    builder: (_) => const ReceiptScannerScreen(),
-                  ),
-                );
-                if (result == null) return;
-                if (!mounted) return;
-                setState(() {
-                  _titleCtrl.text = result.title;
-                  _amountCtrl.text = result.amount == result.amount.roundToDouble()
-                      ? result.amount.toStringAsFixed(0)
-                      : result.amount.toStringAsFixed(2);
-                  _selectedCategoryId = result.categoryId;
-                  _date = result.date;
-                  _noteCtrl.text = result.note ?? '';
-                  _dateChip = _chipForDate(result.date);
-                });
-              },
-            ),
-        ],
+        // Scan + Voice buttons moved OUT of the AppBar and into a prominent
+        // row below the amount card — much more visible and beautiful.
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          // Extra bottom padding so the Save button clears the keyboard
-          // comfortably + doesn't sit flush against the screen edge.
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
           child: Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -287,29 +261,80 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
 
                 // ═══ AMOUNT HERO CARD ═══
-                // Wrapped in a subtle card so the amount has a clear
-                // "input slot" feel — previously the TextField floated
-                // with no border, looking unfinished.
                 _sectionCard(
                   context,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _label(context, 'Amount'),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       _amountHero(context),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-                // ═══ Quick Add (directly under amount — no card, horizontal scroll) ═══
+                // ═══ SCAN + VOICE ACTION ROW ═══
+                // Two prominent side-by-side buttons — beautiful placement
+                // where the user can easily see and tap them. Replaces the
+                // AppBar icons which were hard to find.
+                if (!_isEdit)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _actionButton(
+                          icon: Icons.document_scanner_rounded,
+                          label: 'Scan Receipt',
+                          color: AppColors.mint,
+                          onTap: () async {
+                            Haptics.light();
+                            final Expense? result =
+                                await Navigator.of(context).push<Expense>(
+                              MaterialPageRoute(
+                                builder: (_) => const ReceiptScannerScreen(),
+                              ),
+                            );
+                            if (result == null) return;
+                            if (!mounted) return;
+                            setState(() {
+                              _amountCtrl.text = result.amount ==
+                                      result.amount.roundToDouble()
+                                  ? result.amount.toStringAsFixed(0)
+                                  : result.amount.toStringAsFixed(2);
+                              _selectedCategoryId = result.categoryId;
+                              _date = result.date;
+                              _noteCtrl.text = result.note ?? '';
+                              _dateChip = _chipForDate(result.date);
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _actionButton(
+                          icon: Icons.mic_rounded,
+                          label: 'Voice Input',
+                          color: AppColors.primaryPurple,
+                          onTap: () {
+                            Haptics.light();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) => const VoiceEntryScreen()),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                if (!_isEdit) const SizedBox(height: 8),
+
+                // ═══ Quick Add (horizontal scroll) ═══
                 if (!_isEdit) ...[
                   SizedBox(
-                    height: 40,
+                    height: 36,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _quickAdd.length,
@@ -330,7 +355,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             duration: AppMotion.base,
                             curve: AppMotion.celebrate,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                               decoration: BoxDecoration(
                                 color: qSel
                                     ? q.$4.withOpacity(0.18)
@@ -355,7 +380,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                 ],
 
                 // ═══ CATEGORY + DATE CARD (grouped — both relate to
@@ -366,18 +391,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _label(context, 'Category'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       _categoryGrid(),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       // Subtle divider between category and date sections
                       Divider(
                         height: 1,
                         thickness: 1,
                         color: AppColorsOf.divider(context),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _label(context, 'Date'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
                           Expanded(child: _dateChipBtn(0, 'Today')),
@@ -398,29 +423,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-                // ═══ DETAILS CARD (Title + Note grouped as "textual details") ═══
+                // ═══ NOTE CARD (only Note — Title field removed per user request) ═══
                 _sectionCard(
                   context,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _label(context, 'Title (optional)'),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _titleCtrl,
-                        style: TextStyles.body(context),
-                        textInputAction: TextInputAction.next,
-                        decoration: InputDecoration(
-                          hintText: 'e.g. Lunch at cafe',
-                          // Better semantic icon — 'title' not 'edit'.
-                          prefixIcon: const Icon(Icons.title_rounded, size: 18),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
                       _label(context, 'Note (optional)'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       TextField(
                         controller: _noteCtrl,
                         maxLines: 2,
@@ -430,14 +442,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         decoration: InputDecoration(
                           hintText: 'What was this expense for?',
                           counterText: '',
-                          // Prefix icon for consistency with Title field.
                           prefixIcon: const Icon(Icons.notes_rounded, size: 18),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
 
                 // ═══ Save button ═══
                 // Disabled until BOTH amount > 0 AND a category is selected.
@@ -460,7 +471,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           .copyWith(color: AppColorsOf.tertiaryText(context)),
                     ),
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
               ],
             ),
           ),
@@ -470,8 +481,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   }
 
   /// Section card — subtle bg + border + 14px padding. Groups related form
-  /// fields together so the form has clear visual hierarchy instead of
-  /// being one long undifferentiated list.
+  /// fields together so the form has clear visual hierarchy.
   Widget _sectionCard(BuildContext context, {required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -493,11 +503,57 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-  // ═══ Amount hero — centered 36px display inside the section card ═══
-  // Uses Formatters.currencySymbol instead of hardcoded 'Rs. ' so the
-  // prefix adapts when the user changes currency via Settings.
-  // Autofocus is disabled when prefilling (scan result or edit) so the
-  // keyboard doesn't pop up over the pre-filled data on screen mount.
+  /// Premium action button — used for Scan Receipt + Voice Input.
+  /// Two side-by-side below the amount card. Beautiful placement where
+  /// the user can easily see and tap them.
+  Widget _actionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.10),
+            border: Border.all(color: color.withOpacity(0.25), width: 1.5),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══ Amount hero — centered 28px display inside the section card ═══
+  // 28px is the premium sweet spot — prominent enough to be the hero of
+  // the form, but not so large it overwhelms. Better alignment: tight
+  // letter-spacing (-0.6), tabular figures for digit alignment, and a
+  // clean "Rs. " prefix in secondary color.
   Widget _amountHero(BuildContext context) {
     return Column(
       children: [
@@ -506,48 +562,41 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
           textAlign: TextAlign.center,
-          // Only autofocus on a fresh add (no prefill, no edit) so the
-          // keyboard doesn't cover scanned data or edited values on mount.
           autofocus: widget.prefill == null && widget.expenseId == null,
           textInputAction: TextInputAction.done,
           style: TextStyle(
             fontFamily: 'PlusJakartaSans',
-            fontSize: 36,
+            fontSize: 28,
             fontWeight: FontWeight.w700,
             color: AppColorsOf.mainText(context),
             height: 1.1,
-            letterSpacing: -0.8,
+            letterSpacing: -0.6,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
           decoration: InputDecoration(
-            // Currency symbol adapts to the user's selected currency.
             prefixText: '${Formatters.currencySymbol} ',
             prefixStyle: TextStyle(
               fontFamily: 'PlusJakartaSans',
-              fontSize: 36,
+              fontSize: 28,
               fontWeight: FontWeight.w700,
               color: AppColorsOf.secondaryText(context),
               height: 1.1,
-              letterSpacing: -0.8,
+              letterSpacing: -0.6,
             ),
             hintText: '0',
             hintStyle: TextStyle(
               fontFamily: 'PlusJakartaSans',
-              fontSize: 36,
+              fontSize: 28,
               fontWeight: FontWeight.w700,
-              // Bumped opacity 0.3 → 0.5 — 0.3 was nearly invisible,
-              // especially in light mode.
               color: AppColorsOf.tertiaryText(context).withOpacity(0.5),
               height: 1.1,
             ),
             border: InputBorder.none,
             focusedBorder: InputBorder.none,
             enabledBorder: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(vertical: 2),
           ),
         ),
-        // Live formatted preview with subtle scale-pop when amount changes.
-        // Now shows full currency formatting: "Rs. 1,500" instead of "1,500".
         if (_hasAmount)
           TweenAnimationBuilder<double>(
             key: ValueKey(_formattedAmount()),
@@ -560,7 +609,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             child: Text(
               _formattedAmount(),
               style: TextStyles.caption(context, weight: FontWeight.w700)
-                  .copyWith(color: AppColorsOf.secondaryText(context), fontSize: 14),
+                  .copyWith(color: AppColorsOf.secondaryText(context), fontSize: 13),
             ),
           ),
       ],

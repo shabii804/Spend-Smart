@@ -370,7 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.0, end: percent.clamp(0.0, 1.0)),
-                  duration: const Duration(milliseconds: 900),
+                  duration: const Duration(milliseconds: 1000),
                   curve: Curves.easeOutCubic,
                   builder: (context, v, _) {
                     final pct = (v * 100).clamp(0, 999).toInt();

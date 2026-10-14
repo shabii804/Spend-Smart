@@ -19,6 +19,7 @@ import '../budgets/budget_overview_screen.dart';
 import '../expenses/transactions_screen.dart';
 import '../goals/savings_goals_screen.dart';
 import '../profile/edit_profile_screen.dart';
+import '../profile/profile_screen.dart';
 import '../settings/currency_selection_screen.dart';
 import '../settings/general_settings_screen.dart';
 import '../settings/notification_preferences_screen.dart';
@@ -63,22 +64,39 @@ class MoreScreen extends StatelessWidget {
     ].join(' · ');
     final notifSubtitle = notifSummary.isEmpty ? 'Off' : notifSummary;
 
-    return SafeArea(
-      bottom: false,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
-        children: [
-          Text('More', style: TextStyles.h1(context)),
-          const SizedBox(height: 20),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('More'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
+          children: [
 
-          // ─── QUICK ACCESS GROUP — Goals is the headline feature ───
+          // ─── QUICK ACCESS GROUP — Goals + Profile + Transactions ───
           // Goals was previously a bottom-nav tab. Now lives here as the
           // first item so users can still reach it in one tap from More.
+          // Profile shortcut added per user request — now accessible from
+          // both the home avatar tap AND the More tab.
           StaggeredEntrance(
             index: 0,
             child: _MenuGroup(
               title: 'Quick Access',
               items: [
+                _MenuItem(
+                  icon: Icons.person_rounded,
+                  color: AppColors.primaryIndigo,
+                  title: 'Profile',
+                  subtitle: user.fullName,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  ),
+                ),
                 _MenuItem(
                   icon: Icons.savings_rounded,
                   color: AppColors.mint,
@@ -258,6 +276,7 @@ class MoreScreen extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

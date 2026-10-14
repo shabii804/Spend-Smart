@@ -44,12 +44,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         title: const Text(AppStrings.analytics),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () {
+            if (ModalRoute.of(context)?.canPop ?? false) {
+              Navigator.of(context).maybePop();
+            }
+          },
         ),
-        // ── Removed the broken "This Month" pill button ──
-        // It had NO onTap handler (only a GestureDetector with no callback),
-        // so tapping it did nothing. The period toggle below handles all
-        // period selection. The AppBar is now clean.
       ),
       body: SafeArea(
         // Pull-to-refresh — manually refresh the analytics data.
@@ -67,7 +67,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             children: [
               // Segmented control — now actually switches the chart view.
               _periodToggle(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               // Two summary cards — deltas removed (were hardcoded "+12%"
               // and "+8%" fake values). Now shows a clean "this month" label
               // instead of misleading the user with fake percentages.
@@ -94,19 +94,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               // Spending chart — switches between Daily (bar 7d),
               // Weekly (bar 4w), and Monthly (line) based on _period.
               ChartEntrance(
                 child: _buildPeriodChart(expenses, dailyMap, total, last7, last4Weeks),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               // Spending Breakdown — donut + right legend
               ChartEntrance(
                 delay: const Duration(milliseconds: 160),
                 child: _BreakdownDonut(total: total, items: top),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               // Two insight cards at bottom
               Row(
                 children: [
@@ -197,7 +197,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
                     gradient: _period == p ? AppGradients.primaryButton : null,
                     color: _period == p ? null : Colors.transparent,
@@ -258,7 +258,7 @@ class _SummaryCard extends StatelessWidget {
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       child: SizedBox(
-        height: 100,
+        height: 80,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -411,7 +411,7 @@ class _SpendingAreaChartState extends State<_SpendingAreaChart> {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 220,
+            height: 180,
             child: LineChart(
               duration: const Duration(milliseconds: 1000),
               curve: Curves.easeOutCubic,
@@ -623,35 +623,9 @@ class _BreakdownDonutState extends State<_BreakdownDonut> {
       );
     }
     final safeTotal = widget.total == 0 ? 1.0 : widget.total;
-    final sections = <PieChartSectionData>[];
-    for (int i = 0; i < widget.items.length; i++) {
-      final entry = widget.items[i];
-      final c = entry.key;
-      final pct = entry.value / safeTotal;
-      // Only show the % label on slices that are big enough (>= 6%).
-      final showLabel = pct >= 0.06;
-      sections.add(PieChartSectionData(
-        color: c.color,
-        // 0 on first render, real value after _showData flips → arcs sweep in
-        value: _showData ? entry.value : 0.0001,
-        title: showLabel ? '${(pct * 100).round()}%' : '',
-        titleStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
-        titlePositionPercentageOffset: 0.62,
-        radius: 38,
-        borderSide: BorderSide(
-          color: AppColorsOf.card(context),
-          width: 2,
-        ),
-      ));
-    }
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        // Subtle linear gradient background — purple tint fading to card surface.
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -677,6 +651,7 @@ class _BreakdownDonutState extends State<_BreakdownDonut> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Header row ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -695,95 +670,118 @@ class _BreakdownDonutState extends State<_BreakdownDonut> {
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              SizedBox(
-                width: 180,
-                height: 180,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    PieChart(
-                      duration: const Duration(milliseconds: 1100),
+          // ── Chart + center text ──
+          // Fixed: donut was CLIPPED (outer diameter 154px > SizedBox 140px).
+          // Reduced centerSpaceRadius 44→36 and section radius 32→26.
+          // New outer radius = 36 + 26 + 1 = 63 → diameter 126px ≤ 140px. ✓
+          Center(
+            child: SizedBox(
+              width: 140,
+              height: 140,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 140,
+                    height: 140,
+                    child: PieChart(
+                      duration: const Duration(milliseconds: 1000),
                       curve: Curves.easeOutCubic,
                       PieChartData(
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 56,
-                        sections: sections,
+                        sectionsSpace: 0,
+                        centerSpaceRadius: 36,
+                        sections: [
+                          for (int i = 0; i < widget.items.length; i++)
+                            PieChartSectionData(
+                              color: widget.items[i].key.color,
+                              value: _showData
+                                  ? widget.items[i].value
+                                  : 0.001,
+                              title: '',
+                              radius: 26,
+                              borderSide: BorderSide(
+                                color: AppColorsOf.card(context),
+                                width: 2,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Total Spent', style: TextStyles.label(context)),
-                        const SizedBox(height: 4),
-                        AnimatedMoney(
+                  ),
+                  // Center text — FittedBox prevents overflow on long amounts
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Total Spent', style: TextStyles.label(context)),
+                      const SizedBox(height: 4),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: AnimatedMoney(
                           amount: widget.total,
-                          style: TextStyles.money(context, size: 18),
+                          style: TextStyles.money(context, size: 16),
+                          durationMs: 1000,
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // ── Legend: stacked BELOW the chart (was side-by-side, which
+          // caused overflow when 8 categories × 20px = 240px > chart 140px).
+          // Now uses a Wrap with proper spacing — items wrap to multiple
+          // rows on narrow screens instead of overflowing.
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            children: widget.items.map((e) {
+              final c = e.key;
+              final pctVal = ((e.value / safeTotal) * 100).round();
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: c.color,
+                      shape: BoxShape.circle,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: widget.items
-                      .map((e) {
-                        final c = e.key;
-                        final pctVal = ((e.value / safeTotal) * 100).round();
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: c.color,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  c.name,
-                                  style: TextStyles.caption(context,
-                                      weight: FontWeight.w600),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Amount now shown next to the percentage —
-                              // was previously only the percentage, which
-                              // made it hard to gauge actual category spend
-                              // (e.g. "Food 32%" — but 32% of what?).
-                              Text(
-                                Formatters.moneyPlain(e.value),
-                                style: TextStyles.caption(context,
-                                    weight: FontWeight.w700).copyWith(
-                                        fontFeatures: const [FontFeature.tabularFigures()],
-                                        fontSize: 11),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$pctVal%',
-                                style: TextStyles.caption(context).copyWith(
-                                    color: AppColorsOf.tertiaryText(context),
-                                    fontSize: 10,
-                                    fontFeatures: const [FontFeature.tabularFigures()]),
-                              ),
-                            ],
-                          ),
-                        );
-                      })
-                      .toList(),
-                ),
-              ),
-            ],
+                  ),
+                  const SizedBox(width: 6),
+                  // Category name — use Flexible with maxLines: 1 + ellipsis
+                  // so long names like "Entertainment" don't push amounts off
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 80),
+                    child: Text(
+                      c.name,
+                      style: TextStyles.caption(context,
+                          weight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    Formatters.moneyPlain(e.value),
+                    style: TextStyles.caption(context,
+                        weight: FontWeight.w700).copyWith(
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                            fontSize: 11),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$pctVal%',
+                    style: TextStyles.caption(context).copyWith(
+                        color: AppColorsOf.tertiaryText(context),
+                        fontSize: 10,
+                        fontFeatures: const [FontFeature.tabularFigures()]),
+                  ),
+                ],
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -958,7 +956,7 @@ class _PeriodBarChartState extends State<_PeriodBarChart> {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 200,
+            height: 160,
             child: BarChart(
               duration: const Duration(milliseconds: 1100),
               curve: Curves.easeOutCubic,

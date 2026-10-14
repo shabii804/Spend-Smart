@@ -427,10 +427,21 @@ class AuthScreenScaffold extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Align to TOP CENTER (not Center) so the form starts at
-                  // the top of the SafeArea instead of vertically centering
-                  // when content is shorter than the viewport. This fixes
-                  // the "starts from the middle / empty space on top" issue.
+                  // ── PINNED back button (does NOT scroll with content) ──
+                  // Previously the back button was INSIDE the SingleChildScrollView,
+                  // which caused it to scroll away and added extra vertical space.
+                  // Now it's pinned at the top via Positioned — consistent with
+                  // all other screens that use AppBar.leading.
+                  if (showBackButton)
+                    Positioned(
+                      top: 8,
+                      left: 20,
+                      child: AuthBackButton(
+                        onTap: onBack ??
+                            () => Navigator.of(context).maybePop(),
+                      ),
+                    ),
+                  // Align to TOP CENTER so the form starts at the top.
                   Align(
                     alignment: Alignment.topCenter,
                     child: ConstrainedBox(
@@ -439,26 +450,14 @@ class AuthScreenScaffold extends StatelessWidget {
                       ),
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        // The Scaffold's default `resizeToAvoidBottomInset`
-                        // already shrinks the body when the keyboard opens,
-                        // and the SingleChildScrollView scrolls hidden
-                        // fields into view — no manual viewInsets padding
-                        // needed (that would double-offset the content).
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            if (showBackButton) ...[
-                              const SizedBox(height: AuthSpacing.sm),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: AuthBackButton(
-                                  onTap: onBack ??
-                                      () => Navigator.of(context).maybePop(),
-                                ),
-                              ),
-                              const SizedBox(height: AuthSpacing.xs),
-                            ] else
-                              const SizedBox(height: AuthSpacing.lg),
+                            // When back button is shown (pinned), add 56px
+                            // top padding to clear the 40px button + 8px top
+                            // + 8px gap. When no back button, use lg (24px).
+                            SizedBox(
+                                height: showBackButton ? 56 : AuthSpacing.lg),
                             child,
                           ],
                         ),

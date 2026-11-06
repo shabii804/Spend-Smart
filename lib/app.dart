@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
-import 'features/splash/splash_screen.dart';
+import 'screens/splash/splash_screen.dart';
 import 'providers/theme_provider.dart';
 
 /// Root widget. Rebuilds when ThemeProvider / CurrencyProvider change.

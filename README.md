@@ -69,7 +69,7 @@ Spend-Smart/                # repository root
     ├── data/sample_data.dart  # ← ALL DEMO DATA LIVES HERE
     ├── providers/             # expense, budget, goal, theme, notification,
     │                          # currency, notif_prefs, user
-    └── features/
+    └── screens/
         ├── splash/            # splash_screen
         ├── onboarding/        # onboarding_screen
         ├── auth/              # login, register, forgot_password

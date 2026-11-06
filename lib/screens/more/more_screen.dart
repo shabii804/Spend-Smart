@@ -24,6 +24,7 @@ import '../profile/edit_profile_screen.dart';
 import '../profile/profile_screen.dart';
 import '../settings/currency_selection_screen.dart';
 import '../settings/general_settings_screen.dart';
+import '../split_bill/split_bill_screen.dart';
 import '../settings/notification_preferences_screen.dart';
 import '../settings/theme_settings_screen.dart';
 
@@ -117,6 +118,15 @@ class MoreScreen extends StatelessWidget {
                       '${Formatters.money(user.monthlyIncome)}/month · ${user.occupation}',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const IncomeScreen()),
+                  ),
+                ),
+                _MenuItem(
+                  icon: Icons.groups_rounded,
+                  color: AppColors.catEntertainment,
+                  title: 'SplitSmart Bill',
+                  subtitle: 'Split bills & tips with friends',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SplitBillScreen()),
                   ),
                 ),
                 _MenuItem(

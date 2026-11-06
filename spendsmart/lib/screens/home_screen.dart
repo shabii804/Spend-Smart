@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../core/constants/app_strings.dart';
 import '../core/motion/app_motion.dart';
+import '../core/motion/motion_widgets.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_gradients.dart';
 import '../core/theme/text_styles.dart';
@@ -175,9 +176,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text('SpendSmart',
                 style: TextStyles.body(context, weight: FontWeight.w700)
-                    .copyWith(fontSize: 16)),
+                    .copyWith(fontSize: 16),),
             Text('Track. Plan. Achieve.',
-                style: TextStyles.caption(context).copyWith(fontSize: 10)),
+                style: TextStyles.caption(context).copyWith(fontSize: 10),),
           ],
         ),
         const Spacer(),
@@ -191,12 +192,9 @@ class _HomeScreenState extends State<HomeScreen> {
         // ── Profile avatar — now TAPPABLE ──
         // Switches to the Profile tab via the callback passed by MainShell.
         // Falls back to a no-op if no callback (e.g. preview/test render).
-        GestureDetector(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            widget.onAvatarTap?.call();
-          },
-          behavior: HitTestBehavior.opaque,
+        Pressable(
+          scale: 0.92,
+          onPressed: () => widget.onAvatarTap?.call(),
           child: Container(
             width: 44,
             height: 44,
@@ -234,13 +232,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(greeting,
                   style: TextStyles.body(context,
                       color: AppColorsOf.secondaryText(context),
-                      weight: FontWeight.w500)),
+                      weight: FontWeight.w500,),),
               const SizedBox(height: 2),
               Text('$firstName!',
                   style: TextStyles.h1(context).copyWith(
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5)),
+                      letterSpacing: -0.5,),),
               const SizedBox(height: 4),
               // Actionable subtitle: date + safe-to-spend today.
               // Replaces the previous "Small steps make big progress" motivational
@@ -265,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // users see the breakdown at a glance alongside the donut percent.
   // ────────────────────────────────────────────────────────────────
   Widget _budgetHero(
-      BuildContext context, double spent, double remaining, double percent, double limit) {
+      BuildContext context, double spent, double remaining, double percent, double limit,) {
     // Days left in month
     final now = DateTime.now();
     final endOfMonth = DateTime(now.year, now.month + 1, 0);
@@ -293,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(AppStrings.monthlyBudget,
                     style: TextStyles.label(context).copyWith(
-                        color: Colors.white.withOpacity(0.85))),
+                        color: Colors.white.withOpacity(0.85),),),
                 const SizedBox(height: 6),
                 // Display amount (hero)
                 AnimatedMoney(
@@ -304,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Rs. X left, N days to go — single compact line
                 Text('${Formatters.money(remaining.abs())} left · $daysLeft days to go',
                     style: TextStyles.caption(context, weight: FontWeight.w600)
-                        .copyWith(color: Colors.white.withOpacity(0.85))),
+                        .copyWith(color: Colors.white.withOpacity(0.85)),),
                 const SizedBox(height: 10),
                 // ── Spent + Remaining two-column row ──
                 // Restored at user request: explicit breakdown of spent
@@ -318,12 +316,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(AppStrings.spentThisMonth,
                             style: TextStyles.label(context).copyWith(
                                 color: Colors.white.withOpacity(0.7),
-                                fontSize: 10)),
+                                fontSize: 10,),),
                         const SizedBox(height: 2),
                         AnimatedMoney(
                           amount: spent,
                           style: TextStyles.money(context,
-                              size: 14, color: Colors.white),
+                              size: 14, color: Colors.white,),
                         ),
                       ],
                     ),
@@ -334,12 +332,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(AppStrings.remaining,
                             style: TextStyles.label(context).copyWith(
                                 color: Colors.white.withOpacity(0.7),
-                                fontSize: 10)),
+                                fontSize: 10,),),
                         const SizedBox(height: 2),
                         AnimatedMoney(
                           amount: remaining.abs(),
                           style: TextStyles.money(context,
-                              size: 14, color: Colors.white),
+                              size: 14, color: Colors.white,),
                         ),
                       ],
                     ),
@@ -393,12 +391,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Text('$pct%',
                             style: TextStyles.money(context,
-                                size: 21, color: Colors.white)),
+                                size: 21, color: Colors.white,),),
                         Text('used',
                             style: TextStyles.caption(context).copyWith(
                                 color: Colors.white.withOpacity(0.75),
                                 fontSize: 10,
-                                fontWeight: FontWeight.w600)),
+                                fontWeight: FontWeight.w600,),),
                       ],
                     );
                   },
@@ -442,17 +440,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ('Goals', Icons.savings_rounded, AppColors.blue,
           () => Navigator.of(context).push(
                 MaterialPageRoute(
-                    builder: (_) => const SavingsGoalsScreen()),
+                    builder: (_) => const SavingsGoalsScreen(),),
               )),
     ];
     return Row(
       children: tiles.map((t) {
         return Expanded(
-          child: GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              t.$4();
-            },
+          child: Pressable(
+            scale: 0.93,
+            onPressed: () => t.$4(),
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
@@ -518,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Text(
           AppStrings.noDataYet,
           style: TextStyles.body(context,
-              color: AppColorsOf.secondaryText(context)),
+              color: AppColorsOf.secondaryText(context),),
         ),
       );
     }
@@ -582,18 +578,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Text('$pct%',
                             style: TextStyles.caption(context,
-                                weight: FontWeight.w700).copyWith(color: c.color, fontSize: 11)),
+                                weight: FontWeight.w700,).copyWith(color: c.color, fontSize: 11),),
                       ),
                     ],
                   ),
                   const Spacer(),
                   Text(c.name, style: TextStyles.body(context,
-                      weight: FontWeight.w600), maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                      weight: FontWeight.w600,), maxLines: 1,
+                      overflow: TextOverflow.ellipsis,),
                   const SizedBox(height: 2),
                   Text(Formatters.money(amt),
                       style: TextStyles.body(context, weight: FontWeight.w700)
-                          .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+                          .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),),
                 ],
               ),
             ),
@@ -612,7 +608,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(16),
         child: Text(AppStrings.noTransactions,
             style: TextStyles.body(context,
-                color: AppColorsOf.secondaryText(context))),
+                color: AppColorsOf.secondaryText(context),),),
       );
     }
     return GlassCard(
@@ -634,7 +630,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             if (i != items.length - 1)
               Divider(height: 1, indent: 12, endIndent: 12,
-                  color: AppColorsOf.divider(context)),
+                  color: AppColorsOf.divider(context),),
           ],
         ],
       ),
@@ -690,9 +686,9 @@ class _TransactionTile extends StatelessWidget {
                   children: [
                     Text(expense.title,
                         style: TextStyles.body(context,
-                            weight: FontWeight.w600),
+                            weight: FontWeight.w600,),
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
+                        overflow: TextOverflow.ellipsis,),
                     const SizedBox(height: 2),
                     // Use relative date formatting ("Today 8:45 AM",
                     // "Yesterday 9:13 AM", "Mon 10:00 AM") instead of the
@@ -702,7 +698,7 @@ class _TransactionTile extends StatelessWidget {
                     Text(
                       Formatters.relativeDateTime(expense.date),
                       style: TextStyles.caption(context).copyWith(
-                          fontSize: 11),
+                          fontSize: 11,),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -715,7 +711,7 @@ class _TransactionTile extends StatelessWidget {
                 style: TextStyles.body(context, weight: FontWeight.w700)
                     .copyWith(
                         color: AppColors.danger,
-                        fontFeatures: const [FontFeature.tabularFigures()]),
+                        fontFeatures: const [FontFeature.tabularFigures()],),
               ),
             ],
           ),
@@ -790,11 +786,9 @@ class _BellButtonState extends State<_BellButton>
     return Semantics(
       label: 'Notifications${widget.unread > 0 ? ', ${widget.unread} unread' : ''}',
       button: true,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          widget.onTap();
-        },
+      child: Pressable(
+        scale: 0.92,
+        onPressed: widget.onTap,
         child: Container(
           width: 44,
           height: 44,
@@ -816,7 +810,7 @@ class _BellButtonState extends State<_BellButton>
                   return Transform.rotate(angle: angle, child: child);
                 },
                 child: Icon(Icons.notifications_none_rounded,
-                    color: AppColorsOf.mainText(context), size: 20),
+                    color: AppColorsOf.mainText(context), size: 20,),
               ),
               // ── Unread badge (scales in when unread > 0) ──
               // 16px badge with a 2px ring matching the container bg —
@@ -853,3 +847,6 @@ class _BellButtonState extends State<_BellButton>
     );
   }
 }
+
+
+

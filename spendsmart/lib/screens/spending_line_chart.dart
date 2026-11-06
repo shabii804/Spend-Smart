@@ -109,11 +109,11 @@ class SpendingLineChart extends StatelessWidget {
                       return spots.map((s) {
                         return LineTooltipItem(
                           Formatters.moneyPlain(s.y),
-                          TextStyle(
+                          const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            fontFeatures: const [FontFeature.tabularFigures()],
+                            fontFeatures: [FontFeature.tabularFigures()],
                           ),
                         );
                       }).toList();

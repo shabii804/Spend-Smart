@@ -45,7 +45,7 @@ class SmartAdviceScreen extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: const Icon(Icons.waving_hand_rounded,
-                        color: Colors.white, size: 26),
+                        color: Colors.white, size: 26,),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -60,7 +60,7 @@ class SmartAdviceScreen extends StatelessWidget {
                         Text(
                           AppStrings.adviceGreetingSubtitle,
                           style: TextStyles.caption(context).copyWith(
-                              color: Colors.white.withOpacity(0.9)),
+                              color: Colors.white.withOpacity(0.9),),
                         ),
                       ],
                     ),
@@ -79,7 +79,7 @@ class SmartAdviceScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.info_outline_rounded,
-                      color: AppColors.warning, size: 14),
+                      color: AppColors.warning, size: 14,),
                   const SizedBox(width: 6),
                   Text(
                     AppStrings.adviceDemoLabel,
@@ -110,10 +110,10 @@ class SmartAdviceScreen extends StatelessWidget {
       out.add(_AdviceCardData(
         icon: c.key.icon,
         color: c.key.color,
-        title: '${c.key.name} is ${pct}% of your spending',
+        title: '${c.key.name} is $pct% of your spending',
         body: 'Try reducing ${c.key.name.toLowerCase()} by 20% to save around '
             '${Formatters.money(c.value * 0.2)} this month.',
-      ));
+      ),);
     }
 
     // 2. Transport advice
@@ -125,14 +125,14 @@ class SmartAdviceScreen extends StatelessWidget {
         title: AppStrings.adviceTransport,
         body: '${AppStrings.adviceTransportBody} '
             '(You\'ve spent ${Formatters.money(transportTotal)} so far.)',
-      ));
+      ),);
     } else {
-      out.add(_AdviceCardData(
+      out.add(const _AdviceCardData(
         icon: Icons.directions_bus_rounded,
         color: AppColors.catTransport,
         title: AppStrings.adviceTransport,
         body: AppStrings.adviceTransportBody,
-      ));
+      ),);
     }
 
     // 3. Budget pacing
@@ -147,7 +147,7 @@ class SmartAdviceScreen extends StatelessWidget {
       color: AppColors.primaryIndigo,
       title: AppStrings.adviceBudget,
       body: pacingMsg,
-    ));
+    ),);
 
     // 4. Savings boost
     final remaining = expenses.remaining;
@@ -159,7 +159,7 @@ class SmartAdviceScreen extends StatelessWidget {
           ? 'You have ${Formatters.money(remaining)} left this month. Move '
               '${Formatters.money(remaining * 0.5)} to your Emergency Fund before you spend it.'
           : 'You\'re over budget this month. Review your largest categories and pause discretionary spending.',
-    ));
+    ),);
 
     return out;
   }

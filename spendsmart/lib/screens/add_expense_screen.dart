@@ -232,7 +232,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             }
           },
         ),
-      ));
+      ),);
     }
 
     if (Navigator.of(context).canPop()) Navigator.of(context).maybePop();
@@ -322,7 +322,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             Haptics.light();
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                  builder: (_) => const VoiceEntryScreen()),
+                                  builder: (_) => const VoiceEntryScreen(),),
                             );
                           },
                         ),
@@ -371,7 +371,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                   Icon(q.$3, size: 14, color: q.$4),
                                   const SizedBox(width: 6),
                                   Text(q.$1,
-                                      style: TextStyles.caption(context, weight: FontWeight.w700)),
+                                      style: TextStyles.caption(context, weight: FontWeight.w700),),
                                 ],
                               ),
                             ),
@@ -439,10 +439,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         maxLength: 80,
                         style: TextStyles.body(context),
                         textInputAction: TextInputAction.done,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           hintText: 'What was this expense for?',
                           counterText: '',
-                          prefixIcon: const Icon(Icons.notes_rounded, size: 18),
+                          prefixIcon: Icon(Icons.notes_rounded, size: 18),
                         ),
                       ),
                     ],
@@ -642,37 +642,34 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           alignment: Alignment.center,
           child: Text(label,
               style: TextStyles.caption(context, weight: FontWeight.w600)
-                  .copyWith(color: sel ? Colors.white : AppColorsOf.secondaryText(context))),
+                  .copyWith(color: sel ? Colors.white : AppColorsOf.secondaryText(context)),),
         ),
       ),
     );
   }
 
-  // ═══ Category grid — shortened labels, clear selected state ═══
+  // ═══ Category grid — spacious 3-column layout, clear selected state ═══
   Widget _categoryGrid() {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        // Taller ratio (0.92 → 0.85) so the icon + label has more
-        // breathing room — previously the items felt squat/cramped.
-        childAspectRatio: 1.0,
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 1.05,
       ),
       itemCount: SampleData.categories.length,
       itemBuilder: (ctx, i) {
         final c = SampleData.categories[i];
         final sel = _selectedCategoryId == c.id;
-        final shortName = _shortLabels[c.id] ?? c.name;
         return GestureDetector(
           onTap: () {
             Haptics.selection();
             setState(() => _selectedCategoryId = c.id);
           },
           child: AnimatedScale(
-            scale: sel ? 1.06 : 1.0,
+            scale: sel ? 1.04 : 1.0,
             duration: AppMotion.effective(ctx, AppMotion.base),
             curve: AppMotion.effectiveCurve(ctx, AppMotion.celebrate),
             child: AnimatedContainer(
@@ -684,33 +681,45 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   color: sel ? c.color : AppColorsOf.border(context),
                   width: sel ? 1.6 : 1,
                 ),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Stack(
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedScale(
-                        scale: sel ? 1.12 : 1.0,
-                        duration: AppMotion.base,
-                        curve: AppMotion.celebrate,
-                        child: Container(
-                          width: 36, height: 36,
-                          decoration: BoxDecoration(
-                            color: c.color.withOpacity(0.16),
-                            shape: BoxShape.circle,
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedScale(
+                            scale: sel ? 1.1 : 1.0,
+                            duration: AppMotion.base,
+                            curve: AppMotion.celebrate,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: c.color.withOpacity(0.16),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(c.icon, color: c.color, size: 20),
+                            ),
                           ),
-                          alignment: Alignment.center,
-                          child: Icon(c.icon, color: c.color, size: 18),
-                        ),
+                          const SizedBox(height: 8),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              c.name,
+                              style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(shortName,
-                          style: TextStyles.caption(context, weight: FontWeight.w600),
-                          textAlign: TextAlign.center,
-                          maxLines: 1),
-                    ],
+                    ),
                   ),
                   if (sel)
                     Positioned(

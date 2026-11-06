@@ -21,6 +21,7 @@ import 'budget_overview_screen.dart';
 import 'edit_profile_screen.dart';
 import 'currency_selection_screen.dart';
 import 'notification_preferences_screen.dart';
+import 'income_screen.dart';
 
 /// Premium Profile screen with comprehensive, personalized financial and account content.
 ///
@@ -369,6 +370,9 @@ class ProfileScreen extends StatelessWidget {
                           value: Formatters.money(income),
                           icon: Icons.account_balance_rounded,
                           color: AppColors.mint,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const IncomeScreen()),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -378,6 +382,9 @@ class ProfileScreen extends StatelessWidget {
                           value: Formatters.money(monthlyLimit),
                           icon: Icons.wallet_rounded,
                           color: AppColors.primaryIndigo,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const BudgetOverviewScreen()),
+                          ),
                         ),
                       ),
                     ],
@@ -419,10 +426,10 @@ class ProfileScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 4, bottom: 8),
                     child: Text('Achievements & Badges', style: TextStyles.label(context)),
                   ),
-                  SingleChildScrollView(
+                  const SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: const [
+                      children: [
                         _BadgeItem(
                           icon: '🎯',
                           title: 'Goal Crusher',
@@ -606,7 +613,7 @@ class ProfileScreen extends StatelessWidget {
                     (_) => false,
                   );
                 }
-              }),
+              },),
             ),
 
             // ═══ 8. VERSION INFO ═══
@@ -727,56 +734,65 @@ class _MetricCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 
   const _MetricCard({
     required this.title,
     required this.value,
     required this.icon,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      padding: const EdgeInsets.all(14),
-      customColor: color.withOpacity(0.06),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: GlassCard(
+          padding: const EdgeInsets.all(14),
+          customColor: color.withOpacity(0.06),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.18),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: color, size: 16),
+                  ),
+                  const Spacer(),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 11, color: AppColorsOf.tertiaryText(context)),
+                ],
               ),
-              const Spacer(),
-              Icon(Icons.arrow_forward_ios_rounded, size: 11, color: AppColorsOf.tertiaryText(context)),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: TextStyles.caption(context).copyWith(
+                  color: AppColorsOf.secondaryText(context),
+                  fontSize: 11,
+                ),
+              ),
+              const SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: TextStyles.body(context, weight: FontWeight.w700).copyWith(
+                    fontSize: 15,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyles.caption(context).copyWith(
-              color: AppColorsOf.secondaryText(context),
-              fontSize: 11,
-            ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: TextStyles.body(context, weight: FontWeight.w700).copyWith(
-                fontSize: 15,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -863,7 +879,7 @@ class _ThemeQuickToggleSheet extends StatelessWidget {
           const SizedBox(height: 4),
           Text('Choose your preferred appearance',
               style: TextStyles.caption(context),
-              textAlign: TextAlign.center),
+              textAlign: TextAlign.center,),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(4),

@@ -61,7 +61,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           phone: _phoneCtrl.text.trim(),
           occupation: _occupationCtrl.text.trim(),
           monthlyIncome: incomeVal,
-        ));
+        ),);
 
     setState(() => _saving = false);
     if (!mounted) return;

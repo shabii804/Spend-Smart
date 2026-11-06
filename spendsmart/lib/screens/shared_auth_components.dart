@@ -265,7 +265,7 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
               fontSize: 16,
               letterSpacing: 4,
             ),
-            prefixIcon: Icon(
+            prefixIcon: const Icon(
               Icons.lock_outline_rounded,
               size: 20,
               color: AppColors.darkTextSecondary,
@@ -458,7 +458,7 @@ class AuthScreenScaffold extends StatelessWidget {
                             // top padding to clear the 40px button + 8px top
                             // + 8px gap. When no back button, use lg (24px).
                             SizedBox(
-                                height: showBackButton ? 56 : AuthSpacing.lg),
+                                height: showBackButton ? 56 : AuthSpacing.lg,),
                             child,
                           ],
                         ),
@@ -678,7 +678,7 @@ class AuthFooterLink extends StatelessWidget {
                     TextSpan(text: '$prompt '),
                     TextSpan(
                       text: action,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
@@ -852,7 +852,7 @@ class AuthTermsRow extends StatelessWidget {
               padding: const EdgeInsets.only(top: 1),
               child: RichText(
                 text: TextSpan(
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'PlusJakartaSans',
                     fontSize: 12,
                     color: AppColors.darkTextSecondary,
@@ -862,7 +862,7 @@ class AuthTermsRow extends StatelessWidget {
                     TextSpan(text: promptText),
                     TextSpan(
                       text: termsLabel,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColors.primaryIndigo,
                         fontWeight: FontWeight.w700,
                       ),
@@ -872,7 +872,7 @@ class AuthTermsRow extends StatelessWidget {
                     TextSpan(text: conjunctionText),
                     TextSpan(
                       text: privacyLabel,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColors.primaryIndigo,
                         fontWeight: FontWeight.w700,
                       ),

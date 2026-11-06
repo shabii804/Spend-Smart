@@ -114,7 +114,7 @@ class _ThemeCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(title,
-                              style: TextStyles.body(context, weight: FontWeight.w700)),
+                              style: TextStyles.body(context, weight: FontWeight.w700),),
                           const SizedBox(height: 2),
                           Text(subtitle, style: TextStyles.caption(context)),
                         ],
@@ -135,7 +135,7 @@ class _ThemeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     Text(title,
-                        style: TextStyles.body(context, weight: FontWeight.w700)),
+                        style: TextStyles.body(context, weight: FontWeight.w700),),
                     const SizedBox(height: 2),
                     Text(subtitle, style: TextStyles.caption(context)),
                   ],

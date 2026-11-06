@@ -105,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     context.read<UserProvider>().updateUser(UserProfile(
           fullName: _nameCtrl.text.trim(),
           email: _emailCtrl.text.trim(),
-        ));
+        ),);
     await showPremiumSuccess(context);
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
@@ -301,17 +301,17 @@ class _RegisterScreenState extends State<RegisterScreen>
                 },
                 child: RichText(
                   textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: TextStyle(
+                  text: const TextSpan(
+                    style: const TextStyle(
                       fontFamily: 'PlusJakartaSans',
                       fontSize: 14,
                       color: AppColors.darkTextSecondary,
                     ),
                     children: [
-                      const TextSpan(text: 'Already have an account? '),
-                      TextSpan(
+                      TextSpan(text: 'Already have an account? '),
+                      const TextSpan(
                         text: 'Sign In',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.primaryIndigo,
                           fontWeight: FontWeight.w700,
                         ),

@@ -276,7 +276,7 @@ class _CountUpTextState extends State<CountUpText>
     if (dur != widget.duration) {
       // Reduce-motion: show final value immediately
       return Text('${widget.prefix}${_format(widget.target)}${widget.suffix}',
-          style: widget.style);
+          style: widget.style,);
     }
     return AnimatedBuilder(
       animation: _anim,
@@ -376,6 +376,95 @@ class _ShimmerSkeletonState extends State<ShimmerSkeleton>
           ),
         );
       },
+    );
+  }
+}
+
+/// Animated bouncing icon widget with spring micro-interaction.
+/// Delivers high-end haptic and tactile bounce when tapped or triggered.
+class AnimatedIconBounce extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final double bounceScale;
+  final Duration duration;
+
+  const AnimatedIconBounce({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.bounceScale = 1.22,
+    this.duration = const Duration(milliseconds: 320),
+  });
+
+  @override
+  State<AnimatedIconBounce> createState() => AnimatedIconBounceState();
+}
+
+class AnimatedIconBounceState extends State<AnimatedIconBounce>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  late final Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(vsync: this, duration: widget.duration);
+    _scaleAnim = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: widget.bounceScale)
+            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 40,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: widget.bounceScale, end: 0.95)
+            .chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 35,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.95, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 25,
+      ),
+    ]).animate(_c);
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  /// Trigger bounce programmatically
+  void bounce() {
+    if (AppMotion.reduceMotion(context)) {
+      widget.onTap?.call();
+      return;
+    }
+    Haptics.light();
+    _c.forward(from: 0.0);
+    widget.onTap?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (AppMotion.reduceMotion(context)) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: widget.child,
+      );
+    }
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: bounce,
+      child: AnimatedBuilder(
+        animation: _scaleAnim,
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnim.value,
+          child: child,
+        ),
+        child: widget.child,
+      ),
     );
   }
 }

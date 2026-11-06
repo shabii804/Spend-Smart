@@ -25,7 +25,7 @@ class SampleData {
     occupation: 'Software Engineer',
     streakDays: 42,
     healthScore: 88,
-    biometricsEnabled: true,
+    biometricsEnabled: false,
     appLockEnabled: false,
   );
 
@@ -45,6 +45,7 @@ class SampleData {
     Category(id: 'bills', name: 'Bills', icon: Icons.receipt_long_rounded, color: AppColors.catBills),
     Category(id: 'internet', name: 'Internet', icon: Icons.wifi_rounded, color: AppColors.catInternet),
     Category(id: 'shopping', name: 'Shopping', icon: Icons.shopping_bag_rounded, color: AppColors.catShopping),
+    Category(id: 'rent', name: 'Rent & Hostel', icon: Icons.home_rounded, color: AppColors.primaryPurple),
     Category(id: 'others', name: 'Others', icon: Icons.category_rounded, color: AppColors.catOthers),
   ];
 
@@ -199,7 +200,7 @@ class SampleData {
   // NOTIFICATIONS (sample)
   // ============================================================
   static final List<AppNotification> notifications = [
-    AppNotification(
+    const AppNotification(
       id: 'n1',
       type: NotificationType.alert,
       title: 'Budget Alert',
@@ -208,7 +209,7 @@ class SampleData {
       icon: Icons.warning_amber_rounded,
       color: AppColors.warning,
     ),
-    AppNotification(
+    const AppNotification(
       id: 'n2',
       type: NotificationType.reminder,
       title: 'Add Transaction',
@@ -217,7 +218,7 @@ class SampleData {
       icon: Icons.notifications_active_rounded,
       color: AppColors.blue,
     ),
-    AppNotification(
+    const AppNotification(
       id: 'n3',
       type: NotificationType.achievement,
       title: 'Goal Milestone!',
@@ -226,7 +227,7 @@ class SampleData {
       icon: Icons.emoji_events_rounded,
       color: AppColors.mint,
     ),
-    AppNotification(
+    const AppNotification(
       id: 'n4',
       type: NotificationType.suggestion,
       title: 'Smart Suggestion',

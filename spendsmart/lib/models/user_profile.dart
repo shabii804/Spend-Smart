@@ -22,7 +22,7 @@ class UserProfile {
     this.occupation = 'Software Engineer',
     this.streakDays = 42,
     this.healthScore = 88,
-    this.biometricsEnabled = true,
+    this.biometricsEnabled = false,
     this.appLockEnabled = false,
   });
 

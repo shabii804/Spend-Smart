@@ -78,7 +78,7 @@ class ExpenseDetailsScreen extends StatelessWidget {
                     expense.title,
                     style: TextStyles.body(context,
                         color: Colors.white.withOpacity(0.9),
-                        weight: FontWeight.w600),
+                        weight: FontWeight.w600,),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -93,7 +93,7 @@ class ExpenseDetailsScreen extends StatelessWidget {
                       label: AppStrings.category,
                       value: cat.name,
                       icon: cat.icon,
-                      iconColor: cat.color),
+                      iconColor: cat.color,),
                   const Divider(height: 24),
                   _DetailRow(
                     label: AppStrings.date,
@@ -148,7 +148,7 @@ class ExpenseDetailsScreen extends StatelessWidget {
                             .deleteExpense(expense.id);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text(AppStrings.expenseDeleted)),
+                              content: Text(AppStrings.expenseDeleted),),
                         );
                         if (Navigator.of(context).canPop()) {
                           Navigator.of(context).maybePop();

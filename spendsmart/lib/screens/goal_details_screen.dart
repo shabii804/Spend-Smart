@@ -73,7 +73,7 @@ class GoalDetailsScreen extends StatelessWidget {
                     Text(
                       '${AppStrings.ofText} ${Formatters.money(goal.targetAmount)}',
                       style: TextStyles.body(context,
-                          color: Colors.white.withOpacity(0.9)),
+                          color: Colors.white.withOpacity(0.9),),
                     ),
                     const SizedBox(height: 20),
                     ClipRRect(
@@ -119,7 +119,7 @@ class GoalDetailsScreen extends StatelessWidget {
                       ),
                       alignment: Alignment.center,
                       child: const Icon(Icons.emoji_events_rounded,
-                          color: Colors.white, size: 22),
+                          color: Colors.white, size: 22,),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -129,9 +129,9 @@ class GoalDetailsScreen extends StatelessWidget {
                           Text(AppStrings.goalComplete,
                               style: TextStyles.body(context,
                                   weight: FontWeight.w700,
-                                  color: AppColors.mint)),
+                                  color: AppColors.mint,),),
                           Text(AppStrings.goalCompleteSubtitle,
-                              style: TextStyles.caption(context)),
+                              style: TextStyles.caption(context),),
                         ],
                       ),
                     ),

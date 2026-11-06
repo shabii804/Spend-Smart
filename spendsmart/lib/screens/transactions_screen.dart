@@ -91,7 +91,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       out = out
           .where((e) =>
               e.title.toLowerCase().contains(q) ||
-              (e.note?.toLowerCase().contains(q) ?? false))
+              (e.note?.toLowerCase().contains(q) ?? false),)
           .toList();
     }
     out.sort((a, b) => b.date.compareTo(a.date));
@@ -151,7 +151,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           Haptics.selection();
         },
       ),
-    ));
+    ),);
   }
 
   @override
@@ -212,22 +212,22 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   color: AppColors.primaryIndigo.withOpacity(0.06),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: AppColors.primaryIndigo.withOpacity(0.10)),
+                      color: AppColors.primaryIndigo.withOpacity(0.10),),
                 ),
                 child: Row(
                   children: [
                     const Icon(Icons.trending_down_rounded,
-                        size: 14, color: AppColors.danger),
+                        size: 14, color: AppColors.danger,),
                     const SizedBox(width: 6),
                     Text(
                         '${Formatters.money(monthTotal)} this month',
                         style: TextStyles.caption(context,
-                            weight: FontWeight.w700)),
+                            weight: FontWeight.w700,),),
                     const Spacer(),
                     Text(
                       '${grouped.length} ${grouped.length == 1 ? 'day' : 'days'}',
                       style: TextStyles.caption(context).copyWith(
-                          color: AppColorsOf.tertiaryText(context), fontSize: 10),
+                          color: AppColorsOf.tertiaryText(context), fontSize: 10,),
                     ),
                   ],
                 ),
@@ -245,7 +245,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   style: TextStyles.body(context).copyWith(fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Search transactions',
-                    hintStyle: TextStyle(fontSize: 13),
+                    hintStyle: const TextStyle(fontSize: 13),
                     prefixIcon:
                         const Icon(Icons.search_rounded, size: 18),
                     prefixIconConstraints:
@@ -288,7 +288,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                          horizontal: 12, vertical: 6,),
                       decoration: BoxDecoration(
                         color: sel
                             ? AppColors.primaryIndigo
@@ -322,7 +322,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             // buttons inline. Much more discoverable than swipe.
             Expanded(
               child: filtered.isEmpty
-                  ? EmptyState(
+                  ? const EmptyState(
                       icon: Icons.search_off_rounded,
                       title: 'No transactions found',
                       subtitle: 'Try a different search or filter.',
@@ -333,7 +333,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       onRefresh: () async {
                         Haptics.selection();
                         await Future.delayed(
-                            const Duration(milliseconds: 600));
+                            const Duration(milliseconds: 600),);
                         setState(() {});
                       },
                       child: ListView.builder(
@@ -350,27 +350,27 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               // Date header + daily total
                               Padding(
                                 padding: const EdgeInsets.only(
-                                    top: 10, bottom: 6),
+                                    top: 10, bottom: 6,),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(label,
                                         style: TextStyles.caption(context,
-                                                weight: FontWeight.w700)
+                                                weight: FontWeight.w700,)
                                             .copyWith(
                                                 color: AppColorsOf
-                                                    .secondaryText(context))),
+                                                    .secondaryText(context),),),
                                     Text(
                                         '-${Formatters.money(total)}',
                                         style: TextStyles.caption(context,
-                                                weight: FontWeight.w700)
+                                                weight: FontWeight.w700,)
                                             .copyWith(
                                               color: AppColors.danger,
                                               fontFeatures: const [
-                                                FontFeature.tabularFigures()
+                                                FontFeature.tabularFigures(),
                                               ],
-                                            )),
+                                            ),),
                                   ],
                                 ),
                               ),
@@ -387,7 +387,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                         child: _ExpandableTransactionTile(
                                           expense: group.value[i],
                                           category: SampleData.categoryById(
-                                              group.value[i].categoryId),
+                                              group.value[i].categoryId,),
                                           onDelete: _deleteExpense,
                                         ),
                                       ),
@@ -496,7 +496,7 @@ class _ExpandableTransactionTileState
                       ),
                       alignment: Alignment.center,
                       child: Icon(widget.category.icon,
-                          color: widget.category.color, size: 20),
+                          color: widget.category.color, size: 20,),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -508,14 +508,14 @@ class _ExpandableTransactionTileState
                         Text(
                           widget.expense.title,
                           style: TextStyles.body(context,
-                              weight: FontWeight.w600),
+                              weight: FontWeight.w600,),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Text(
                           Formatters.relativeDateTime(
-                              widget.expense.date),
+                              widget.expense.date,),
                           style: TextStyles.caption(context)
                               .copyWith(fontSize: 10),
                           maxLines: 1,
@@ -532,7 +532,7 @@ class _ExpandableTransactionTileState
                         .copyWith(
                       color: AppColors.danger,
                       fontFeatures: const [
-                        FontFeature.tabularFigures()
+                        FontFeature.tabularFigures(),
                       ],
                     ),
                   ),
@@ -614,7 +614,7 @@ class _ExpandableTransactionTileState
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => ExpenseDetailsScreen(
-                            expenseId: widget.expense.id),
+                            expenseId: widget.expense.id,),
                       ),
                     );
                   },

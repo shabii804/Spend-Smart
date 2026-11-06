@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/expense.dart';
 import '../models/category.dart' as app_models;
 import '../data/sample_data.dart';
@@ -8,15 +10,44 @@ typedef AppCategory = app_models.Category;
 /// Owns the expense list and all derived aggregations.
 /// Charts, dashboard and analytics read directly from this provider.
 class ExpenseProvider extends ChangeNotifier {
-  ExpenseProvider() : _expenses = List.of(SampleData.expenses);
+  static const _keyExpenses = 'spendsmart_expenses';
+
+  ExpenseProvider() : _expenses = List.of(SampleData.expenses) {
+    _loadFromPrefs();
+  }
 
   List<Expense> _expenses;
   List<Expense> get expenses => List.unmodifiable(_expenses);
+
+  Future<void> _loadFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_keyExpenses);
+      if (raw != null && raw.isNotEmpty) {
+        final List list = jsonDecode(raw);
+        _expenses = list.map((item) => Expense.fromJson(item as Map<String, dynamic>)).toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error loading expenses: $e');
+    }
+  }
+
+  Future<void> _saveToPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = jsonEncode(_expenses.map((e) => e.toJson()).toList());
+      await prefs.setString(_keyExpenses, raw);
+    } catch (e) {
+      debugPrint('Error saving expenses: $e');
+    }
+  }
 
   // ---------- Mutations ----------
   void addExpense(Expense e) {
     _expenses.insert(0, e);
     notifyListeners();
+    _saveToPrefs();
   }
 
   void updateExpense(Expense updated) {
@@ -24,12 +55,14 @@ class ExpenseProvider extends ChangeNotifier {
     if (i >= 0) {
       _expenses[i] = updated;
       notifyListeners();
+      _saveToPrefs();
     }
   }
 
   void deleteExpense(String id) {
     _expenses.removeWhere((e) => e.id == id);
     notifyListeners();
+    _saveToPrefs();
   }
 
   Expense? byId(String id) {
@@ -53,7 +86,7 @@ class ExpenseProvider extends ChangeNotifier {
   List<Expense> get _monthExpenses {
     final anchor = _anchorMonth;
     return _expenses.where((e) =>
-        e.date.year == anchor.year && e.date.month == anchor.month).toList();
+        e.date.year == anchor.year && e.date.month == anchor.month,).toList();
   }
 
   double get totalSpent =>

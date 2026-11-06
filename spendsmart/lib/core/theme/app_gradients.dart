@@ -41,10 +41,10 @@ class AppGradients {
   );
 
   /// Hero card subtle wash (for dashboard main card).
-  static LinearGradient heroCard(BuildContext context) => LinearGradient(
+  static LinearGradient heroCard(BuildContext context) => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
+        colors: const [
           AppColors.primaryIndigo,
           AppColors.primaryPurple,
         ],

@@ -28,7 +28,7 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
     _amountCtrl = TextEditingController(
         text: current == current.roundToDouble()
             ? current.toStringAsFixed(0)
-            : current.toStringAsFixed(2));
+            : current.toStringAsFixed(2),);
   }
 
   @override
@@ -75,7 +75,7 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
                 const SizedBox(height: 16),
                 // Period display (read-only)
                 _readRow(context, AppStrings.budgetPeriod, AppStrings.budgetMonthly,
-                    Icons.calendar_month_rounded),
+                    Icons.calendar_month_rounded,),
                 const SizedBox(height: 24),
                 PrimaryButton(
                   label: AppStrings.save,
@@ -149,7 +149,7 @@ class _AmountField extends StatelessWidget {
           decoration: InputDecoration(
             prefixText: '${Formatters.currencySymbol} ',
             prefixStyle: TextStyles.money(context, size: 22,
-                color: AppColorsOf.secondaryText(context)),
+                color: AppColorsOf.secondaryText(context),),
             hintText: '25000',
           ),
         ),

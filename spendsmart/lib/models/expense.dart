@@ -32,4 +32,22 @@ class Expense {
         date: date ?? this.date,
         note: note ?? this.note,
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'amount': amount,
+        'categoryId': categoryId,
+        'date': date.toIso8601String(),
+        'note': note,
+      };
+
+  factory Expense.fromJson(Map<String, dynamic> json) => Expense(
+        id: json['id'] as String,
+        title: json['title'] as String,
+        amount: (json['amount'] as num).toDouble(),
+        categoryId: json['categoryId'] as String,
+        date: DateTime.parse(json['date'] as String),
+        note: json['note'] as String?,
+      );
 }

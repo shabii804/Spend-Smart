@@ -24,10 +24,16 @@ class CurrencyProvider extends ChangeNotifier {
   ];
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final id = prefs.getString(AppConstants.keyCurrency) ?? 'PKR';
-    _apply(id);
-    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getString(AppConstants.keyCurrency) ?? 'PKR';
+      _apply(id);
+    } catch (e) {
+      debugPrint('Error loading currency: $e');
+      _apply('PKR');
+    } finally {
+      notifyListeners();
+    }
   }
 
   Future<void> setCurrency(String id) async {

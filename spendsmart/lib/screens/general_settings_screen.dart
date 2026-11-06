@@ -10,6 +10,8 @@ import '../providers/theme_provider.dart';
 import 'currency_selection_screen.dart';
 import 'notification_preferences_screen.dart';
 import 'theme_settings_screen.dart';
+import 'language_selection_screen.dart';
+import '../providers/language_provider.dart';
 
 class GeneralSettingsScreen extends StatelessWidget {
   const GeneralSettingsScreen({super.key});
@@ -19,6 +21,7 @@ class GeneralSettingsScreen extends StatelessWidget {
     final theme = context.watch<ThemeProvider>();
     final currency = context.watch<CurrencyProvider>();
     final notifPrefs = context.watch<NotifPrefsProvider>();
+    final lang = context.watch<LanguageProvider>();
 
     final themeLabel = theme.mode == ThemeModeChoice.light
         ? 'Light'
@@ -58,11 +61,21 @@ class GeneralSettingsScreen extends StatelessWidget {
                 _SettingsItem(
                   icon: Icons.language_rounded,
                   color: AppColors.catBills,
-                  title: AppStrings.languageCurrency,
-                  subtitle: 'English · ${currency.id} ${currency.symbol}',
+                  title: 'App Language',
+                  subtitle: '${lang.currentLanguage.name} (${lang.currentLanguage.nativeName})',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                        builder: (_) => const CurrencySelectionScreen()),
+                        builder: (_) => const LanguageSelectionScreen(),),
+                  ),
+                ),
+                _SettingsItem(
+                  icon: Icons.currency_exchange_rounded,
+                  color: AppColors.blue,
+                  title: AppStrings.currencySelection,
+                  subtitle: '${currency.id} · ${currency.symbol}',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const CurrencySelectionScreen(),),
                   ),
                 ),
               ],
@@ -78,7 +91,7 @@ class GeneralSettingsScreen extends StatelessWidget {
                   subtitle: themeLabel,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                        builder: (_) => const ThemeSettingsScreen()),
+                        builder: (_) => const ThemeSettingsScreen(),),
                   ),
                 ),
               ],
@@ -94,7 +107,7 @@ class GeneralSettingsScreen extends StatelessWidget {
                   subtitle: notifSubtitle,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                        builder: (_) => const NotificationPreferencesScreen()),
+                        builder: (_) => const NotificationPreferencesScreen(),),
                   ),
                 ),
               ],
@@ -200,14 +213,14 @@ class _SettingsItem extends StatelessWidget {
                     if (subtitle != null) ...[
                       const SizedBox(height: 2),
                       Text(subtitle!, style: TextStyles.caption(context),
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                          maxLines: 1, overflow: TextOverflow.ellipsis,),
                     ],
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               Icon(Icons.chevron_right_rounded,
-                  color: AppColorsOf.tertiaryText(context), size: 20),
+                  color: AppColorsOf.tertiaryText(context), size: 20,),
             ],
           ),
         ),

@@ -37,11 +37,11 @@ void _showAddMoneySheet(BuildContext context, String goalId, String goalName) {
           children: [
             Center(child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(color: AppColorsOf.tertiaryText(context).withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2)))),
+                borderRadius: BorderRadius.circular(2),),),),
             Text(goalName, style: TextStyles.h2(context), textAlign: TextAlign.center),
             const SizedBox(height: 4),
             Text('${Formatters.money(goal?.savedAmount ?? 0)} of ${Formatters.money(goal?.targetAmount ?? 0)}',
-                style: TextStyles.caption(context), textAlign: TextAlign.center),
+                style: TextStyles.caption(context), textAlign: TextAlign.center,),
             const SizedBox(height: 20),
             TextField(
               controller: amountCtrl,
@@ -53,9 +53,9 @@ void _showAddMoneySheet(BuildContext context, String goalId, String goalName) {
                 prefixText: '${Formatters.currencySymbol} ',
                 hintText: '0',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: AppColorsOf.border(context))),
+                  borderSide: BorderSide(color: AppColorsOf.border(context)),),
                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.primaryIndigo, width: 2)),
+                  borderSide: const BorderSide(color: AppColors.primaryIndigo, width: 2),),
               ),
             ),
             const SizedBox(height: 16),
@@ -75,7 +75,7 @@ void _showAddMoneySheet(BuildContext context, String goalId, String goalName) {
                         ),
                         alignment: Alignment.center,
                         child: Text(Formatters.moneyPlain(amt.toDouble()),
-                            style: TextStyles.body(context, weight: FontWeight.w700)),
+                            style: TextStyles.body(context, weight: FontWeight.w700),),
                       ),
                     ),
                   ),
@@ -103,7 +103,7 @@ void _showAddMoneySheet(BuildContext context, String goalId, String goalName) {
                   ConfettiBurst.show(context);
                 }
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Added ${Formatters.money(v)} to $goalName')));
+                  SnackBar(content: Text('Added ${Formatters.money(v)} to $goalName')),);
               },
             ),
             const SizedBox(height: 8),
@@ -175,7 +175,7 @@ class SavingsGoalsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Expanded(
               child: goals.isEmpty
-                  ? EmptyState(
+                  ? const EmptyState(
                       icon: Icons.savings_outlined,
                       title: AppStrings.noGoals,
                       subtitle: AppStrings.noGoalsSubtitle,
@@ -255,7 +255,7 @@ class _GoalsOverviewCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Savings Overview',
-                    style: TextStyles.h3(context)),
+                    style: TextStyles.h3(context),),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -293,7 +293,7 @@ class _GoalsOverviewCard extends StatelessWidget {
                           strokeWidth: 8,
                           backgroundColor:
                               AppColorsOf.tertiaryText(context).withOpacity(0.18),
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.mint),
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.mint),
                         ),
                       ),
                       TweenAnimationBuilder<double>(
@@ -303,13 +303,13 @@ class _GoalsOverviewCard extends StatelessWidget {
                         builder: (context, v, _) {
                           final pct = (v * 100).clamp(0, 100).toInt();
                           return Text('$pct%',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontFamily: 'PlusJakartaSans',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.mint,
-                                fontFeatures: const [FontFeature.tabularFigures()],
-                              ));
+                                fontFeatures: [FontFeature.tabularFigures()],
+                              ),);
                         },
                       ),
                     ],
@@ -323,15 +323,15 @@ class _GoalsOverviewCard extends StatelessWidget {
                     children: [
                       Text(Formatters.money(totalSaved),
                           style: TextStyles.money(context, size: 18, color: AppColors.mint)
-                              .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+                              .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),),
                       const SizedBox(height: 2),
                       Text('of ${Formatters.money(totalTarget)}',
                           style: TextStyles.caption(context)
-                              .copyWith(color: AppColorsOf.secondaryText(context))),
+                              .copyWith(color: AppColorsOf.secondaryText(context)),),
                       const SizedBox(height: 2),
                       Text('${Formatters.money(remaining)} to go',
                           style: TextStyles.caption(context, weight: FontWeight.w700)
-                              .copyWith(color: AppColors.primaryIndigo, fontSize: 11)),
+                              .copyWith(color: AppColors.primaryIndigo, fontSize: 11),),
                     ],
                   ),
                 ),
@@ -373,14 +373,14 @@ class _GoalsOverviewCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text('${g.name} ',
-                          style: TextStyles.caption(context, weight: FontWeight.w600)),
+                          style: TextStyles.caption(context, weight: FontWeight.w600),),
                       Text(Formatters.moneyPlain(g.savedAmount),
                           style: TextStyles.caption(context, weight: FontWeight.w700)
-                              .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+                              .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),),
                       const SizedBox(width: 4),
                       Text('· $sharePct%',
                           style: TextStyles.caption(context)
-                              .copyWith(color: AppColorsOf.tertiaryText(context), fontSize: 10)),
+                              .copyWith(color: AppColorsOf.tertiaryText(context), fontSize: 10),),
                     ],
                   );
                 }).toList(),
@@ -468,7 +468,7 @@ class _ExpandableGoalCardState extends State<_ExpandableGoalCard> {
             Haptics.selection();
           },
         ),
-      ));
+      ),);
     }
   }
 
@@ -551,7 +551,7 @@ class _GoalCard extends StatelessWidget {
                       children: [
                         Text(goal.name,
                             style: TextStyles.body(context, weight: FontWeight.w700),
-                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                            maxLines: 1, overflow: TextOverflow.ellipsis,),
                         const SizedBox(height: 2),
                         Text(
                           '${Formatters.money(goal.savedAmount)} of ${Formatters.money(goal.targetAmount)}',
@@ -573,11 +573,11 @@ class _GoalCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.emoji_events_rounded,
-                              color: AppColors.mint, size: 12),
+                              color: AppColors.mint, size: 12,),
                           const SizedBox(width: 4),
                           Text('Achieved',
                               style: TextStyles.caption(context, weight: FontWeight.w700)
-                                  .copyWith(color: AppColors.mint, fontSize: 10)),
+                                  .copyWith(color: AppColors.mint, fontSize: 10),),
                         ],
                       ),
                     )
@@ -628,7 +628,7 @@ class _GoalCard extends StatelessWidget {
                           : '${Formatters.money(goal.remaining)} to go',
                       style: TextStyles.caption(context).copyWith(
                           color: goal.isComplete ? AppColors.mint : null,
-                          fontWeight: FontWeight.w600, fontSize: 11),
+                          fontWeight: FontWeight.w600, fontSize: 11,),
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -655,7 +655,7 @@ class _GoalCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text('Add Money',
                                 style: TextStyles.caption(context, weight: FontWeight.w700)
-                                    .copyWith(color: Colors.white, fontSize: 11)),
+                                    .copyWith(color: Colors.white, fontSize: 11),),
                           ],
                         ),
                       ),

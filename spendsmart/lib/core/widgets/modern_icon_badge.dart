@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
 
 /// Next-level modern icon badge with squircle container, vibrant multi-stop
 /// gradient, glowing shadow, subtle border, and optional spring tap animation.

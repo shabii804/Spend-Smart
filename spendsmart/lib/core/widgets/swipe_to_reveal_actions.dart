@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/motion/haptics.dart';
-import '../theme/app_colors.dart';
 
 /// Swipe-to-reveal-actions wrapper — a safer alternative to [Dismissible].
 ///

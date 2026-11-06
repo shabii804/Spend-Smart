@@ -79,7 +79,7 @@ class TextStyles {
 
   // ── BODY (default text) ──
   static TextStyle body(BuildContext context,
-          {Color? color, FontWeight weight = FontWeight.w400}) =>
+          {Color? color, FontWeight weight = FontWeight.w400,}) =>
       TextStyle(
         fontFamily: _font,
         fontSize: 14,
@@ -90,7 +90,7 @@ class TextStyles {
 
   // ── CAPTION (small text — minimum 12px) ──
   static TextStyle caption(BuildContext context,
-          {Color? color, FontWeight weight = FontWeight.w400}) =>
+          {Color? color, FontWeight weight = FontWeight.w400,}) =>
       TextStyle(
         fontFamily: _font,
         fontSize: 12,
@@ -111,7 +111,7 @@ class TextStyles {
 
   // ── MONEY (tabular figures for aligned digits) ──
   static TextStyle money(BuildContext context,
-          {Color? color, double size = 22, FontWeight weight = FontWeight.w600}) =>
+          {Color? color, double size = 22, FontWeight weight = FontWeight.w600,}) =>
       TextStyle(
         fontFamily: _font,
         fontSize: size,

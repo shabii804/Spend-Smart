@@ -94,10 +94,10 @@ class CurrencySelectionScreen extends StatelessWidget {
                               children: [
                                 Text(o.name,
                                     style: TextStyles.body(context,
-                                        weight: FontWeight.w600)),
+                                        weight: FontWeight.w600,),),
                                 const SizedBox(height: 2),
                                 Text('${o.id} · ${o.symbol}',
-                                    style: TextStyles.caption(context)),
+                                    style: TextStyles.caption(context),),
                               ],
                             ),
                           ),

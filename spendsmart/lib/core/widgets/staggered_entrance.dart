@@ -41,7 +41,7 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
       ),
     );
     _offset = Tween<Offset>(
-      begin: const Offset(0, 0.4),
+      begin: const Offset(0, 0.08),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(

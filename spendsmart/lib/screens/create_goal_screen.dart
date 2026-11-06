@@ -168,7 +168,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                 alignment: Alignment.center,
                 child: Icon(ic,
                     color: sel ? Colors.white : AppColorsOf.secondaryText(context),
-                    size: 20),
+                    size: 20,),
               ),
             );
           }).toList(),
@@ -202,7 +202,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                   const Icon(Icons.event_rounded, color: AppColors.blue, size: 20),
                   const SizedBox(width: 12),
                   Text(Formatters.date(_targetDate),
-                      style: TextStyles.body(context, weight: FontWeight.w600)),
+                      style: TextStyles.body(context, weight: FontWeight.w600),),
                   const Spacer(),
                   const Icon(Icons.chevron_right_rounded, color: AppColors.blue),
                 ],
@@ -240,7 +240,7 @@ class _AmountField extends StatelessWidget {
           decoration: InputDecoration(
             prefixText: '${Formatters.currencySymbol} ',
             prefixStyle: TextStyles.money(context, size: 20,
-                color: AppColorsOf.secondaryText(context)),
+                color: AppColorsOf.secondaryText(context),),
             hintText: '0',
           ),
         ),

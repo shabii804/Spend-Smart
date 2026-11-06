@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import '../constants/app_constants.dart';
+import '../motion/page_transitions.dart';
 
 /// Builds the light + dark Material 3 themes for SpendSmart.
 /// Uses bundled Plus Jakarta Sans (no google_fonts dependency).
@@ -41,7 +42,6 @@ class AppTheme {
 
   static ThemeData light() => ThemeData(
         useMaterial3: true,
-        fontFamily: 'PlusJakartaSans',
         brightness: Brightness.light,
         scaffoldBackgroundColor: AppColors.lightBackground,
         colorScheme: const ColorScheme.light(
@@ -62,17 +62,17 @@ class AppTheme {
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            side: BorderSide(color: AppColors.lightBorder, width: 1),
+            side: const BorderSide(color: AppColors.lightBorder, width: 1),
           ),
         ),
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           backgroundColor: AppColors.lightBackground,
           foregroundColor: AppColors.lightTextPrimary,
-          iconTheme: const IconThemeData(color: AppColors.lightTextPrimary, size: 24),
-          actionsIconTheme: const IconThemeData(color: AppColors.lightTextPrimary, size: 24),
+          iconTheme: IconThemeData(color: AppColors.lightTextPrimary, size: 24),
+          actionsIconTheme: IconThemeData(color: AppColors.lightTextPrimary, size: 24),
           elevation: 0,
           centerTitle: false,
-          titleTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.lightTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
+          titleTextStyle: TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.lightTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         inputDecorationTheme: _inputTheme(
           border: AppColors.lightBorder,
@@ -87,10 +87,10 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusChip),
-            side: BorderSide(color: AppColors.lightBorder),
+            side: const BorderSide(color: AppColors.lightBorder),
           ),
         ),
-        dividerTheme: DividerThemeData(color: AppColors.lightDivider, thickness: 1, space: 1),
+        dividerTheme: const DividerThemeData(color: AppColors.lightDivider, thickness: 1, space: 1),
         iconTheme: const IconThemeData(color: AppColors.lightTextPrimary, size: 24),
         primaryIconTheme: const IconThemeData(color: AppColors.lightTextPrimary, size: 24),
         snackBarTheme: SnackBarThemeData(
@@ -100,9 +100,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 0,
         ),
-        bottomSheetTheme: BottomSheetThemeData(
+        bottomSheetTheme: const BottomSheetThemeData(
           backgroundColor: AppColors.lightSurface,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
           elevation: 0,
         ),
         dialogTheme: DialogThemeData(
@@ -113,22 +113,21 @@ class AppTheme {
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
-            TargetPlatform.android: _FadeUpTransitionsBuilder(),
-            TargetPlatform.iOS: _FadeUpTransitionsBuilder(),
-            TargetPlatform.macOS: _FadeUpTransitionsBuilder(),
-            TargetPlatform.windows: _FadeUpTransitionsBuilder(),
-            TargetPlatform.linux: _FadeUpTransitionsBuilder(),
-            TargetPlatform.fuchsia: _FadeUpTransitionsBuilder(),
+            TargetPlatform.android: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.iOS: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.macOS: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.windows: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.linux: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.fuchsia: SmoothFadePageTransitionsBuilder(),
           },
         ),
       );
 
   static ThemeData dark() => ThemeData(
         useMaterial3: true,
-        fontFamily: 'PlusJakartaSans',
         brightness: Brightness.dark,
         scaffoldBackgroundColor: AppColors.darkBackground,
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: AppColors.primaryIndigo,
           secondary: AppColors.blue,
           surface: AppColors.darkSurface,
@@ -146,17 +145,17 @@ class AppTheme {
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-            side: BorderSide(color: AppColors.darkBorder, width: 1),
+            side: const BorderSide(color: AppColors.darkBorder, width: 1),
           ),
         ),
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           backgroundColor: AppColors.darkBackground,
           foregroundColor: AppColors.darkTextPrimary,
-          iconTheme: const IconThemeData(color: AppColors.darkTextPrimary, size: 24),
-          actionsIconTheme: const IconThemeData(color: AppColors.darkTextPrimary, size: 24),
+          iconTheme: IconThemeData(color: AppColors.darkTextPrimary, size: 24),
+          actionsIconTheme: IconThemeData(color: AppColors.darkTextPrimary, size: 24),
           elevation: 0,
           centerTitle: false,
-          titleTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.darkTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
+          titleTextStyle: TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.darkTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         inputDecorationTheme: _inputTheme(
           border: AppColors.darkBorder,
@@ -171,10 +170,10 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusChip),
-            side: BorderSide(color: AppColors.darkBorder),
+            side: const BorderSide(color: AppColors.darkBorder),
           ),
         ),
-        dividerTheme: DividerThemeData(color: AppColors.darkDivider, thickness: 1, space: 1),
+        dividerTheme: const DividerThemeData(color: AppColors.darkDivider, thickness: 1, space: 1),
         iconTheme: const IconThemeData(color: AppColors.darkTextPrimary, size: 24),
         primaryIconTheme: const IconThemeData(color: AppColors.darkTextPrimary, size: 24),
         snackBarTheme: SnackBarThemeData(
@@ -184,9 +183,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 0,
         ),
-        bottomSheetTheme: BottomSheetThemeData(
+        bottomSheetTheme: const BottomSheetThemeData(
           backgroundColor: AppColors.darkSurface,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
           elevation: 0,
         ),
         dialogTheme: DialogThemeData(
@@ -197,62 +196,13 @@ class AppTheme {
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
-            TargetPlatform.android: _FadeUpTransitionsBuilder(),
-            TargetPlatform.iOS: _FadeUpTransitionsBuilder(),
-            TargetPlatform.macOS: _FadeUpTransitionsBuilder(),
-            TargetPlatform.windows: _FadeUpTransitionsBuilder(),
-            TargetPlatform.linux: _FadeUpTransitionsBuilder(),
-            TargetPlatform.fuchsia: _FadeUpTransitionsBuilder(),
+            TargetPlatform.android: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.iOS: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.macOS: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.windows: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.linux: SmoothFadePageTransitionsBuilder(),
+            TargetPlatform.fuchsia: SmoothFadePageTransitionsBuilder(),
           },
         ),
       );
-}
-
-/// Premium page transition: smooth slide + crossfade + exit parallax.
-class _FadeUpTransitionsBuilder extends PageTransitionsBuilder {
-  const _FadeUpTransitionsBuilder();
-
-  @override
-  Widget buildTransitions<T extends Object?>(
-    PageRoute<T> route,
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondary,
-    Widget child,
-  ) {
-    final curved = CurvedAnimation(
-      parent: animation,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
-    final secondaryCurved = CurvedAnimation(
-      parent: secondary,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
-
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(0.06, 0.0),
-        end: Offset.zero,
-      ).animate(curved),
-      child: FadeTransition(
-        opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved),
-        child: ScaleTransition(
-          scale: Tween<double>(begin: 0.985, end: 1.0).animate(curved),
-          alignment: Alignment.center,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset.zero,
-              end: const Offset(-0.03, 0.0),
-            ).animate(secondaryCurved),
-            child: FadeTransition(
-              opacity: Tween<double>(begin: 1.0, end: 0.88).animate(secondaryCurved),
-              child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

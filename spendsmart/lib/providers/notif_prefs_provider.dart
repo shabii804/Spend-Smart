@@ -17,11 +17,16 @@ class NotifPrefsProvider extends ChangeNotifier {
   bool get goalUpdates => _goalUpdates;
 
   Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    _budgetAlerts = prefs.getBool(AppConstants.keyNotifBudget) ?? true;
-    _lowBalance = prefs.getBool(AppConstants.keyNotifLowBalance) ?? true;
-    _goalUpdates = prefs.getBool(AppConstants.keyNotifGoals) ?? true;
-    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _budgetAlerts = prefs.getBool(AppConstants.keyNotifBudget) ?? true;
+      _lowBalance = prefs.getBool(AppConstants.keyNotifLowBalance) ?? true;
+      _goalUpdates = prefs.getBool(AppConstants.keyNotifGoals) ?? true;
+    } catch (e) {
+      debugPrint('Error loading notif prefs: $e');
+    } finally {
+      notifyListeners();
+    }
   }
 
   Future<void> setBudgetAlerts(bool v) async {

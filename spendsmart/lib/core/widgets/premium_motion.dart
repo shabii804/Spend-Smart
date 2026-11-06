@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/constants/motion.dart';
+import '../motion/page_transitions.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
@@ -49,16 +50,16 @@ class _PremiumLoadingIndicatorState extends State<PremiumLoadingIndicator>
         // Outer ring (clockwise)
         RotationTransition(turns: _spin1,
           child: SizedBox(width: widget.size, height: widget.size,
-            child: CircularProgressIndicator(value: 0.7, strokeWidth: 2.5, color: c.withOpacity(0.7), backgroundColor: c.withOpacity(0.12))),
+            child: CircularProgressIndicator(value: 0.7, strokeWidth: 2.5, color: c.withOpacity(0.7), backgroundColor: c.withOpacity(0.12)),),
         ),
         // Inner ring (counter-clockwise)
         RotationTransition(turns: _spin2,
           child: SizedBox(width: widget.size * 0.62, height: widget.size * 0.62,
-            child: CircularProgressIndicator(value: 0.5, strokeWidth: 2, color: c.withOpacity(0.9), backgroundColor: Colors.transparent))),
+            child: CircularProgressIndicator(value: 0.5, strokeWidth: 2, color: c.withOpacity(0.9), backgroundColor: Colors.transparent),),),
         // Pulsing center dot
         ScaleTransition(scale: Tween(begin: 0.7, end: 1.0).animate(CurvedAnimation(parent: _pulse, curve: Motion.easeOut)),
-          child: Container(width: 6, height: 6, decoration: BoxDecoration(color: c, shape: BoxShape.circle))),
-      ]),
+          child: Container(width: 6, height: 6, decoration: BoxDecoration(color: c, shape: BoxShape.circle)),),
+      ],),
     );
   }
 }
@@ -135,11 +136,11 @@ class _MorphingLoadingButtonState extends State<MorphingLoadingButton>
                 child: Row(mainAxisSize: widget.expand ? MainAxisSize.max : MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
                   if (widget.icon != null) ...[Icon(widget.icon, color: Colors.white, size: 18), const SizedBox(width: 8)],
                   Text(widget.label, style: TextStyles.body(context).copyWith(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
-                ]))),
+                ],),),),
             // Spinner (only mounted when loading to prevent background battery/ticker drain)
             if (widget.loading)
               const PremiumLoadingIndicator(size: 22, color: Colors.white),
-          ]),
+          ],),
         ),
       ),
     );
@@ -188,29 +189,29 @@ class _AmbientBackgroundAnimationState extends State<AmbientBackgroundAnimation>
       AnimatedBuilder(animation: _float1, builder: (context, _) {
         return Transform.translate(offset: Offset(60 * _float1.value - 30, 40 * _float1.value - 20),
           child: Opacity(opacity: 0.06,
-            child: Container(width: 200, height: 200, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryIndigo))));
-      }),
+            child: Container(width: 200, height: 200, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryIndigo)),),);
+      },),
       // Large floating shape 2
       Positioned(right: -40, top: 200,
         child: AnimatedBuilder(animation: _float2, builder: (context, _) {
           return Transform.translate(offset: Offset(-40 * _float2.value + 20, 50 * _float2.value - 25),
             child: Opacity(opacity: 0.05,
-              child: Container(width: 160, height: 160, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryPurple))));
-        })),
+              child: Container(width: 160, height: 160, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primaryPurple)),),);
+        },),),
       // Small floating shape 3
       Positioned(left: 30, bottom: 150,
         child: AnimatedBuilder(animation: _float3, builder: (context, _) {
           return Transform.translate(offset: Offset(30 * _float3.value - 15, -30 * _float3.value + 15),
             child: Opacity(opacity: 0.04,
-              child: Container(width: 100, height: 100, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.mint))));
-        })),
+              child: Container(width: 100, height: 100, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.mint)),),);
+        },),),
       // Ambient glow pulse
       Center(child: AnimatedBuilder(animation: _glow, builder: (context, _) {
         return Container(width: 300, height: 300,
           decoration: BoxDecoration(shape: BoxShape.circle,
-            gradient: RadialGradient(colors: [AppColors.primaryIndigo.withOpacity(0.08 * _glow.value), Colors.transparent], stops: const [0.4, 1.0])));
-      })),
-    ]);
+            gradient: RadialGradient(colors: [AppColors.primaryIndigo.withOpacity(0.08 * _glow.value), Colors.transparent], stops: const [0.4, 1.0]),),);
+      },),),
+    ],);
   }
 }
 
@@ -235,12 +236,12 @@ class PasswordStrengthMeter extends StatelessWidget {
               Container(height: 4, color: AppColors.primaryIndigo.withOpacity(0.12)),
               AnimatedContainer(duration: const Duration(milliseconds: 300), curve: Motion.easeOut,
                 height: 4, width: (strength * constraints.maxWidth).clamp(0.0, constraints.maxWidth),
-                decoration: BoxDecoration(gradient: LinearGradient(colors: [color, color.withOpacity(0.7)]), borderRadius: BorderRadius.circular(3))),
-            ])),
+                decoration: BoxDecoration(gradient: LinearGradient(colors: [color, color.withOpacity(0.7)]), borderRadius: BorderRadius.circular(3)),),
+            ],),),
           const SizedBox(height: 6),
           Text(label, style: TextStyles.caption(context, weight: FontWeight.w700).copyWith(color: color, fontSize: 11)),
-        ]);
-      }),
+        ],);
+      },),
     );
   }
 
@@ -360,7 +361,7 @@ class _PremiumSuccessAnimationState extends State<PremiumSuccessAnimation>
                       curve: const Interval(0.4, 1.0, curve: Motion.springOut),
                     ),
                     child: const Icon(Icons.check_rounded,
-                        color: Colors.white, size: 46),
+                        color: Colors.white, size: 46,),
                   ),
                 ),
               ],
@@ -376,8 +377,8 @@ class _PremiumSuccessAnimationState extends State<PremiumSuccessAnimation>
       final t = c.value;
       return Opacity(opacity: (1 - t).clamp(0.0, 1.0),
         child: Container(width: 70 + t * max * 2, height: 70 + t * max * 2,
-          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.mint.withOpacity(0.7 * (1 - t)), width: 3))));
-    });
+          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.mint.withOpacity(0.7 * (1 - t)), width: 3)),),);
+    },);
   }
 }
 
@@ -387,14 +388,16 @@ class _PremiumSuccessAnimationState extends State<PremiumSuccessAnimation>
 class AnimatedAuthRoute<T> extends PageRouteBuilder<T> {
   AnimatedAuthRoute({required WidgetBuilder builder})
       : super(
-          pageBuilder: (context, anim, _) => builder(context),
-          transitionDuration: Motion.durPageRoute,
-          reverseTransitionDuration: Motion.durPageRoute,
-          transitionsBuilder: (context, anim, _, child) {
-            final curved = CurvedAnimation(parent: anim, curve: Motion.easeOut);
-            return FadeTransition(opacity: curved,
-              child: SlideTransition(position: Tween(begin: const Offset(0.0, 0.05), end: Offset.zero).animate(curved),
-                child: ScaleTransition(scale: Tween(begin: 0.97, end: 1.0).animate(curved), alignment: Alignment.topCenter, child: child)));
+          pageBuilder: (context, anim, secAnim) => builder(context),
+          transitionDuration: const Duration(milliseconds: 320),
+          reverseTransitionDuration: const Duration(milliseconds: 280),
+          transitionsBuilder: (context, anim, secAnim, child) {
+            return SmoothFadePageTransitionsBuilder.buildSmoothFadeTransition(
+              context: context,
+              animation: anim,
+              secondaryAnimation: secAnim,
+              child: child,
+            );
           },
         );
 }
@@ -403,5 +406,6 @@ class AnimatedAuthRoute<T> extends PageRouteBuilder<T> {
 Future<void> showPremiumSuccess(BuildContext context, {VoidCallback? onComplete}) {
   HapticFeedback.mediumImpact();
   return showDialog<void>(context: context, barrierDismissible: false, barrierColor: Colors.black.withOpacity(0.34),
-    builder: (_) => PremiumSuccessAnimation(onComplete: () { if (Navigator.of(context).canPop()) Navigator.of(context).maybePop(); onComplete?.call(); }));
+    builder: (_) => PremiumSuccessAnimation(onComplete: () { if (Navigator.of(context).canPop()) Navigator.of(context).maybePop(); onComplete?.call(); }),);
 }
+

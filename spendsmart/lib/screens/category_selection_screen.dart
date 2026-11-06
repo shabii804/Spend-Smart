@@ -45,24 +45,35 @@ class CategorySelectionScreen extends StatelessWidget {
                     border: Border.all(color: AppColorsOf.border(context)),
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: c.color.withOpacity(0.14),
-                          shape: BoxShape.circle,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: c.color.withOpacity(0.14),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(c.icon, color: c.color, size: 28),
                         ),
-                        alignment: Alignment.center,
-                        child: Icon(c.icon, color: c.color, size: 28),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(c.name, style: TextStyles.body(context,
-                          weight: FontWeight.w600),
-                          textAlign: TextAlign.center),
-                    ],
+                        const SizedBox(height: 12),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            c.name,
+                            style: TextStyles.body(
+                              context,
+                              weight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -27,6 +27,7 @@ import 'currency_selection_screen.dart';
 import 'general_settings_screen.dart';
 import 'notification_preferences_screen.dart';
 import 'theme_settings_screen.dart';
+import 'income_screen.dart';
 
 /// "More" tab — unified hub for financial management, account settings,
 /// preferences, security, and support.
@@ -181,7 +182,7 @@ class MoreScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 2),
                             const Icon(Icons.arrow_forward_ios_rounded,
-                                size: 10, color: AppColors.primaryIndigo),
+                                size: 10, color: AppColors.primaryIndigo,),
                           ],
                         ),
                       ),
@@ -225,6 +226,15 @@ class MoreScreen extends StatelessWidget {
                     subtitle: '${Formatters.money(budget.monthlyLimit)}/month limit',
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const BudgetOverviewScreen()),
+                    ),
+                  ),
+                  _MenuItem(
+                    icon: Icons.work_outline_rounded,
+                    color: AppColors.mint,
+                    title: 'Job Income & Auto Budget',
+                    subtitle: '${Formatters.money(user.monthlyIncome)}/month · ${user.occupation}',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const IncomeScreen()),
                     ),
                   ),
                   _MenuItem(
@@ -370,7 +380,7 @@ class MoreScreen extends StatelessWidget {
                     (_) => false,
                   );
                 }
-              }),
+              },),
             ),
 
             // ─── 6. VERSION INFO ───
@@ -483,7 +493,7 @@ class MoreScreen extends StatelessWidget {
             Text('Export Financial Statement', style: TextStyles.h2(ctx), textAlign: TextAlign.center),
             const SizedBox(height: 4),
             Text('Choose the format you want to download',
-                style: TextStyles.caption(ctx), textAlign: TextAlign.center),
+                style: TextStyles.caption(ctx), textAlign: TextAlign.center,),
             const SizedBox(height: 20),
             ListTile(
               leading: Container(
@@ -753,7 +763,7 @@ class _MenuItem extends StatelessWidget {
                           child: Text(title,
                               style: TextStyles.body(context, weight: FontWeight.w600),
                               maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
+                              overflow: TextOverflow.ellipsis,),
                         ),
                         if (badgeText != null) ...[
                           const SizedBox(width: 6),
@@ -779,14 +789,14 @@ class _MenuItem extends StatelessWidget {
                       Text(subtitle!,
                           style: TextStyles.caption(context),
                           maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
+                          overflow: TextOverflow.ellipsis,),
                     ],
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               Icon(Icons.chevron_right_rounded,
-                  color: AppColorsOf.tertiaryText(context), size: 20),
+                  color: AppColorsOf.tertiaryText(context), size: 20,),
             ],
           ),
         ),
@@ -831,7 +841,7 @@ class _LogOutButton extends StatelessWidget {
               const SizedBox(width: 8),
               Text(AppStrings.logOut,
                   style: TextStyles.body(context, weight: FontWeight.w700)
-                      .copyWith(color: Colors.white)),
+                      .copyWith(color: Colors.white),),
             ],
           ),
         ),

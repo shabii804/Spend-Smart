@@ -3,7 +3,7 @@ import '../models/goal.dart';
 import '../data/sample_data.dart';
 
 class GoalProvider extends ChangeNotifier {
-  List<Goal> _goals = List.of(SampleData.goals);
+  final List<Goal> _goals = List.of(SampleData.goals);
 
   List<Goal> get goals => List.unmodifiable(_goals);
 

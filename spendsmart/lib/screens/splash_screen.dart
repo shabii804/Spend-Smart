@@ -104,48 +104,48 @@ class _SplashScreenState extends State<SplashScreen>
                   // Orbital rings (rotating)
                   RotationTransition(turns: _rings,
                     child: SizedBox(width: 140, height: 140,
-                      child: CustomPaint(painter: _OrbitalRingPainter()))),
+                      child: CustomPaint(painter: _OrbitalRingPainter()),),),
 
                   // White circle with logo
                   ScaleTransition(scale: CurvedAnimation(parent: _logo, curve: Motion.springOut),
                     child: FadeTransition(opacity: CurvedAnimation(parent: _logo, curve: Motion.easeOut),
-                      child: AppLogo(size: 90, variant: AppLogoVariant.markOnly))),
+                      child: const AppLogo(size: 90, variant: AppLogoVariant.markOnly),),),
 
                   // Expanding ring pulse
                   AnimatedBuilder(animation: _rings, builder: (context, _) {
                     final t = _rings.value;
                     return Opacity(opacity: (1 - t).clamp(0.0, 1.0),
                       child: Container(width: 90 + t * 60, height: 90 + t * 60,
-                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withOpacity(0.3 * (1 - t)), width: 2))));
-                  }),
-                ])),
+                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white.withOpacity(0.3 * (1 - t)), width: 2)),),);
+                  },),
+                ],),),
 
                 const SizedBox(height: 28),
 
                 // App name — staggered character reveal
                 FadeTransition(opacity: CurvedAnimation(parent: _text, curve: Motion.easeOut),
                   child: SlideTransition(position: Tween(begin: const Offset(0, 0.3), end: Offset.zero).animate(CurvedAnimation(parent: _text, curve: Motion.springBack)),
-                    child: Text('SpendSmart', style: TextStyles.h1(context).copyWith(color: Colors.white, fontSize: 32, letterSpacing: 1)))),
+                    child: Text('SpendSmart', style: TextStyles.h1(context).copyWith(color: Colors.white, fontSize: 32, letterSpacing: 1)),),),
 
                 const SizedBox(height: 10),
 
                 // Tagline
                 FadeTransition(opacity: CurvedAnimation(parent: _text, curve: const Interval(0.3, 1.0, curve: Motion.easeOut)),
-                  child: Text('Track · Plan · Achieve', style: TextStyles.body(context).copyWith(color: Colors.white.withOpacity(0.85), letterSpacing: 2, fontSize: 13))),
+                  child: Text('Track · Plan · Achieve', style: TextStyles.body(context).copyWith(color: Colors.white.withOpacity(0.85), letterSpacing: 2, fontSize: 13)),),
 
                 const Spacer(flex: 1),
 
                 // Progress indicator
                 FadeTransition(opacity: CurvedAnimation(parent: _progress, curve: Motion.easeOut),
                   child: SizedBox(width: 28, height: 28,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white.withOpacity(0.7)))),
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white.withOpacity(0.7)),),),
 
                 const Spacer(flex: 1),
-              ]),
+              ],),
 
               // Background fade
               FadeTransition(opacity: _bg, child: Container(color: Colors.transparent)),
-            ]),
+            ],),
           ),
         ),
       ),
@@ -156,20 +156,20 @@ class _SplashScreenState extends State<SplashScreen>
     return Positioned.fill(
       child: Stack(children: [
         Positioned(top: 100, left: -40,
-          child: _floatingCircle(120, AppColors.primaryPurple.withOpacity(0.08), _rings)),
+          child: _floatingCircle(120, AppColors.primaryPurple.withOpacity(0.08), _rings),),
         Positioned(bottom: 200, right: -30,
-          child: _floatingCircle(80, AppColors.mint.withOpacity(0.06), _rings)),
+          child: _floatingCircle(80, AppColors.mint.withOpacity(0.06), _rings),),
         Positioned(top: 300, right: 60,
-          child: _floatingCircle(50, Colors.white.withOpacity(0.04), _rings)),
-      ]),
+          child: _floatingCircle(50, Colors.white.withOpacity(0.04), _rings),),
+      ],),
     );
   }
 
   Widget _floatingCircle(double size, Color color, AnimationController anim) {
     return AnimatedBuilder(animation: anim, builder: (context, _) {
       return Transform.translate(offset: Offset(0, 20 * anim.value - 10),
-        child: Container(width: size, height: size, decoration: BoxDecoration(color: color, shape: BoxShape.circle)));
-    });
+        child: Container(width: size, height: size, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),);
+    },);
   }
 }
 

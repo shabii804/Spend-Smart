@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spendsmart/core/motion/app_motion.dart';
 import 'package:spendsmart/core/motion/haptics.dart';
 import 'package:spendsmart/core/motion/motion_widgets.dart';
+import 'package:spendsmart/core/motion/page_transitions.dart';
 import 'package:spendsmart/core/widgets/empty_state.dart';
 
 void main() {
@@ -26,9 +27,9 @@ void main() {
     test('staggerDelay is non-zero for items within maxStaggeredItems', () {
       expect(AppMotion.staggerDelay(0), Duration.zero);
       expect(AppMotion.staggerDelay(1).inMilliseconds,
-          AppMotion.staggerStep.inMilliseconds);
+          AppMotion.staggerStep.inMilliseconds,);
       expect(AppMotion.staggerDelay(2).inMilliseconds,
-          2 * AppMotion.staggerStep.inMilliseconds);
+          2 * AppMotion.staggerStep.inMilliseconds,);
     });
 
     test('pressScale is between 0.9 and 1.0 (small, not zero)', () {
@@ -81,7 +82,7 @@ void main() {
             child: const Text('Press'),
           ),
         ),
-      ));
+      ),);
       await tester.tap(find.text('Press'));
       await tester.pumpAndSettle();
       expect(pressed, isTrue);
@@ -102,7 +103,7 @@ void main() {
             child: const Text('Press'),
           ),
         ),
-      ));
+      ),);
       // The child should still be present.
       expect(find.text('Press'), findsOneWidget);
       // No Transform wrapper inside Pressable since reduceMotion is true.
@@ -127,7 +128,7 @@ void main() {
             child: const Text('Shake me'),
           ),
         ),
-      ));
+      ),);
       expect(find.text('Shake me'), findsOneWidget);
       expect(key.currentState, isNotNull);
       // Calling shake() should not throw.
@@ -148,7 +149,7 @@ void main() {
             color: Colors.green,
           ),
         ),
-      ));
+      ),);
       expect(find.byType(CustomPaint), findsWidgets);
       expect(key.currentState, isNotNull);
       key.currentState!.play();
@@ -167,7 +168,7 @@ void main() {
             duration: Duration(milliseconds: 10),
           ),
         ),
-      ));
+      ),);
       await tester.pumpAndSettle();
       // After settling, the final value should be 1000, formatted with no decimals.
       expect(find.text('Rs. 1000'), findsOneWidget);
@@ -183,7 +184,7 @@ void main() {
             duration: Duration(milliseconds: 10),
           ),
         ),
-      ));
+      ),);
       await tester.pumpAndSettle();
       expect(find.text('1.3M'), findsOneWidget);
     });
@@ -196,7 +197,7 @@ void main() {
         home: Scaffold(
           body: ShimmerSkeleton(width: 100, height: 20, radius: 8),
         ),
-      ));
+      ),);
       // Find any Container — the skeleton is built from one.
       expect(find.byType(Container), findsWidgets);
     });
@@ -212,10 +213,65 @@ void main() {
             subtitle: 'Try a different filter',
           ),
         ),
-      ));
+      ),);
       await tester.pumpAndSettle();
       expect(find.text('Nothing here'), findsOneWidget);
       expect(find.text('Try a different filter'), findsOneWidget);
+    });
+  });
+
+  group('Page Transitions and Icon Animations', () {
+    testWidgets('SmoothFadePageRoute navigates with fade transition',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  SmoothFadePageRoute(
+                    builder: (_) => const Scaffold(
+                      body: Text('Destination Screen'),
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Go Next'),
+            ),
+          ),
+        ),
+      ),);
+
+      expect(find.text('Go Next'), findsOneWidget);
+      await tester.tap(find.text('Go Next'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 160));
+      expect(find.text('Destination Screen'), findsOneWidget);
+
+      // Settle completely
+      await tester.pumpAndSettle();
+      expect(find.text('Destination Screen'), findsOneWidget);
+    });
+
+    testWidgets('AnimatedIconBounce renders and triggers tap callback',
+        (WidgetTester tester) async {
+      bool tapped = false;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: AnimatedIconBounce(
+              onTap: () => tapped = true,
+              child: const Icon(Icons.star),
+            ),
+          ),
+        ),
+      ),);
+
+      expect(find.byIcon(Icons.star), findsOneWidget);
+      await tester.tap(find.byType(AnimatedIconBounce));
+      await tester.pump();
+      expect(tapped, isTrue);
+      await tester.pumpAndSettle();
     });
   });
 }

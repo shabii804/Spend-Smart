@@ -60,7 +60,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: TextButton(
                 onPressed: _finish,
                 child: Text(AppStrings.onboardingSkip,
-                    style: TextStyles.body(context, weight: FontWeight.w600)),
+                    style: TextStyles.body(context, weight: FontWeight.w600),),
               ),
             ),
             Expanded(
@@ -173,7 +173,7 @@ class _OnboardPage extends StatelessWidget {
           Text(
             subtitle,
             style: TextStyles.body(context,
-                color: AppColorsOf.secondaryText(context)),
+                color: AppColorsOf.secondaryText(context),),
             textAlign: TextAlign.center,
           ),
         ],

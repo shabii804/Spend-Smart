@@ -124,7 +124,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                               : AppColors.primaryIndigo.withOpacity(0.32),
                           width: 22,
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(8)),
+                              top: Radius.circular(8),),
                           backDrawRodData: BackgroundBarChartRodData(
                             toY: safeMax,
                             color: AppColors.primaryIndigo.withOpacity(0.05),
@@ -150,9 +150,9 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                      sideTitles: SideTitles(showTitles: false),),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                      sideTitles: SideTitles(showTitles: false),),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -202,7 +202,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                     getTooltipColor: (group) => AppColors.primaryIndigo,
                     tooltipRoundedRadius: 6,
                     tooltipPadding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                        horizontal: 8, vertical: 4,),
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       return BarTooltipItem(
                         Formatters.moneyPlain(rod.toY),

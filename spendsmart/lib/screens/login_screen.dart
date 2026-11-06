@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen>
     context.read<UserProvider>().updateUser(UserProfile(
           fullName: 'Muhammad Shoaib',
           email: _emailCtrl.text.trim(),
-        ));
+        ),);
     await showPremiumSuccess(context);
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen>
                 Text(
                   'Log in to keep tracking your spending.',
                   style: TextStyles.body(context,
-                      color: AppColors.darkTextSecondary),
+                      color: AppColors.darkTextSecondary,),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -204,17 +204,17 @@ class _LoginScreenState extends State<LoginScreen>
                 },
                 child: RichText(
                   textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: TextStyle(
+                  text: const TextSpan(
+                    style: const TextStyle(
                       fontFamily: 'PlusJakartaSans',
                       fontSize: 14,
                       color: AppColors.darkTextSecondary,
                     ),
                     children: [
-                      const TextSpan(text: 'New here? '),
-                      TextSpan(
+                      TextSpan(text: 'New here? '),
+                      const TextSpan(
                         text: 'Create account',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.primaryIndigo,
                           fontWeight: FontWeight.w700,
                         ),

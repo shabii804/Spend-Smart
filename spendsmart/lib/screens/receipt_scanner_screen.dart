@@ -312,7 +312,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(
+            child: const Icon(
               Icons.document_scanner_rounded,
               size: 32,
               color: AppColors.primaryIndigo,

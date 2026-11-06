@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
-import 'core/theme/app_colors.dart';
 import 'providers/budget_provider.dart';
 import 'providers/currency_provider.dart';
 import 'providers/expense_provider.dart';
@@ -10,11 +10,14 @@ import 'providers/notif_prefs_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/user_provider.dart';
+import 'providers/language_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(const _Providers());
 }
+
 
 class _Providers extends StatelessWidget {
   const _Providers();
@@ -31,24 +34,9 @@ class _Providers extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => NotifPrefsProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ],
-      child: Builder(
-        builder: (context) {
-          final theme = context.watch<ThemeProvider>();
-          // While prefs are loading, render a plain splash-less placeholder
-          // so we don't flash the wrong theme.
-          if (!theme.isLoaded) {
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              home: Material(
-                color: AppColors.lightBackground,
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-            );
-          }
-          return const SpendSmartApp();
-        },
-      ),
+      child: const SpendSmartApp(),
     );
   }
 }

@@ -267,7 +267,7 @@ class _SummaryCard extends StatelessWidget {
                 Expanded(
                   child: Text(label,
                       style: TextStyles.label(context),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                      maxLines: 1, overflow: TextOverflow.ellipsis,),
                 ),
                 Container(
                   padding: const EdgeInsets.all(6),
@@ -288,7 +288,7 @@ class _SummaryCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(deltaText,
                 style: TextStyles.caption(context)
-                    .copyWith(color: AppColorsOf.tertiaryText(context), fontSize: 10)),
+                    .copyWith(color: AppColorsOf.tertiaryText(context), fontSize: 10),),
           ],
         ),
       ),
@@ -399,7 +399,7 @@ class _SpendingAreaChartState extends State<_SpendingAreaChart> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.auto_graph_rounded,
-                    color: AppColors.primaryIndigo, size: 14),
+                    color: AppColors.primaryIndigo, size: 14,),
               ),
             ],
           ),
@@ -465,7 +465,7 @@ class _SpendingAreaChartState extends State<_SpendingAreaChart> {
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text('$day',
-                                style: TextStyles.caption(context).copyWith(fontSize: 10)),
+                                style: TextStyles.caption(context).copyWith(fontSize: 10),),
                           );
                         }
                         return const SizedBox.shrink();
@@ -1075,10 +1075,10 @@ class _InsightCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(value,
               style: TextStyles.body(context, weight: FontWeight.w700)
-                  .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+                  .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),),
           const SizedBox(height: 2),
           Text(sub, style: TextStyles.caption(context), maxLines: 1,
-              overflow: TextOverflow.ellipsis),
+              overflow: TextOverflow.ellipsis,),
         ],
       ),
     );
@@ -1190,7 +1190,7 @@ class _PeriodBarChartState extends State<_PeriodBarChart> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(widget.icon,
-                    color: AppColors.primaryIndigo, size: 14),
+                    color: AppColors.primaryIndigo, size: 14,),
               ),
             ],
           ),
@@ -1222,7 +1222,7 @@ class _PeriodBarChartState extends State<_PeriodBarChart> {
                               : AppColors.primaryIndigo.withOpacity(0.32),
                           width: widget.isWeekly ? 36 : 28,
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(8)),
+                              top: Radius.circular(8),),
                           backDrawRodData: BackgroundBarChartRodData(
                             toY: safeMax,
                             color: AppColors.primaryIndigo.withOpacity(0.05),
@@ -1249,9 +1249,9 @@ class _PeriodBarChartState extends State<_PeriodBarChart> {
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                      sideTitles: SideTitles(showTitles: false),),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                      sideTitles: SideTitles(showTitles: false),),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -1308,7 +1308,7 @@ class _PeriodBarChartState extends State<_PeriodBarChart> {
                     getTooltipColor: (group) => AppColors.primaryIndigo,
                     tooltipRoundedRadius: 6,
                     tooltipPadding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                        horizontal: 8, vertical: 4,),
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       return BarTooltipItem(
                         Formatters.money(rod.toY),

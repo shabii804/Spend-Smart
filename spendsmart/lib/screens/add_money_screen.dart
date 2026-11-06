@@ -104,7 +104,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(AppStrings.savedAmount,
-                                style: TextStyles.label(context)),
+                                style: TextStyles.label(context),),
                             Text(
                               '${Formatters.money(goal.savedAmount)} / ${Formatters.money(goal.targetAmount)}',
                               style: TextStyles.money(context, size: 16),
@@ -115,7 +115,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
                       Text(
                         '${(goal.progressPercent * 100).toInt()}%',
                         style: TextStyles.body(context, weight: FontWeight.w700,
-                            color: AppColors.primaryIndigo),
+                            color: AppColors.primaryIndigo,),
                       ),
                     ],
                   ),
@@ -123,7 +123,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
                 const SizedBox(height: 24),
                 // Quick chips
                 Text('Quick Amount',
-                    style: TextStyles.label(context)),
+                    style: TextStyles.label(context),),
                 const SizedBox(height: 8),
                 Row(
                   children: _quickAmounts
@@ -136,7 +136,7 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
                                     _amountCtrl.text = a.toStringAsFixed(0),
                               ),
                             ),
-                          ))
+                          ),)
                       .toList(),
                 ),
                 const SizedBox(height: 24),
@@ -182,7 +182,7 @@ class _QuickChip extends StatelessWidget {
           ),
           alignment: Alignment.center,
           child: Text(label,
-              style: TextStyles.body(context, weight: FontWeight.w700)),
+              style: TextStyles.body(context, weight: FontWeight.w700),),
         ),
       ),
     );
@@ -213,7 +213,7 @@ class _AmountField extends StatelessWidget {
           decoration: InputDecoration(
             prefixText: '${Formatters.currencySymbol} ',
             prefixStyle: TextStyles.money(context, size: 22,
-                color: AppColorsOf.secondaryText(context)),
+                color: AppColorsOf.secondaryText(context),),
             hintText: '0',
           ),
         ),

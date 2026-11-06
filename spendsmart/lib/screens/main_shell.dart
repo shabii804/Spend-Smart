@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../core/motion/page_transitions.dart';
 import '../core/theme/app_colors.dart';
 import '../core/widgets/floating_nav_bar.dart';
+import '../core/widgets/app_lock_screen.dart';
 import '../providers/user_provider.dart';
 import 'smart_advice_screen.dart';
 import 'analytics_screen.dart';
@@ -38,6 +40,7 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   late int _index;
   int _prevIndex = 0;
+  bool _isUnlocked = false;
 
   @override
   void initState() {
@@ -64,7 +67,7 @@ class _MainShellState extends State<MainShell> {
   void _openProfile() {
     HapticFeedback.selectionClick();
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+      SmoothFadePageRoute(builder: (_) => const ProfileScreen()),
     );
   }
 
@@ -92,7 +95,7 @@ class _MainShellState extends State<MainShell> {
       final route = _pendingRoute!;
       _pendingRoute = null;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final goalId = Uri.base.queryParameters['goalId'];
+        const goalId = null; // deep-link not available on mobile
         Widget? target;
         switch (route) {
           case 'analytics':
@@ -147,7 +150,7 @@ class _MainShellState extends State<MainShell> {
         }
         if (target != null) {
           Navigator.of(context).push(
-            MaterialPageRoute<Widget>(builder: (_) => target!),
+            SmoothFadePageRoute<Widget>(builder: (_) => target!),
           );
         }
       });
@@ -157,14 +160,18 @@ class _MainShellState extends State<MainShell> {
   void _openAddExpense() {
     HapticFeedback.lightImpact();
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AddExpenseScreen()),
+      SmoothFadePageRoute(builder: (_) => const AddExpenseScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     // Touch user provider so greeting updates after profile edit
-    context.watch<UserProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.user;
+    if ((user.appLockEnabled || user.biometricsEnabled) && !_isUnlocked) {
+      return AppLockScreen(onUnlocked: () => setState(() => _isUnlocked = true));
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       // Adapt system status bar to the app theme. Fixes the "dark icons on
@@ -185,23 +192,31 @@ class _MainShellState extends State<MainShell> {
               systemNavigationBarColor: Colors.white,
               systemNavigationBarIconBrightness: Brightness.dark,
             ),
-      child: Scaffold(
-        backgroundColor: AppColorsOf.background(context),
-        extendBody: true,
-        // Smooth directional slide + crossfade between tabs
-        body: AnimatedSwitcher(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          if (_index != 0) {
+            setState(() => _index = 0);
+          } else {
+            SystemNavigator.pop();
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColorsOf.background(context),
+          extendBody: true,
+          // Smooth directional slide + crossfade between tabs
+          body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           switchInCurve: Curves.easeOutCubic,
           switchOutCurve: Curves.easeInCubic,
           transitionBuilder: (child, anim) {
-            final isForward = _index >= _prevIndex;
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: Offset(isForward ? 0.05 : -0.05, 0.0),
-                end: Offset.zero,
-              ).animate(anim),
-              child: FadeTransition(
-                opacity: anim,
+            return FadeTransition(
+              opacity: anim,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.99, end: 1.0).animate(
+                  CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
+                ),
                 child: child,
               ),
             );
@@ -224,6 +239,8 @@ class _MainShellState extends State<MainShell> {
           onFabPressed: _openAddExpense,
         ),
       ),
-    );
+    ),
+  );
   }
 }
+

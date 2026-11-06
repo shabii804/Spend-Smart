@@ -75,7 +75,7 @@ class BudgetOverviewScreen extends StatelessWidget {
                 children: [
                   Text(AppStrings.monthlyBudget,
                       style: TextStyles.label(context).copyWith(
-                          color: Colors.white.withOpacity(0.85))),
+                          color: Colors.white.withOpacity(0.85),),),
                   const SizedBox(height: 6),
                   AnimatedMoney(
                     amount: budget.monthlyLimit,
@@ -110,17 +110,17 @@ class BudgetOverviewScreen extends StatelessWidget {
                     children: [
                       _HeroStat(
                           label: AppStrings.spentThisMonth,
-                          value: Formatters.money(spent)),
+                          value: Formatters.money(spent),),
                       _HeroStat(
                           label: AppStrings.remaining,
-                          value: Formatters.money(remaining)),
+                          value: Formatters.money(remaining),),
                     ],
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 28),
-            SectionHeader(title: AppStrings.perCategory),
+            const SectionHeader(title: AppStrings.perCategory),
             const SizedBox(height: 12),
             if (perCategory.isEmpty)
               GlassCard(
@@ -128,7 +128,7 @@ class BudgetOverviewScreen extends StatelessWidget {
                 child: Text(
                   AppStrings.noDataYet,
                   style: TextStyles.body(context,
-                      color: AppColorsOf.secondaryText(context)),
+                      color: AppColorsOf.secondaryText(context),),
                 ),
               )
             else
@@ -152,18 +152,18 @@ class BudgetOverviewScreen extends StatelessWidget {
                                       ),
                                       alignment: Alignment.center,
                                       child: Icon(c.cat.icon,
-                                          color: c.cat.color, size: 18),
+                                          color: c.cat.color, size: 18,),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(c.cat.name,
                                           style: TextStyles.body(context,
-                                              weight: FontWeight.w600)),
+                                              weight: FontWeight.w600,),),
                                     ),
                                     Text(
                                       Formatters.money(c.total),
                                       style: TextStyles.body(context,
-                                          weight: FontWeight.w700),
+                                          weight: FontWeight.w700,),
                                     ),
                                   ],
                                 ),
@@ -174,11 +174,11 @@ class BudgetOverviewScreen extends StatelessWidget {
                                   gradient: LinearGradient(colors: [
                                     c.cat.color,
                                     c.cat.color.withOpacity(0.6),
-                                  ]),
+                                  ],),
                                 ),
                               ],
                             ),
-                          ))
+                          ),)
                       .toList(),
                 ),
               ),
@@ -201,10 +201,10 @@ class _HeroStat extends StatelessWidget {
       children: [
         Text(label,
             style: TextStyles.label(context)
-                .copyWith(color: Colors.white.withOpacity(0.7))),
+                .copyWith(color: Colors.white.withOpacity(0.7)),),
         const SizedBox(height: 2),
         Text(value,
-            style: TextStyles.money(context, size: 16, color: Colors.white)),
+            style: TextStyles.money(context, size: 16, color: Colors.white),),
       ],
     );
   }

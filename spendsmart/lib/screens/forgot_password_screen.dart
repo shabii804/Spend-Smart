@@ -86,7 +86,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       ? 'We sent a reset link to ${_emailCtrl.text.isEmpty ? "your email" : _emailCtrl.text.trim()}.'
                       : 'Enter your email and we will send you a reset link.',
                   style: TextStyles.body(context,
-                      color: Colors.white.withOpacity(0.7)),
+                      color: Colors.white.withOpacity(0.7),),
                   textAlign: TextAlign.center,
                 ),
               ],

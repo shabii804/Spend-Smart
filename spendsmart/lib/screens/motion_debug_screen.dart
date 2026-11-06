@@ -4,6 +4,7 @@ import '../core/motion/app_logo.dart';
 import '../core/motion/app_motion.dart';
 import '../core/motion/haptics.dart';
 import '../core/motion/motion_widgets.dart';
+import '../core/motion/page_transitions.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_gradients.dart';
 import '../core/theme/text_styles.dart';
@@ -38,6 +39,14 @@ class MotionDebugScreen extends StatelessWidget {
 
             _sectionLabel(context, 'Pressable (press-scale feedback)'),
             _PressableShowcase(),
+            const SizedBox(height: 24),
+
+            _sectionLabel(context, 'Smooth Fade Page Transitions (Ultra-Smooth)'),
+            _PageTransitionShowcase(),
+            const SizedBox(height: 24),
+
+            _sectionLabel(context, 'Animated Icon Bounce & Micro-Interactions'),
+            _IconBounceShowcase(),
             const SizedBox(height: 24),
 
             _sectionLabel(context, 'ShakeWidget (validation error)'),
@@ -94,7 +103,7 @@ class MotionDebugScreen extends StatelessWidget {
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Text(text,
           style: TextStyles.caption(context, weight: FontWeight.w700)
-              .copyWith(color: AppColorsOf.secondaryText(context), letterSpacing: 0.6)),
+              .copyWith(color: AppColorsOf.secondaryText(context), letterSpacing: 0.6),),
     );
   }
 
@@ -106,9 +115,9 @@ class MotionDebugScreen extends StatelessWidget {
       MapEntry('slow', '${AppMotion.slow.inMilliseconds}ms'),
       MapEntry('hero', '${AppMotion.hero.inMilliseconds}ms'),
       MapEntry('splashMax', '${AppMotion.splashMax.inMilliseconds}ms'),
-      MapEntry('pressScale', '${AppMotion.pressScale}x'),
+      const MapEntry('pressScale', '${AppMotion.pressScale}x'),
       MapEntry('staggerStep', '${AppMotion.staggerStep.inMilliseconds}ms'),
-      MapEntry('maxStaggeredItems', '${AppMotion.maxStaggeredItems}'),
+      const MapEntry('maxStaggeredItems', '${AppMotion.maxStaggeredItems}'),
       MapEntry('reduceMotion', '${AppMotion.reduceMotion(context)}'),
     ];
     return Container(
@@ -130,7 +139,7 @@ class MotionDebugScreen extends StatelessWidget {
                   Text(r.key, style: TextStyles.caption(context, weight: FontWeight.w600)),
                   Text(r.value,
                       style: TextStyles.caption(context, weight: FontWeight.w700)
-                          .copyWith(color: AppColors.primaryIndigo)),
+                          .copyWith(color: AppColors.primaryIndigo),),
                 ],
               ),
             ),
@@ -154,11 +163,11 @@ class _LogoShowcase extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColorsOf.border(context)),
       ),
-      child: Wrap(
+      child: const Wrap(
         spacing: 24,
         runSpacing: 16,
         crossAxisAlignment: WrapCrossAlignment.center,
-        children: const [
+        children: [
           AppLogo(size: 64, variant: AppLogoVariant.markOnly),
           AppLogo(size: 64, variant: AppLogoVariant.markWithWordmarkHorizontal),
           AppLogo(size: 80, variant: AppLogoVariant.markWithWordmarkStacked),
@@ -190,7 +199,7 @@ class _PressableShowcase extends StatelessWidget {
           onPressed: () {},
           child: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.mint,
               shape: BoxShape.circle,
             ),
@@ -233,7 +242,7 @@ class _ShakeCardState extends State<_ShakeCard> {
               border: Border.all(color: AppColors.danger.withOpacity(0.4)),
             ),
             child: const Text('Email is invalid',
-                style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600),),
           ),
         ),
         const SizedBox(width: 12),
@@ -407,16 +416,145 @@ class _HapticShowcase extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        TextButton(onPressed: Haptics.light, child: const Text('Light')),
-        TextButton(onPressed: Haptics.selection, child: const Text('Selection')),
-        TextButton(onPressed: Haptics.success, child: const Text('Success (medium)')),
-        TextButton(onPressed: Haptics.heavy, child: const Text('Heavy')),
-        TextButton(onPressed: Haptics.error, child: const Text('Error pattern')),
+        const TextButton(onPressed: Haptics.light, child: Text('Light')),
+        const TextButton(onPressed: Haptics.selection, child: Text('Selection')),
+        const TextButton(onPressed: Haptics.success, child: Text('Success (medium)')),
+        const TextButton(onPressed: Haptics.heavy, child: Text('Heavy')),
+        const TextButton(onPressed: Haptics.error, child: Text('Error pattern')),
         TextButton(
           onPressed: () => Haptics.enabled = !Haptics.enabled,
           child: const Text('Toggle haptics'),
         ),
       ],
+    );
+  }
+}
+
+
+class _PageTransitionShowcase extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColorsOf.card(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColorsOf.border(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Test the buttery-smooth fade opacity page transitions',
+            style: TextStyles.caption(context),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryIndigo,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            icon: const Icon(Icons.animation_rounded, size: 20),
+            label: const Text('Navigate with Smooth Fade Opacity'),
+            onPressed: () {
+              Navigator.of(context).push(
+                SmoothFadePageRoute(
+                  builder: (_) => Scaffold(
+                    appBar: AppBar(
+                      title: const Text('Smooth Page Demo'),
+                      leading: IconButton(
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        onPressed: () => Navigator.of(context).maybePop(),
+                      ),
+                    ),
+                    body: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle_outline_rounded,
+                              size: 64, color: AppColors.mint,),
+                          const SizedBox(height: 16),
+                          Text('Smooth Fade Page',
+                              style: TextStyles.h2(context),),
+                          const SizedBox(height: 8),
+                          Text('Delightful opacity cross-fade active!',
+                              style: TextStyles.caption(context),),
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).maybePop(),
+                            child: const Text('Go Back'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IconBounceShowcase extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColorsOf.card(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColorsOf.border(context)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          AnimatedIconBounce(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryIndigo.withOpacity(0.14),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.home_rounded, color: AppColors.primaryIndigo, size: 28),
+            ),
+          ),
+          AnimatedIconBounce(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.mint.withOpacity(0.14),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.savings_rounded, color: AppColors.mint, size: 28),
+            ),
+          ),
+          AnimatedIconBounce(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryPurple.withOpacity(0.14),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.insights_rounded, color: AppColors.primaryPurple, size: 28),
+            ),
+          ),
+          AnimatedIconBounce(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.blue.withOpacity(0.14),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.bolt_rounded, color: AppColors.blue, size: 28),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -98,11 +98,11 @@ class _VoiceEntryScreenState extends State<VoiceEntryScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.info_outline_rounded,
-                        color: AppColors.warning, size: 14),
+                        color: AppColors.warning, size: 14,),
                     const SizedBox(width: 6),
                     Text(AppStrings.voiceDemoLabel,
                         style: TextStyles.caption(context, weight: FontWeight.w600)
-                            .copyWith(color: AppColors.warning)),
+                            .copyWith(color: AppColors.warning),),
                   ],
                 ),
               ),
@@ -186,7 +186,7 @@ class _VoiceEntryScreenState extends State<VoiceEntryScreen>
                         ? '"Lunch at cafe, 320 rupees, food"'
                         : AppStrings.voiceDemoLabel,
                 style: TextStyles.body(context,
-                    color: AppColorsOf.secondaryText(context)),
+                    color: AppColorsOf.secondaryText(context),),
                 textAlign: TextAlign.center,
               ),
               const Spacer(flex: 1),
@@ -198,7 +198,7 @@ class _VoiceEntryScreenState extends State<VoiceEntryScreen>
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _reset,
-                        child: Text(AppStrings.voiceTryAgain),
+                        child: const Text(AppStrings.voiceTryAgain),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -227,7 +227,7 @@ class _VoiceEntryScreenState extends State<VoiceEntryScreen>
                 onPressed: () => Navigator.of(context).maybePop(),
                 child: Text(AppStrings.cancel,
                     style: TextStyles.body(context,
-                        weight: FontWeight.w600)),
+                        weight: FontWeight.w600,),),
               ),
             ],
           ),
@@ -266,7 +266,7 @@ class _ResultCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Lunch at cafe',
-                    style: TextStyles.body(context, weight: FontWeight.w600)),
+                    style: TextStyles.body(context, weight: FontWeight.w600),),
                 Text(cat.name, style: TextStyles.caption(context)),
               ],
             ),
@@ -276,7 +276,7 @@ class _ResultCard extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: AppColors.primaryIndigo,
-              )),
+              ),),
         ],
       ),
     );

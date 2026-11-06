@@ -56,7 +56,7 @@ class AppTheme {
         ),
         extensions: const [SpendSmartColors.light],
         textTheme: _textTheme(AppColors.lightTextPrimary, AppColors.lightTextSecondary),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: AppColors.lightSurface,
           elevation: 0,
           margin: EdgeInsets.zero,
@@ -102,7 +102,7 @@ class AppTheme {
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
           elevation: 0,
         ),
-        dialogTheme: DialogTheme(
+        dialogTheme: DialogThemeData(
           backgroundColor: AppColors.lightSurface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           titleTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.lightTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),
@@ -132,7 +132,7 @@ class AppTheme {
         ),
         extensions: const [SpendSmartColors.dark],
         textTheme: _textTheme(AppColors.darkTextPrimary, AppColors.darkTextSecondary),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: AppColors.darkSurface,
           elevation: 0,
           margin: EdgeInsets.zero,
@@ -178,7 +178,7 @@ class AppTheme {
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
           elevation: 0,
         ),
-        dialogTheme: DialogTheme(
+        dialogTheme: DialogThemeData(
           backgroundColor: AppColors.darkSurface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           titleTextStyle: const TextStyle(fontFamily: 'PlusJakartaSans', color: AppColors.darkTextPrimary, fontSize: 18, fontWeight: FontWeight.w600),

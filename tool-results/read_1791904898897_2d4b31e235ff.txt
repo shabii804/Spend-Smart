@@ -1,0 +1,804 @@
+     1→import 'dart:math' as math;
+     2→import 'package:fl_chart/fl_chart.dart';
+     3→import 'package:flutter/material.dart';
+     4→import 'package:provider/provider.dart';
+     5→import '../../core/constants/app_strings.dart';
+     6→import '../../core/theme/app_colors.dart';
+     7→import '../../core/theme/app_gradients.dart';
+     8→import '../../core/theme/text_styles.dart';
+     9→import '../../core/utils/formatters.dart';
+    10→import '../../core/widgets/animated_money.dart';
+    11→import '../../core/widgets/glass_card.dart';
+    12→import '../../core/widgets/screen_entrance.dart';
+    13→import '../../providers/expense_provider.dart';
+    14→
+    15→enum AnalyticsPeriod { daily, weekly, monthly }
+    16→
+    17→class AnalyticsScreen extends StatefulWidget {
+    18→  const AnalyticsScreen({super.key});
+    19→
+    20→  @override
+    21→  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+    22→}
+    23→
+    24→class _AnalyticsScreenState extends State<AnalyticsScreen> {
+    25→  AnalyticsPeriod _period = AnalyticsPeriod.monthly;
+    26→
+    27→  @override
+    28→  Widget build(BuildContext context) {
+    29→    final expenses = context.watch<ExpenseProvider>();
+    30→    final total = expenses.totalSpent;
+    31→    final avg = expenses.averageDailySpend;
+    32→    final highest = expenses.highestSpendingDay;
+    33→    final top = expenses.topCategories(8);
+    34→    final dailyMap = expenses.dailyTotals;
+    35→
+    36→    return Scaffold(
+    37→      appBar: AppBar(
+    38→        title: const Text(AppStrings.analytics),
+    39→        leading: IconButton(
+    40→          icon: const Icon(Icons.arrow_back_rounded),
+    41→          onPressed: () => Navigator.of(context).maybePop(),
+    42→        ),
+    43→        actions: [
+    44→          Padding(
+    45→            padding: const EdgeInsets.only(right: 12),
+    46→            child: GestureDetector(
+    47→              child: Container(
+    48→                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    49→                decoration: BoxDecoration(
+    50→                  color: AppColorsOf.card(context),
+    51→                  border: Border.all(color: AppColorsOf.border(context)),
+    52→                  borderRadius: BorderRadius.circular(12),
+    53→                ),
+    54→                child: Row(
+    55→                  mainAxisSize: MainAxisSize.min,
+    56→                  children: [
+    57→                    const Icon(Icons.calendar_today_rounded,
+    58→                        color: AppColors.primaryIndigo, size: 14),
+    59→                    const SizedBox(width: 6),
+    60→                    Text('This Month',
+    61→                        style: TextStyles.caption(context, weight: FontWeight.w700)),
+    62→                    const SizedBox(width: 4),
+    63→                    const Icon(Icons.keyboard_arrow_down_rounded, size: 14),
+    64→                  ],
+    65→                ),
+    66→              ),
+    67→            ),
+    68→          ),
+    69→        ],
+    70→      ),
+    71→      body: SafeArea(
+    72→        child: ListView(
+    73→          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+    74→          children: [
+    75→            // Segmented control
+    76→            _periodToggle(),
+    77→            const SizedBox(height: 20),
+    78→            // Two summary cards
+    79→            Row(
+    80→              children: [
+    81→                Expanded(
+    82→                  child: _SummaryCard(
+    83→                    label: 'Total Spending',
+    84→                    amount: total,
+    85→                    delta: '+12%',
+    86→                    deltaPositive: true,
+    87→                    deltaText: 'vs last month',
+    88→                    icon: Icons.trending_up_rounded,
+    89→                    color: AppColors.primaryIndigo,
+    90→                  ),
+    91→                ),
+    92→                const SizedBox(width: 12),
+    93→                Expanded(
+    94→                  child: _SummaryCard(
+    95→                    label: 'Average Daily',
+    96→                    amount: avg,
+    97→                    delta: '+8%',
+    98→                    deltaPositive: true,
+    99→                    deltaText: 'vs last month',
+   100→                    icon: Icons.calendar_today_rounded,
+   101→                    color: AppColors.primaryPurple,
+   102→                  ),
+   103→                ),
+   104→              ],
+   105→            ),
+   106→            const SizedBox(height: 20),
+   107→            // Spending Overview — smooth area chart
+   108→            ChartEntrance(
+   109→              child: _SpendingAreaChart(dailyMap: dailyMap, total: total),
+   110→            ),
+   111→            const SizedBox(height: 20),
+   112→            // Spending Breakdown — donut + right legend
+   113→            ChartEntrance(
+   114→              delay: const Duration(milliseconds: 160),
+   115→              child: _BreakdownDonut(total: total, items: top),
+   116→            ),
+   117→            const SizedBox(height: 20),
+   118→            // Two insight cards at bottom
+   119→            Row(
+   120→              children: [
+   121→                Expanded(
+   122→                  child: _InsightCard(
+   123→                    label: 'Highest Spending Day',
+   124→                    value: highest == null ? '-' : Formatters.money(highest.value),
+   125→                    sub: highest == null ? '-' : Formatters.date(highest.key),
+   126→                    icon: Icons.event_rounded,
+   127→                    color: AppColors.blue,
+   128→                  ),
+   129→                ),
+   130→                const SizedBox(width: 12),
+   131→                Expanded(
+   132→                  child: _InsightCard(
+   133→                    label: 'Top Category',
+   134→                    value: top.isEmpty ? '-' : '${((top.first.value / (total == 0 ? 1 : total)) * 100).toInt()}%',
+   135→                    sub: top.isEmpty ? '-' : top.first.key.name,
+   136→                    icon: Icons.emoji_events_rounded,
+   137→                    color: AppColors.catBills,
+   138→                  ),
+   139→                ),
+   140→              ],
+   141→            ),
+   142→          ],
+   143→        ),
+   144→      ),
+   145→    );
+   146→  }
+   147→
+   148→  Widget _periodToggle() {
+   149→    return Container(
+   150→      padding: const EdgeInsets.all(4),
+   151→      decoration: BoxDecoration(
+   152→        color: AppColorsOf.card(context),
+   153→        border: Border.all(color: AppColorsOf.border(context)),
+   154→        borderRadius: BorderRadius.circular(999),
+   155→      ),
+   156→      child: Row(
+   157→        children: [
+   158→          for (final p in AnalyticsPeriod.values)
+   159→            Expanded(
+   160→              child: GestureDetector(
+   161→                onTap: () => setState(() => _period = p),
+   162→                child: AnimatedContainer(
+   163→                  duration: const Duration(milliseconds: 220),
+   164→                  curve: Curves.easeOutCubic,
+   165→                  padding: const EdgeInsets.symmetric(vertical: 10),
+   166→                  decoration: BoxDecoration(
+   167→                    gradient: _period == p ? AppGradients.primaryButton : null,
+   168→                    color: _period == p ? null : Colors.transparent,
+   169→                    borderRadius: BorderRadius.circular(999),
+   170→                  ),
+   171→                  child: Text(
+   172→                    _periodLabel(p),
+   173→                    textAlign: TextAlign.center,
+   174→                    style: TextStyles.caption(context, weight: FontWeight.w700)
+   175→                        .copyWith(
+   176→                      color: _period == p
+   177→                          ? Colors.white
+   178→                          : AppColorsOf.secondaryText(context),
+   179→                    ),
+   180→                  ),
+   181→                ),
+   182→              ),
+   183→            ),
+   184→        ],
+   185→      ),
+   186→    );
+   187→  }
+   188→
+   189→  String _periodLabel(AnalyticsPeriod p) {
+   190→    switch (p) {
+   191→      case AnalyticsPeriod.daily:
+   192→        return AppStrings.daily;
+   193→      case AnalyticsPeriod.weekly:
+   194→        return AppStrings.weekly;
+   195→      case AnalyticsPeriod.monthly:
+   196→        return AppStrings.monthly;
+   197→    }
+   198→  }
+   199→}
+   200→
+   201→// ----------------------------------------------------------------
+   202→// Summary card — value + green delta%. Equal-height via fixed column.
+   203→// ----------------------------------------------------------------
+   204→class _SummaryCard extends StatelessWidget {
+   205→  final String label;
+   206→  final String delta;
+   207→  final bool deltaPositive;
+   208→  final String deltaText;
+   209→  final IconData icon;
+   210→  final Color color;
+   211→  final double amount;
+   212→
+   213→  const _SummaryCard({
+   214→    required this.label,
+   215→    required this.amount,
+   216→    required this.delta,
+   217→    required this.deltaPositive,
+   218→    required this.deltaText,
+   219→    required this.icon,
+   220→    required this.color,
+   221→  });
+   222→
+   223→  @override
+   224→  Widget build(BuildContext context) {
+   225→    return GlassCard(
+   226→      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+   227→      child: SizedBox(
+   228→        height: 110,
+   229→        child: Column(
+   230→          crossAxisAlignment: CrossAxisAlignment.start,
+   231→          children: [
+   232→            Row(
+   233→              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+   234→              children: [
+   235→                Expanded(
+   236→                  child: Text(label,
+   237→                      style: TextStyles.label(context),
+   238→                      maxLines: 1, overflow: TextOverflow.ellipsis),
+   239→                ),
+   240→                Container(
+   241→                  padding: const EdgeInsets.all(6),
+   242→                  decoration: BoxDecoration(
+   243→                    color: color.withOpacity(0.14),
+   244→                    shape: BoxShape.circle,
+   245→                  ),
+   246→                  child: Icon(icon, color: color, size: 14),
+   247→                ),
+   248→              ],
+   249→            ),
+   250→            const Spacer(),
+   251→            AnimatedMoney(
+   252→              amount: amount,
+   253→              style: TextStyles.money(context, size: 18)
+   254→                  .copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+   255→            ),
+   256→            const SizedBox(height: 6),
+   257→            Row(
+   258→              children: [
+   259→                Icon(
+   260→                  deltaPositive
+   261→                      ? Icons.arrow_upward_rounded
+   262→                      : Icons.arrow_downward_rounded,
+   263→                  size: 11,
+   264→                  color: AppColors.mint,
+   265→                ),
+   266→                const SizedBox(width: 3),
+   267→                Text(delta,
+   268→                    style: TextStyles.caption(context, weight: FontWeight.w700)
+   269→                        .copyWith(color: AppColors.mint, fontSize: 11)),
+   270→                const SizedBox(width: 4),
+   271→                Flexible(
+   272→                  child: Text(deltaText,
+   273→                      style: TextStyles.caption(context).copyWith(fontSize: 9),
+   274→                      maxLines: 1, overflow: TextOverflow.ellipsis),
+   275→                ),
+   276→              ],
+   277→            ),
+   278→          ],
+   279→        ),
+   280→      ),
+   281→    );
+   282→  }
+   283→}
+   284→
+   285→// ----------------------------------------------------------------
+   286→// Spending Overview — smooth area line chart across the full month.
+   287→// Generates a 1..N day series so the x-axis is calendar-correct.
+   288→// ----------------------------------------------------------------
+   289→class _SpendingAreaChart extends StatefulWidget {
+   290→  final Map<String, double> dailyMap;
+   291→  final double total;
+   292→  const _SpendingAreaChart({required this.dailyMap, required this.total});
+   293→
+   294→  @override
+   295→  State<_SpendingAreaChart> createState() => _SpendingAreaChartState();
+   296→}
+   297→
+   298→class _SpendingAreaChartState extends State<_SpendingAreaChart> {
+   299→  bool _showData = false;
+   300→
+   301→  @override
+   302→  void initState() {
+   303→    super.initState();
+   304→    // Trigger line draw-in animation after first frame.
+   305→    Future.delayed(const Duration(milliseconds: 160), () {
+   306→      if (mounted) setState(() => _showData = true);
+   307→    });
+   308→  }
+   309→
+   310→  @override
+   311→  Widget build(BuildContext context) {
+   312→    // Build a full-month series (day 1..lastDay) with 0 for missing days.
+   313→    final anchor = widget.dailyMap.keys.isNotEmpty
+   314→        ? _parseAnchorMonth(widget.dailyMap.keys.first)
+   315→        : DateTime.now();
+   316→    final lastDay = DateTime(anchor.year, anchor.month + 1, 0).day;
+   317→    final series = List.generate(lastDay, (i) {
+   318→      final day = i + 1;
+   319→      final key = '${anchor.year}-${anchor.month}-$day';
+   320→      return _DayPoint(day: day, value: widget.dailyMap[key] ?? 0.0);
+   321→    });
+   322→
+   323→    if (series.every((e) => e.value == 0)) {
+   324→      return GlassCard(
+   325→        padding: const EdgeInsets.all(20),
+   326→        child: Text(AppStrings.noDataYet,
+   327→            style: TextStyles.body(context,
+   328→                color: AppColorsOf.secondaryText(context))),
+   329→      );
+   330→    }
+   331→
+   332→    final maxVal = series.fold<double>(0, (m, e) => e.value > m ? e.value : m);
+   333→    final safeMax = _niceMax(maxVal);
+   334→    final activeIdx = series.indexWhere((e) => e.value == maxVal);
+   335→    final safeActiveIdx = activeIdx < 0 ? 0 : activeIdx;
+   336→
+   337→    // Build spots: all 0 on first render, real values after _showData flips.
+   338→    final spots = [
+   339→      for (int i = 0; i < series.length; i++)
+   340→        FlSpot(i.toDouble(), _showData ? series[i].value : 0),
+   341→    ];
+   342→
+   343→    return Container(
+   344→      padding: const EdgeInsets.fromLTRB(16, 16, 12, 12),
+   345→      decoration: BoxDecoration(
+   346→        // Subtle linear gradient background — indigo tint fading to card surface.
+   347→        gradient: LinearGradient(
+   348→          begin: Alignment.topLeft,
+   349→          end: Alignment.bottomRight,
+   350→          colors: [
+   351→            AppColors.primaryIndigo.withOpacity(0.06),
+   352→            AppColorsOf.card(context),
+   353→            AppColorsOf.card(context),
+   354→          ],
+   355→          stops: const [0.0, 0.45, 1.0],
+   356→        ),
+   357→        border: Border.all(color: AppColorsOf.border(context)),
+   358→        borderRadius: BorderRadius.circular(24),
+   359→        boxShadow: Theme.of(context).brightness == Brightness.light
+   360→            ? [
+   361→                const BoxShadow(
+   362→                  color: Color(0x10000000),
+   363→                  blurRadius: 14,
+   364→                  offset: Offset(0, 6),
+   365→                ),
+   366→              ]
+   367→            : null,
+   368→      ),
+   369→      child: Column(
+   370→        crossAxisAlignment: CrossAxisAlignment.start,
+   371→        children: [
+   372→          Row(
+   373→            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+   374→            children: [
+   375→              Text('Spending Overview', style: TextStyles.h3(context)),
+   376→              Container(
+   377→                padding: const EdgeInsets.all(6),
+   378→                decoration: BoxDecoration(
+   379→                  color: AppColors.primaryIndigo.withOpacity(0.10),
+   380→                  shape: BoxShape.circle,
+   381→                ),
+   382→                child: const Icon(Icons.auto_graph_rounded,
+   383→                    color: AppColors.primaryIndigo, size: 14),
+   384→              ),
+   385→            ],
+   386→          ),
+   387→          const SizedBox(height: 4),
+   388→          Text(
+   389→            '${Formatters.money(widget.total)} this month',
+   390→            style: TextStyles.caption(context),
+   391→          ),
+   392→          const SizedBox(height: 16),
+   393→          SizedBox(
+   394→            height: 220,
+   395→            child: LineChart(
+   396→              duration: const Duration(milliseconds: 1000),
+   397→              curve: Curves.easeOutCubic,
+   398→              LineChartData(
+   399→                gridData: FlGridData(
+   400→                  show: true,
+   401→                  drawVerticalLine: false,
+   402→                  drawHorizontalLine: true,
+   403→                  horizontalInterval: safeMax / 4,
+   404→                  getDrawingHorizontalLine: (v) => FlLine(
+   405→                    color: AppColorsOf.divider(context),
+   406→                    strokeWidth: 1,
+   407→                  ),
+   408→                ),
+   409→                borderData: FlBorderData(show: false),
+   410→                minY: 0,
+   411→                maxY: safeMax,
+   412→                // Padding so the curve doesn't touch the edges.
+   413→                clipData: const FlClipData.none(),
+   414→                titlesData: FlTitlesData(
+   415→                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+   416→                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+   417→                  leftTitles: AxisTitles(
+   418→                    sideTitles: SideTitles(
+   419→                      showTitles: true,
+   420→                      reservedSize: 38,
+   421→                      interval: safeMax / 4,
+   422→                      getTitlesWidget: (v, _) {
+   423→                        if (v == safeMax) return const SizedBox.shrink();
+   424→                        return Padding(
+   425→                          padding: const EdgeInsets.only(right: 6),
+   426→                          child: Text(
+   427→                            Formatters.moneyCompact(v),
+   428→                            style: TextStyles.caption(context).copyWith(fontSize: 10),
+   429→                          ),
+   430→                        );
+   431→                      },
+   432→                    ),
+   433→                  ),
+   434→                  bottomTitles: AxisTitles(
+   435→                    sideTitles: SideTitles(
+   436→                      showTitles: true,
+   437→                      reservedSize: 24,
+   438→                      interval: 5,
+   439→                      getTitlesWidget: (v, _) {
+   440→                        final i = v.toInt();
+   441→                        if (i < 0 || i >= series.length) return const SizedBox.shrink();
+   442→                        final day = series[i].day;
+   443→                        // Show every 5 days: 1, 5, 10, 15, 20, 25, 30 + last day
+   444→                        if (day == 1 || day == 5 || day == 10 || day == 15 ||
+   445→                            day == 20 || day == 25 || day == 30 || day == series.length) {
+   446→                          return Padding(
+   447→                            padding: const EdgeInsets.only(top: 6),
+   448→                            child: Text('$day',
+   449→                                style: TextStyles.caption(context).copyWith(fontSize: 10)),
+   450→                          );
+   451→                        }
+   452→                        return const SizedBox.shrink();
+   453→                      },
+   454→                    ),
+   455→                  ),
+   456→                ),
+   457→                lineBarsData: [
+   458→                  LineChartBarData(
+   459→                    isCurved: true,
+   460→                    curveSmoothness: 0.35,
+   461→                    preventCurveOverShooting: true,
+   462→                    barWidth: 3,
+   463→                    color: AppColors.primaryIndigo,
+   464→                    isStrokeCapRound: true,
+   465→                    dotData: FlDotData(
+   466→                      show: true,
+   467→                      getDotPainter: (spot, percent, barData, index) {
+   468→                        if (index == safeActiveIdx) {
+   469→                          return FlDotCirclePainter(
+   470→                            radius: 5,
+   471→                            color: Colors.white,
+   472→                            strokeWidth: 3,
+   473→                            strokeColor: AppColors.primaryIndigo,
+   474→                          );
+   475→                        }
+   476→                        // Only show dots on days with transactions.
+   477→                        if (series[index].value == 0) {
+   478→                          return FlDotCirclePainter(
+   479→                            radius: 0,
+   480→                            color: Colors.transparent,
+   481→                            strokeWidth: 0,
+   482→                            strokeColor: Colors.transparent,
+   483→                          );
+   484→                        }
+   485→                        return FlDotCirclePainter(
+   486→                          radius: 2.5,
+   487→                          color: AppColors.primaryIndigo,
+   488→                          strokeWidth: 1.5,
+   489→                          strokeColor: Colors.white,
+   490→                        );
+   491→                      },
+   492→                    ),
+   493→                    belowBarData: BarAreaData(
+   494→                      show: true,
+   495→                      gradient: LinearGradient(
+   496→                        begin: Alignment.topCenter,
+   497→                        end: Alignment.bottomCenter,
+   498→                        colors: [
+   499→                          AppColors.primaryIndigo.withOpacity(0.24),
+   500→                          AppColors.primaryIndigo.withOpacity(0.0),
+   501→                        ],
+   502→                      ),
+   503→                    ),
+   504→                    spots: spots,
+   505→                  ),
+   506→                ],
+   507→                lineTouchData: LineTouchData(
+   508→                  touchTooltipData: LineTouchTooltipData(
+   509→                    getTooltipColor: (touchedSpot) => AppColors.primaryIndigo,
+   510→                    tooltipRoundedRadius: 6,
+   511→                    tooltipPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+   512→                    getTooltipItems: (spots) {
+   513→                      return spots.map((s) {
+   514→                        final i = s.x.toInt();
+   515→                        final day = (i >= 0 && i < series.length) ? series[i].day : (i + 1);
+   516→                        return LineTooltipItem(
+   517→                          'Day $day: ${Formatters.moneyPlain(s.y)}',
+   518→                          const TextStyle(
+   519→                            color: Colors.white,
+   520→                            fontSize: 11,
+   521→                            fontWeight: FontWeight.w700,
+   522→                          ),
+   523→                        );
+   524→                      }).toList();
+   525→                    },
+   526→                  ),
+   527→                ),
+   528→              ),
+   529→            ),
+   530→          ),
+   531→        ],
+   532→      ),
+   533→    );
+   534→  }
+   535→
+   536→  DateTime _parseAnchorMonth(String key) {
+   537→    // key format: "year-month-day" (e.g., "2026-10-7")
+   538→    final parts = key.split('-');
+   539→    if (parts.length >= 2) {
+   540→      return DateTime(int.parse(parts[0]), int.parse(parts[1]), 1);
+   541→    }
+   542→    return DateTime.now();
+   543→  }
+   544→
+   545→  /// Round up to a "nice" maximum for the y-axis: 1k, 2k, 5k, 10k, etc.
+   546→  double _niceMax(double v) {
+   547→    if (v <= 0) return 1000;
+   548→    if (v <= 500) return 500;
+   549→    if (v <= 1000) return 1000;
+   550→    if (v <= 2000) return 2000;
+   551→    if (v <= 3000) return 3000;
+   552→    if (v <= 5000) return 5000;
+   553→    if (v <= 10000) return 10000;
+   554→    final pow10 = math.pow(10, (math.log(v) / math.log(10)).ceil());
+   555→    return (v / pow10).ceil() * pow10.toDouble();
+   556→  }
+   557→}
+   558→
+   559→class _DayPoint {
+   560→  final int day;
+   561→  final double value;
+   562→  const _DayPoint({required this.day, required this.value});
+   563→}
+   564→
+   565→// ----------------------------------------------------------------
+   566→// Spending Breakdown — donut with % labels on slices + right legend
+   567→// ----------------------------------------------------------------
+   568→class _BreakdownDonut extends StatefulWidget {
+   569→  final double total;
+   570→  final List<MapEntry<dynamic, double>> items;
+   571→  const _BreakdownDonut({required this.total, required this.items});
+   572→
+   573→  @override
+   574→  State<_BreakdownDonut> createState() => _BreakdownDonutState();
+   575→}
+   576→
+   577→class _BreakdownDonutState extends State<_BreakdownDonut> {
+   578→  bool _showData = false;
+   579→
+   580→  @override
+   581→  void initState() {
+   582→    super.initState();
+   583→    Future.delayed(const Duration(milliseconds: 240), () {
+   584→      if (mounted) setState(() => _showData = true);
+   585→    });
+   586→  }
+   587→
+   588→  @override
+   589→  Widget build(BuildContext context) {
+   590→    if (widget.items.isEmpty) {
+   591→      return GlassCard(
+   592→        padding: const EdgeInsets.all(20),
+   593→        child: Text(AppStrings.noDataYet,
+   594→            style: TextStyles.body(context,
+   595→                color: AppColorsOf.secondaryText(context))),
+   596→      );
+   597→    }
+   598→    final safeTotal = widget.total == 0 ? 1.0 : widget.total;
+   599→    final sections = <PieChartSectionData>[];
+   600→    for (int i = 0; i < widget.items.length; i++) {
+   601→      final entry = widget.items[i];
+   602→      final c = entry.key;
+   603→      final pct = entry.value / safeTotal;
+   604→      // Only show the % label on slices that are big enough (>= 6%).
+   605→      final showLabel = pct >= 0.06;
+   606→      sections.add(PieChartSectionData(
+   607→        color: c.color,
+   608→        // 0 on first render, real value after _showData flips → arcs sweep in
+   609→        value: _showData ? entry.value : 0.0001,
+   610→        title: showLabel ? '${(pct * 100).round()}%' : '',
+   611→        titleStyle: const TextStyle(
+   612→          color: Colors.white,
+   613→          fontSize: 11,
+   614→          fontWeight: FontWeight.w700,
+   615→        ),
+   616→        titlePositionPercentageOffset: 0.62,
+   617→        radius: 38,
+   618→        borderSide: BorderSide(
+   619→          color: AppColorsOf.card(context),
+   620→          width: 2,
+   621→        ),
+   622→      ));
+   623→    }
+   624→    return Container(
+   625→      padding: const EdgeInsets.all(16),
+   626→      decoration: BoxDecoration(
+   627→        // Subtle linear gradient background — purple tint fading to card surface.
+   628→        gradient: LinearGradient(
+   629→          begin: Alignment.topLeft,
+   630→          end: Alignment.bottomRight,
+   631→          colors: [
+   632→            AppColors.primaryPurple.withOpacity(0.06),
+   633→            AppColorsOf.card(context),
+   634→            AppColorsOf.card(context),
+   635→          ],
+   636→          stops: const [0.0, 0.45, 1.0],
+   637→        ),
+   638→        border: Border.all(color: AppColorsOf.border(context)),
+   639→        borderRadius: BorderRadius.circular(24),
+   640→        boxShadow: Theme.of(context).brightness == Brightness.light
+   641→            ? [
+   642→                const BoxShadow(
+   643→                  color: Color(0x10000000),
+   644→                  blurRadius: 14,
+   645→                  offset: Offset(0, 6),
+   646→                ),
+   647→              ]
+   648→            : null,
+   649→      ),
+   650→      child: Column(
+   651→        crossAxisAlignment: CrossAxisAlignment.start,
+   652→        children: [
+   653→          Row(
+   654→            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+   655→            children: [
+   656→              Text('Spending Breakdown', style: TextStyles.h3(context)),
+   657→              Container(
+   658→                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+   659→                decoration: BoxDecoration(
+   660→                  color: AppColorsOf.card(context),
+   661→                  border: Border.all(color: AppColorsOf.border(context)),
+   662→                  borderRadius: BorderRadius.circular(8),
+   663→                ),
+   664→                child: Text('This Month',
+   665→                    style: TextStyles.caption(context, weight: FontWeight.w700)
+   666→                        .copyWith(fontSize: 10)),
+   667→              ),
+   668→            ],
+   669→          ),
+   670→          const SizedBox(height: 16),
+   671→          Row(
+   672→            children: [
+   673→              SizedBox(
+   674→                width: 180,
+   675→                height: 180,
+   676→                child: Stack(
+   677→                  alignment: Alignment.center,
+   678→                  children: [
+   679→                    PieChart(
+   680→                      duration: const Duration(milliseconds: 1100),
+   681→                      curve: Curves.easeOutCubic,
+   682→                      PieChartData(
+   683→                        sectionsSpace: 2,
+   684→                        centerSpaceRadius: 56,
+   685→                        sections: sections,
+   686→                      ),
+   687→                    ),
+   688→                    Column(
+   689→                      mainAxisSize: MainAxisSize.min,
+   690→                      children: [
+   691→                        Text('Total Spent', style: TextStyles.label(context)),
+   692→                        const SizedBox(height: 4),
+   693→                        AnimatedMoney(
+   694→                          amount: widget.total,
+   695→                          style: TextStyles.money(context, size: 18),
+   696→                        ),
+   697→                      ],
+   698→                    ),
+   699→                  ],
+   700→                ),
+   701→              ),
+   702→              const SizedBox(width: 16),
+   703→              Expanded(
+   704→                child: Column(
+   705→                  crossAxisAlignment: CrossAxisAlignment.start,
+   706→                  children: widget.items
+   707→                      .map((e) {
+   708→                        final c = e.key;
+   709→                        final pctVal = ((e.value / safeTotal) * 100).round();
+   710→                        return Padding(
+   711→                          padding: const EdgeInsets.symmetric(vertical: 5),
+   712→                          child: Row(
+   713→                            children: [
+   714→                              Container(
+   715→                                width: 10,
+   716→                                height: 10,
+   717→                                decoration: BoxDecoration(
+   718→                                  color: c.color,
+   719→                                  shape: BoxShape.circle,
+   720→                                ),
+   721→                              ),
+   722→                              const SizedBox(width: 8),
+   723→                              Expanded(
+   724→                                child: Text(
+   725→                                  c.name,
+   726→                                  style: TextStyles.caption(context,
+   727→                                      weight: FontWeight.w600),
+   728→                                  maxLines: 1,
+   729→                                  overflow: TextOverflow.ellipsis,
+   730→                                ),
+   731→                              ),
+   732→                              const SizedBox(width: 8),
+   733→                              Text(
+   734→                                '$pctVal%',
+   735→                                style: TextStyles.caption(context,
+   736→                                    weight: FontWeight.w700).copyWith(
+   737→                                        fontFeatures: const [FontFeature.tabularFigures()]),
+   738→                              ),
+   739→                            ],
+   740→                          ),
+   741→                        );
+   742→                      })
+   743→                      .toList(),
+   744→                ),
+   745→              ),
+   746→            ],
+   747→          ),
+   748→        ],
+   749→      ),
+   750→    );
+   751→  }
+   752→}
+   753→
+   754→// ----------------------------------------------------------------
+   755→// Insight card at bottom
+   756→// ----------------------------------------------------------------
+   757→class _InsightCard extends StatelessWidget {
+   758→  final String label;
+   759→  final String value;
+   760→  final String sub;
+   761→  final IconData icon;
+   762→  final Color color;
+   763→
+   764→  const _InsightCard({
+   765→    required this.label,
+   766→    required this.value,
+   767→    required this.sub,
+   768→    required this.icon,
+   769→    required this.color,
+   770→  });
+   771→
+   772→  @override
+   773→  Widget build(BuildContext context) {
+   774→    return GlassCard(
+   775→      padding: const EdgeInsets.all(14),
+   776→      customColor: color.withOpacity(0.06),
+   777→      child: Column(
+   778→        crossAxisAlignment: CrossAxisAlignment.start,
+   779→        children: [
+   780→          Container(
+   781→            width: 32,
+   782→            height: 32,
+   783→            decoration: BoxDecoration(
+   784→              color: color.withOpacity(0.18),
+   785→              shape: BoxShape.circle,
+   786→            ),
+   787→            alignment: Alignment.center,
+   788→            child: Icon(icon, color: color, size: 16),
+   789→          ),
+   790→          const SizedBox(height: 10),
+   791→          Text(label, style: TextStyles.label(context)),
+   792→          const SizedBox(height: 4),
+   793→          Text(value,
+   794→              style: TextStyles.body(context, weight: FontWeight.w700)
+   795→                  .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+   796→          const SizedBox(height: 2),
+   797→          Text(sub, style: TextStyles.caption(context), maxLines: 1,
+   798→              overflow: TextOverflow.ellipsis),
+   799→        ],
+   800→      ),
+   801→    );
+   802→  }
+   803→}
+   804→

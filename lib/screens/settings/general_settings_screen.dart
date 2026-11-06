@@ -4,10 +4,14 @@ import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/widgets/glass_card.dart';
+import '../../core/widgets/security_dialog.dart';
 import '../../providers/currency_provider.dart';
+import '../../providers/language_provider.dart';
 import '../../providers/notif_prefs_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/user_provider.dart';
 import 'currency_selection_screen.dart';
+import 'language_selection_screen.dart';
 import 'notification_preferences_screen.dart';
 import 'theme_settings_screen.dart';
 
@@ -19,6 +23,7 @@ class GeneralSettingsScreen extends StatelessWidget {
     final theme = context.watch<ThemeProvider>();
     final currency = context.watch<CurrencyProvider>();
     final notifPrefs = context.watch<NotifPrefsProvider>();
+    final lang = context.watch<LanguageProvider>();
 
     final themeLabel = theme.mode == ThemeModeChoice.light
         ? 'Light'
@@ -53,7 +58,20 @@ class GeneralSettingsScreen extends StatelessWidget {
                   color: AppColors.mint,
                   title: AppStrings.securityPrivacy,
                   subtitle: 'Biometrics & App Lock',
-                  onTap: () {},
+                  onTap: () {
+                    showSecurityDialog(context, context.read<UserProvider>());
+                  },
+                ),
+                _SettingsItem(
+                  icon: Icons.translate_rounded,
+                  color: AppColors.primaryIndigo,
+                  title: 'App Language',
+                  subtitle:
+                      '${lang.currentLanguage.name} (${lang.currentLanguage.nativeName})',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const LanguageSelectionScreen()),
+                  ),
                 ),
                 _SettingsItem(
                   icon: Icons.language_rounded,

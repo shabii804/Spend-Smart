@@ -46,7 +46,7 @@ void main() {
       final sim = AppMotion.springSim(0.0, 1.0);
       expect(sim, isNotNull);
       // The simulation should not throw and should settle near `to`.
-      expect(() => sim.x(1.0, 0.0), returnsNormally);
+      expect(() => sim.x(1.0), returnsNormally);
     });
   });
 

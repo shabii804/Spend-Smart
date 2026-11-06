@@ -1,25 +1,35 @@
-# Build artifacts (Flutter/Dart)
-spendsmart/.dart_tool/
-spendsmart/.flutter-plugins
-spendsmart/.flutter-plugins-dependencies
-spendsmart/.packages
-spendsmart/build/
+# ─── Flutter / Dart build artifacts (app is at repo root) ───
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+generated_plugin_registrant.dart
 
-# IDE
+# ─── Secrets & environment (never commit) ───
+.env
+.env.*
+!.env.example
+
+# ─── AI / agent session junk (never commit) ───
+tool-results/
+worklog.md
+
+# ─── IDE ───
 .idea/
 .vscode/
 *.iml
+.run/
+devtools_options.yaml
 
-# OS
+# ─── OS ───
 .DS_Store
 Thumbs.db
 
-# Generated screenshots + zips (don't commit)
+# ─── Misc local files ───
 download/
 upload/
 *.zip
 *.log
-
-# Skills + node
 skills/
 node_modules/

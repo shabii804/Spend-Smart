@@ -8,6 +8,7 @@ import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/glass_card.dart';
+import '../../core/widgets/security_dialog.dart';
 import '../../core/widgets/staggered_entrance.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/currency_provider.dart';
@@ -18,6 +19,7 @@ import '../auth/login_screen.dart';
 import '../budgets/budget_overview_screen.dart';
 import '../expenses/transactions_screen.dart';
 import '../goals/savings_goals_screen.dart';
+import '../income/income_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../profile/profile_screen.dart';
 import '../settings/currency_selection_screen.dart';
@@ -108,6 +110,16 @@ class MoreScreen extends StatelessWidget {
                   ),
                 ),
                 _MenuItem(
+                  icon: Icons.work_outline_rounded,
+                  color: AppColors.mint,
+                  title: 'Job Income & Auto Budget',
+                  subtitle:
+                      '${Formatters.money(user.monthlyIncome)}/month · ${user.occupation}',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const IncomeScreen()),
+                  ),
+                ),
+                _MenuItem(
                   icon: Icons.receipt_long_rounded,
                   color: AppColors.blue,
                   title: 'All Transactions',
@@ -173,14 +185,7 @@ class MoreScreen extends StatelessWidget {
                   title: AppStrings.securityPrivacy,
                   subtitle: 'Biometrics & App Lock',
                   onTap: () {
-                    Haptics.selection();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Security & Privacy — coming soon'),
-                        duration: Duration(seconds: 2),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    showSecurityDialog(context, context.read<UserProvider>());
                   },
                 ),
                 _MenuItem(

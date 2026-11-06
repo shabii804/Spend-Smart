@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/app_lock_screen.dart';
 import '../../core/widgets/floating_nav_bar.dart';
 import '../../providers/user_provider.dart';
 import '../advice/smart_advice_screen.dart';
@@ -37,6 +38,10 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   late int _index;
+
+  /// Whether the user has unlocked the app this session (App Lock PIN /
+  /// biometrics). Reset naturally when the shell is rebuilt after a restart.
+  bool _isUnlocked = false;
 
   @override
   void initState() {
@@ -163,7 +168,12 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     // Touch user provider so greeting updates after profile edit
-    context.watch<UserProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.user;
+    // App Lock / biometrics gate (Tabussam's security feature)
+    if ((user.appLockEnabled || user.biometricsEnabled) && !_isUnlocked) {
+      return AppLockScreen(onUnlocked: () => setState(() => _isUnlocked = true));
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       // Adapt system status bar to the app theme. Fixes the "dark icons on

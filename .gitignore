@@ -1,25 +1,36 @@
-# Build artifacts (Flutter/Dart)
-spendsmart/.dart_tool/
-spendsmart/.flutter-plugins
-spendsmart/.flutter-plugins-dependencies
-spendsmart/.packages
-spendsmart/build/
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+ios/Pods/
+android/.gradle/
 
 # IDE
 .idea/
 .vscode/
 *.iml
+*.ipr
+*.iws
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Generated screenshots + zips (don't commit)
+# Secrets — never commit
+.env
+
+# Generated screenshots + zips + local artifacts (don't commit)
 download/
 upload/
+tool-results/
 *.zip
 *.log
+.flutter/
 
-# Skills + node
+# Node / misc
 skills/
 node_modules/

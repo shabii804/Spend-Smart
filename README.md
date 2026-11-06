@@ -2,7 +2,7 @@
 
 A premium student expense-tracking Flutter app — **frontend only**. All data is local sample data managed with Provider. Built as a Mobile Application Development university project.
 
-> Preview-ready and ZIP-ready. The whole `spendsmart/` folder can be downloaded as a ZIP, opened in any IDE with Flutter installed, and run with `flutter pub get && flutter run`.
+> Preview-ready. The whole repository can be downloaded as a ZIP, opened in any IDE with Flutter installed, and run with `flutter pub get && flutter run`.
 
 ---
 
@@ -43,7 +43,7 @@ Only allowed packages are used; no extra dependencies that break web/emulator pr
 ## Folder Structure
 
 ```
-spendsmart/
+Spend-Smart/                # repository root
 ├── pubspec.yaml
 ├── analysis_options.yaml
 ├── README.md
@@ -91,7 +91,7 @@ spendsmart/
 ## How to Run
 
 1. Make sure Flutter is installed (`flutter --version`). Stable channel ≥ 3.24 recommended.
-2. From the `spendsmart/` folder:
+2. From the project root:
    ```bash
    flutter pub get
    flutter run                 # Choose Chrome / Android / iOS / Web

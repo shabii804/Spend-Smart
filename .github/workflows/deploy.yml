@@ -24,15 +24,12 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.24.5'
           cache: true
 
       - name: Install dependencies
-        working-directory: spendsmart
         run: flutter pub get
 
       - name: Build web app for GitHub Pages
-        working-directory: spendsmart
         run: flutter build web --base-href "/Spend-Smart/" --release
 
       - name: Setup Pages
@@ -41,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: spendsmart/build/web
+          path: build/web
 
   deploy:
     needs: build

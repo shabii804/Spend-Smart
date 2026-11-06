@@ -12,6 +12,7 @@ import '../../core/widgets/security_dialog.dart';
 import '../../core/widgets/staggered_entrance.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/currency_provider.dart';
+import '../../providers/income_provider.dart';
 import '../../providers/notif_prefs_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/user_provider.dart';
@@ -20,6 +21,7 @@ import '../budgets/budget_overview_screen.dart';
 import '../expenses/transactions_screen.dart';
 import '../goals/savings_goals_screen.dart';
 import '../income/income_screen.dart';
+import '../lend_borrow/lend_borrow_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../profile/profile_screen.dart';
 import '../settings/currency_selection_screen.dart';
@@ -51,6 +53,7 @@ class MoreScreen extends StatelessWidget {
     final currency = context.watch<CurrencyProvider>();
     final notifPrefs = context.watch<NotifPrefsProvider>();
     final budget = context.watch<BudgetProvider>();
+    final income = context.watch<IncomeProvider>();
 
     final themeLabel = theme.mode == ThemeModeChoice.light
         ? 'Light'
@@ -113,9 +116,9 @@ class MoreScreen extends StatelessWidget {
                 _MenuItem(
                   icon: Icons.work_outline_rounded,
                   color: AppColors.mint,
-                  title: 'Job Income & Auto Budget',
+                  title: 'Income Manager',
                   subtitle:
-                      '${Formatters.money(user.monthlyIncome)}/month · ${user.occupation}',
+                      '${Formatters.money(income.totalIn())}/month · job + extras',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const IncomeScreen()),
                   ),
@@ -127,6 +130,15 @@ class MoreScreen extends StatelessWidget {
                   subtitle: 'Split bills & tips with friends',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SplitBillScreen()),
+                  ),
+                ),
+                _MenuItem(
+                  icon: Icons.swap_horiz_rounded,
+                  color: AppColors.primaryPurple,
+                  title: 'Lend & Borrow',
+                  subtitle: 'Track money with friends',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const LendBorrowScreen()),
                   ),
                 ),
                 _MenuItem(

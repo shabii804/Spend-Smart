@@ -6,7 +6,9 @@ import 'providers/budget_provider.dart';
 import 'providers/currency_provider.dart';
 import 'providers/expense_provider.dart';
 import 'providers/goal_provider.dart';
+import 'providers/income_provider.dart';
 import 'providers/language_provider.dart';
+import 'providers/lend_borrow_provider.dart';
 import 'providers/notif_prefs_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
@@ -33,6 +35,8 @@ class _Providers extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => NotifPrefsProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => IncomeProvider()),
+        ChangeNotifierProvider(create: (_) => LendBorrowProvider()),
       ],
       child: Builder(
         builder: (context) {

@@ -27,6 +27,8 @@ import '../expenses/transactions_screen.dart';
 import '../expenses/voice_entry_screen.dart';
 import '../expenses/receipt_scanner_screen.dart';
 import '../goals/savings_goals_screen.dart';
+import '../income/income_screen.dart';
+import '../lend_borrow/lend_borrow_screen.dart';
 import '../notifications/notifications_screen.dart';
 import 'weekly_bar_chart.dart';
 
@@ -428,6 +430,14 @@ class _HomeScreenState extends State<HomeScreen> {
           () => Navigator.of(context).push(
                 MaterialPageRoute(
                     builder: (_) => const SavingsGoalsScreen()),
+              )),
+      ('Income', Icons.payments_rounded, AppColors.mint,
+          () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const IncomeScreen()),
+              )),
+      ('Lend', Icons.swap_horiz_rounded, AppColors.primaryPurple,
+          () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LendBorrowScreen()),
               )),
     ];
     return Row(

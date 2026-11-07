@@ -69,14 +69,21 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
     }
   }
 
+  int _scanGeneration = 0; // invalidates stale scans after a reset/retake
+  bool _popping = false; // guards a fast double-tap popping twice
+
   void _onImagePicked(Uint8List bytes) {
+    // Guard re-entry — tapping "Pick another" mid-scan used to start an
+    // overlapping scan whose stale result could land for the old image.
+    if (_scanning) return;
     Haptics.light();
+    final gen = ++_scanGeneration;
     setState(() {
       _imageBytes = bytes;
       _scanning = true;
       _scanned = null;
     });
-    _runScan();
+    _runScan(gen);
   }
 
   /// Simulated OCR — picks a plausible merchant + amount + category from
@@ -84,10 +91,13 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   /// In a real implementation this would call google_mlkit_text_recognition
   /// (mobile-only) or a cloud OCR API. On web (GitHub Pages) neither is
   /// available, so the demo flow simulates the result.
-  Future<void> _runScan() async {
+  Future<void> _runScan(int gen) async {
     // Simulate OCR latency — 1.8s feels realistic for a small image.
     await Future.delayed(const Duration(milliseconds: 1800));
     if (!mounted) return;
+    // A reset / retake happened while we waited — drop the stale result
+    // instead of flashing a result card with no image.
+    if (gen != _scanGeneration) return;
 
     // Mock merchant list — each entry maps a merchant to a category id
     // so we can pre-fill the right category on AddExpenseScreen.
@@ -164,7 +174,8 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   }
 
   void _addAsExpense() {
-    if (_scanned == null) return;
+    if (_scanned == null || _scanning || _popping) return;
+    _popping = true; // a quick double-tap used to pop the screen below too
     Haptics.selection();
     // Pop back to the caller with the scanned Expense.
     // - When launched from AddExpense AppBar, the caller receives the
@@ -176,6 +187,8 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
   }
 
   void _reset() {
+    // Bump the generation so any in-flight scan is discarded on completion.
+    _scanGeneration++;
     setState(() {
       _imageBytes = null;
       _scanning = false;

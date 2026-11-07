@@ -9,6 +9,7 @@ import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/validators.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../core/widgets/success_overlay.dart';
@@ -519,19 +520,53 @@ class _IncomeScreenState extends State<IncomeScreen> {
                 ],
               ),
             ),
-            Text(
-              '+${Formatters.money(e.amount)}',
-              style: TextStyles.money(context,
-                  size: 15, color: AppColors.mint,),
+            Flexible(
+              child: Text(
+                '+${Formatters.money(e.amount)}',
+                style: TextStyles.money(context,
+                    size: 15, color: AppColors.mint,),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             const SizedBox(width: 6),
+            // 44px tap target + confirmation — deleting a persisted earning
+            // used to happen instantly on a 20px icon with no undo.
             GestureDetector(
-              onTap: () {
+              behavior: HitTestBehavior.opaque,
+              onTap: () async {
                 Haptics.selection();
+                final confirmed = await ConfirmDialog.show(
+                  context,
+                  title: 'Delete earning?',
+                  body: '"${e.source}" (${Formatters.money(e.amount)}) will be removed from your income history.',
+                  confirmLabel: 'Delete',
+                  danger: true,
+                  icon: Icons.delete_outline_rounded,
+                );
+                if (confirmed != true) return;
+                final messenger = ScaffoldMessenger.of(context);
                 context.read<IncomeProvider>().deleteEarning(e.id);
+                Haptics.success();
+                messenger.clearSnackBars();
+                messenger.showSnackBar(SnackBar(
+                  content: Text('Removed ${e.source}'),
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 5),
+                  action: SnackBarAction(
+                    label: 'UNDO',
+                    textColor: AppColors.mint,
+                    onPressed: () => context.read<IncomeProvider>().restoreEarning(e),
+                  ),
+                ));
               },
-              child: Icon(Icons.delete_outline_rounded,
-                  size: 20, color: AppColorsOf.tertiaryText(context),),
+              child: Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                child: Icon(Icons.delete_outline_rounded,
+                    size: 20, color: AppColorsOf.tertiaryText(context),),
+              ),
             ),
           ],
         ),

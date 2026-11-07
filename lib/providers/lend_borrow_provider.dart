@@ -128,6 +128,15 @@ class LendBorrowProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Re-inserts an existing entry (UNDO snackbar after a delete — keeps
+  /// the original id and settled state intact).
+  void restore(LedgerEntry entry) {
+    if (_entries.any((e) => e.id == entry.id)) return;
+    _entries.insert(0, entry);
+    _saveToPrefs();
+    notifyListeners();
+  }
+
   Future<void> _loadFromPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();

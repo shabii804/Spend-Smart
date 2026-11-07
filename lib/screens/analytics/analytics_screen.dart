@@ -42,14 +42,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.analytics),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () {
-            if (ModalRoute.of(context)?.canPop ?? false) {
-              Navigator.of(context).maybePop();
-            }
-          },
-        ),
+        // Analytics is a bottom-nav tab — there is nothing to pop to, so a
+        // back arrow here was a dead affordance. Only show it when the
+        // screen was pushed on top of something (e.g. from More).
+        leading: ModalRoute.of(context)?.canPop ?? false
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => Navigator.of(context).maybePop(),
+              )
+            : null,
       ),
       body: SafeArea(
         // Pull-to-refresh — manually refresh the analytics data.
@@ -258,7 +259,10 @@ class _SummaryCard extends StatelessWidget {
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       child: SizedBox(
-        height: 80,
+        // Grows with the text scale — at large accessibility sizes the 3
+        // stacked rows used to overflow the fixed 80px box.
+        height: (80 * MediaQuery.textScalerOf(context).scale(1.0))
+            .clamp(80.0, 150.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

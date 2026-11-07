@@ -9,6 +9,7 @@ import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/validators.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../core/widgets/success_overlay.dart';
@@ -316,7 +317,11 @@ class _LendBorrowScreenState extends State<LendBorrowScreen> {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      'Settled ${e.settledDate == null ? '' : DateFormat('d MMM').format(e.settledDate!)}',
+                      // Some legacy entries have no settled date — don't
+                      // render a dangling "Settled " with nothing after it.
+                      e.settledDate == null
+                          ? 'Settled'
+                          : 'Settled ${DateFormat('d MMM').format(e.settledDate!)}',
                       style: TextStyles.caption(context, color: AppColors.mint),
                     ),
                   ),
@@ -357,9 +362,34 @@ class _LendBorrowScreenState extends State<LendBorrowScreen> {
                 _actionChip(
                   icon: Icons.delete_outline_rounded,
                   label: '',
-                  onTap: () {
+                  onTap: () async {
                     Haptics.selection();
+                    // A persisted ledger entry used to vanish on a single
+                    // tap — confirm first, then offer UNDO.
+                    final confirmed = await ConfirmDialog.show(
+                      context,
+                      title: 'Delete entry?',
+                      body: 'The "${e.person}" entry (${Formatters.money(e.amount)}) will be removed.',
+                      confirmLabel: 'Delete',
+                      danger: true,
+                      icon: Icons.delete_outline_rounded,
+                    );
+                    if (confirmed != true) return;
+                    final messenger = ScaffoldMessenger.of(context);
                     context.read<LendBorrowProvider>().delete(e.id);
+                    Haptics.success();
+                    messenger.clearSnackBars();
+                    messenger.showSnackBar(SnackBar(
+                      content: Text('Removed ${e.person} entry'),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 5),
+                      action: SnackBarAction(
+                        label: 'UNDO',
+                        textColor: AppColors.primaryIndigo,
+                        onPressed: () =>
+                            context.read<LendBorrowProvider>().restore(e),
+                      ),
+                    ));
                   },
                 ),
               ],
@@ -378,7 +408,8 @@ class _LendBorrowScreenState extends State<LendBorrowScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        // Taller chip keeps the tap target near the 44px minimum.
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         decoration: BoxDecoration(
           color: AppColorsOf.card(context),
           border: Border.all(color: AppColorsOf.border(context)),
@@ -426,7 +457,10 @@ class _LendBorrowScreenState extends State<LendBorrowScreen> {
             padding: const EdgeInsets.all(18),
             child: Form(
               key: formKey,
-              child: Column(
+              // Scrollable so validation errors + keyboard never push the
+              // Save button off-screen on small phones.
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -526,6 +560,7 @@ class _LendBorrowScreenState extends State<LendBorrowScreen> {
                   ),
                 ],
               ),
+            ),
             ),
           ),
         ),

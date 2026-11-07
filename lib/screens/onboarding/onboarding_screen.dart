@@ -165,7 +165,9 @@ class _OnboardPage extends StatelessWidget {
               ],
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.account_balance_wallet_rounded,
+            // Page-specific icon — all three pages used to show the same
+            // wallet while the copy talked about savings and goals.
+            child: Icon(icon,
                 color: Colors.white, size: 64),
           ),
           const SizedBox(height: 36),

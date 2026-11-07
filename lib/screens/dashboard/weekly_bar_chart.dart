@@ -156,15 +156,21 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 36,
+                      // 44 (was 36) — the labels were clipping into the
+                      // plot area on some values.
+                      reservedSize: 44,
                       interval: safeMax / 4,
                       getTitlesWidget: (v, _) {
                         if (v == 0 || v == safeMax) return const SizedBox.shrink();
                         return Padding(
                           padding: const EdgeInsets.only(right: 6),
                           child: Text(
-                            Formatters.moneyCompact(v),
+                            // Symbol-less compact form — "Rs. 2.5K" didn't
+                            // fit the reserved gutter and bled into bars.
+                            Formatters.moneyCompactPlain(v),
                             style: TextStyles.caption(context).copyWith(fontSize: 10),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         );
                       },
@@ -173,7 +179,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 24,
+                      reservedSize: 28,
                       interval: 1,
                       getTitlesWidget: (v, _) {
                         final i = v.toInt();

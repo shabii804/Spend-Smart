@@ -303,8 +303,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyles.moneyHero(context, color: Colors.white),
                 ),
                 const SizedBox(height: 8),
-                // Rs. X left, N days to go — single compact line
-                Text('${Formatters.money(remaining.abs())} left · $daysLeft days to go',
+                // Rs. X left, N days to go — single compact line.
+                // Over budget the honest copy is "over budget", not "left"
+                // (the old abs() math claimed money was left when it wasn't).
+                Text(
+                    remaining >= 0
+                        ? '${Formatters.money(remaining)} left · $daysLeft days to go'
+                        : '${Formatters.money(remaining.abs())} over budget',
                     style: TextStyles.caption(context, weight: FontWeight.w600)
                         .copyWith(color: Colors.white.withOpacity(0.85))),
                 const SizedBox(height: 10),
@@ -314,36 +319,55 @@ class _HomeScreenState extends State<HomeScreen> {
                 // amounts) so it doesn't push the chart off the fold.
                 Row(
                   children: [
-                    Column(
+                    // Expanded keeps the two stats from colliding on narrow
+                    // screens / large text scales; FittedBox shrinks the
+                    // amount instead of overflowing the hero card.
+                    Expanded(
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(AppStrings.spentThisMonth,
                             style: TextStyles.label(context).copyWith(
                                 color: Colors.white.withOpacity(0.7),
-                                fontSize: 10)),
+                                fontSize: 10),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 2),
-                        AnimatedMoney(
-                          amount: spent,
-                          style: TextStyles.money(context,
-                              size: 14, color: Colors.white),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: AnimatedMoney(
+                            amount: spent,
+                            style: TextStyles.money(context,
+                                size: 14, color: Colors.white),
+                          ),
                         ),
                       ],
                     ),
+                    ),
                     const SizedBox(width: 16),
-                    Column(
+                    Expanded(
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(AppStrings.remaining,
+                        Text(remaining >= 0
+                                ? AppStrings.remaining
+                                : 'Over budget',
                             style: TextStyles.label(context).copyWith(
                                 color: Colors.white.withOpacity(0.7),
-                                fontSize: 10)),
+                                fontSize: 10),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 2),
-                        AnimatedMoney(
-                          amount: remaining.abs(),
-                          style: TextStyles.money(context,
-                              size: 14, color: Colors.white),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: AnimatedMoney(
+                            amount: remaining.abs(),
+                            style: TextStyles.money(context,
+                                size: 14, color: Colors.white),
+                          ),
                         ),
                       ],
+                    ),
                     ),
                   ],
                 ),
@@ -376,17 +400,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   curve: Curves.easeOutCubic,
                   builder: (context, v, _) {
                     final pct = (v * 100).clamp(0, 999).toInt();
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('$pct%',
-                            style: TextStyles.money(context,
-                                size: 22, color: Colors.white)),
-                        Text('used',
-                            style: TextStyles.caption(context).copyWith(
-                                color: Colors.white.withOpacity(0.7),
-                                fontSize: 10)),
-                      ],
+                    // FittedBox keeps "% used" inside the 72px ring even at
+                    // large accessibility text scales.
+                    return FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('$pct%',
+                              style: TextStyles.money(context,
+                                  size: 22, color: Colors.white)),
+                          Text('used',
+                              style: TextStyles.caption(context).copyWith(
+                                  color: Colors.white.withOpacity(0.7),
+                                  fontSize: 10)),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -419,9 +448,20 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }),
       ('Voice', Icons.mic_rounded, AppColors.primaryPurple,
-          () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const VoiceEntryScreen()),
-              )),
+          () async {
+            // Voice hands back a parsed expense — open AddExpense with it
+            // pre-filled (same contract as the Scan action).
+            final Expense? result = await Navigator.of(context).push<Expense>(
+              MaterialPageRoute(builder: (_) => const VoiceEntryScreen()),
+            );
+            if (result == null) return;
+            if (!context.mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => AddExpenseScreen(prefill: result),
+              ),
+            );
+          }),
       ('Insights', Icons.insights_rounded, AppColors.primaryIndigo,
           () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
@@ -440,8 +480,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(builder: (_) => const LendBorrowScreen()),
               )),
     ];
-    return Row(
-      children: tiles.map((t) {
+    return LayoutBuilder(builder: (context, constraints) {
+      // 6 tiles in one row leaves ~37px per tile on phones — the 44px
+      // icon badges get squashed into ellipses. Two rows of 3 give every
+      // tile room; wide surfaces (web/desktop) keep the single row.
+      final tilesWide = constraints.maxWidth >= 560;
+      Widget tile(int i) {
+        final t = tiles[i];
         return Expanded(
           child: GestureDetector(
             onTap: () {
@@ -468,9 +513,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // minWidth/minHeight instead of a fixed width — the
+                  // circle never becomes an ellipse inside a narrow tile.
                   Container(
-                    width: 44,
-                    height: 44,
+                    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -499,8 +545,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         );
-      }).toList(),
-    );
+      }
+
+      if (tilesWide) {
+        return Row(children: [for (var i = 0; i < tiles.length; i++) tile(i)]);
+      }
+      return Column(
+        children: [
+          Row(children: [tile(0), tile(1), tile(2)]),
+          const SizedBox(height: 8),
+          Row(children: [tile(3), tile(4), tile(5)]),
+        ],
+      );
+    });
   }
 
   // ────────────────────────────────────────────────────────────────
@@ -521,8 +578,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // category's share of overall spending (not of the top category).
     final totalSpent = items.fold<double>(0.0, (s, e) => s + e.value);
     final safeTotal = totalSpent == 0 ? 1.0 : totalSpent;
+    // Fixed 120px clips the card content at large accessibility text
+    // scales — grow the row with the text scale instead.
+    final scale = MediaQuery.textScalerOf(context).scale(1.0);
     return SizedBox(
-      height: 120,
+      height: (120 * scale).clamp(120.0, 190.0),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: items.length,
@@ -705,12 +765,16 @@ class _TransactionTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                '-${Formatters.money(expense.amount)}',
-                style: TextStyles.body(context, weight: FontWeight.w700)
-                    .copyWith(
-                        color: AppColors.danger,
-                        fontFeatures: const [FontFeature.tabularFigures()]),
+              Flexible(
+                child: Text(
+                  '-${Formatters.money(expense.amount)}',
+                  style: TextStyles.body(context, weight: FontWeight.w700)
+                      .copyWith(
+                          color: AppColors.danger,
+                          fontFeatures: const [FontFeature.tabularFigures()]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

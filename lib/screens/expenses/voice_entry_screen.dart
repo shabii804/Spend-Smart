@@ -5,9 +5,9 @@ import '../../core/constants/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/utils/formatters.dart';
 import '../../core/widgets/primary_button.dart';
 import '../../models/expense.dart';
-import 'add_expense_screen.dart';
 
 /// Simulated voice entry screen. Shows a pulsing mic, "Listening…" state,
 /// then after ~2.5s produces a fake pre-filled expense and pushes it to AddExpense.
@@ -56,7 +56,9 @@ class _VoiceEntryScreenState extends State<VoiceEntryScreen>
   }
 
   void _useResult() {
-    // Simulated recognition result: pre-fill Add Expense with the parsed fields.
+    // Simulated recognition result: hand the parsed fields back via the
+    // route. (pushReplacement used to STACK a second AddExpense on top of
+    // the one that opened this screen — back then showed a duplicate form.)
     final prefill = Expense(
       id: 'voice-${DateTime.now().millisecondsSinceEpoch}',
       title: 'Lunch at cafe',
@@ -65,11 +67,7 @@ class _VoiceEntryScreenState extends State<VoiceEntryScreen>
       date: DateTime.now(),
       note: 'Logged via voice (simulated)',
     );
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => AddExpenseScreen(prefill: prefill),
-      ),
-    );
+    Navigator.of(context).pop(prefill);
   }
 
   @override
@@ -271,12 +269,9 @@ class _ResultCard extends StatelessWidget {
               ],
             ),
           ),
-          const Text('Rs. 320',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryIndigo,
-              )),
+          Text(Formatters.money(320),
+              style: TextStyles.money(context,
+                  size: 20, color: AppColors.primaryIndigo,)),
         ],
       ),
     );

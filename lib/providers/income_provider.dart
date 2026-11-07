@@ -89,6 +89,15 @@ class IncomeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Re-inserts an existing entry (used by the UNDO snackbar after a
+  /// delete — keeps the original id, type and date intact).
+  void restoreEarning(IncomeEntry entry) {
+    if (_earnings.any((e) => e.id == entry.id)) return;
+    _earnings.insert(0, entry);
+    _saveToPrefs();
+    notifyListeners();
+  }
+
   Future<void> _loadFromPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();

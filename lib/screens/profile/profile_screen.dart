@@ -13,6 +13,7 @@ import '../../providers/budget_provider.dart';
 import '../../providers/currency_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/goal_provider.dart';
+import '../../providers/language_provider.dart';
 import '../../providers/notif_prefs_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/user_provider.dart';
@@ -40,6 +41,7 @@ class ProfileScreen extends StatelessWidget {
     final goals = context.watch<GoalProvider>();
     final theme = context.watch<ThemeProvider>();
     final currency = context.watch<CurrencyProvider>();
+    final lang = context.watch<LanguageProvider>();
     final notifPrefs = context.watch<NotifPrefsProvider>();
     final budget = context.watch<BudgetProvider>();
 
@@ -49,7 +51,9 @@ class ProfileScreen extends StatelessWidget {
         ? '${nameParts[0][0]}${nameParts[1][0]}'
         : (nameParts.isNotEmpty && nameParts[0].length >= 2
             ? nameParts[0].substring(0, 2)
-            : (nameParts.isNotEmpty ? nameParts[0][0] : ''))
+            : (nameParts.isNotEmpty && nameParts[0].isNotEmpty
+                ? nameParts[0][0]
+                : '?'))
         .toUpperCase();
 
     final monthSpent = expenses.totalSpent;
@@ -247,15 +251,24 @@ class ProfileScreen extends StatelessWidget {
                     color: AppColors.catInternet,
                     title: AppStrings.theme,
                     subtitle: themeLabel,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const _ThemeQuickToggleSheet()),
+                    // It's a bottom SHEET — pushing it as a full-screen
+                    // route made the drag handle + Done button look broken.
+                    onTap: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const _ThemeQuickToggleSheet(),
                     ),
                   ),
                   _MenuItem(
                     icon: Icons.language_rounded,
                     color: AppColors.catBills,
                     title: AppStrings.languageCurrency,
-                    subtitle: 'English · $currencyLabel',
+                    // Show the ACTUAL current language — a hardcoded
+                    // "English" contradicted the row right above it when a
+                    // different language was selected.
+                    subtitle:
+                        '${lang.currentLanguage.name} · $currencyLabel',
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const CurrencySelectionScreen()),
                     ),

@@ -23,7 +23,14 @@ class GoalDetailsScreen extends StatelessWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Navigator.of(context).canPop()) Navigator.of(context).maybePop();
       });
-      return const Scaffold(body: SizedBox.shrink());
+      // Placeholder for the pre-pop frame (a blank flash used to appear).
+      return Scaffold(
+        body: Center(
+          child: Text('Goal no longer exists',
+              style: TextStyles.body(context,
+                  color: AppColorsOf.secondaryText(context))),
+        ),
+      );
     }
     final pct = goal.progressPercent;
     final isComplete = goal.isComplete;
@@ -84,13 +91,18 @@ class GoalDetailsScreen extends StatelessWidget {
                             height: 10,
                             color: Colors.white.withOpacity(0.22),
                           ),
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 380),
-                            curve: Curves.easeOutCubic,
-                            height: 10,
-                            width: MediaQuery.sizeOf(context).width * pct,
-                            color: Colors.white,
-                          ),
+                          // Fill = fraction of the BAR's width (was full
+                          // screen width — any goal ≥ ~73% complete
+                          // rendered a visually 100% full bar).
+                          LayoutBuilder(builder: (context, bar) {
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 380),
+                              curve: Curves.easeOutCubic,
+                              height: 10,
+                              width: bar.maxWidth * pct.clamp(0.0, 1.0),
+                              color: Colors.white,
+                            );
+                          }),
                         ],
                       ),
                     ),

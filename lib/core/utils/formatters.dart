@@ -39,8 +39,15 @@ class Formatters {
 
   /// Compact money for tight chart labels: 12.5k, 1.2M.
   static String moneyCompact(double amount) {
-    final fmt = NumberFormat.compact(locale: 'en_US');
+    final fmt = NumberFormat.compact(locale: _currencyLocale);
     return '$_currencySymbol ${fmt.format(amount)}';
+  }
+
+  /// Compact money WITHOUT the symbol — for chart axis labels where the
+  /// "Rs." prefix would overflow the reserved gutter width.
+  static String moneyCompactPlain(double amount) {
+    final fmt = NumberFormat.compact(locale: _currencyLocale);
+    return fmt.format(amount);
   }
 
   /// "10 Oct, 12:45 PM"

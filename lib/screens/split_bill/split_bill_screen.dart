@@ -172,12 +172,16 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _heroStatItem('Total Bill', Formatters.money(_billAmount)),
+                      // Expanded + FittedBox — realistic bill amounts (and
+                      // large text scales) used to push this Row into
+                      // overflow stripes inside the gradient hero.
+                      Expanded(child: _heroStatItem('Total Bill', Formatters.money(_billAmount))),
                       Container(width: 1, height: 24, color: Colors.white.withOpacity(0.2)),
-                      _heroStatItem('Tip (${_tipPercent.toInt()}%)', Formatters.money(_tipAmount)),
+                      Expanded(child: _heroStatItem('Tip (${_tipPercent.toInt()}%)', Formatters.money(_tipAmount))),
                       Container(width: 1, height: 24, color: Colors.white.withOpacity(0.2)),
-                      _heroStatItem('Grand Total', Formatters.money(_totalWithTip)),
+                      Expanded(child: _heroStatItem('Grand Total', Formatters.money(_totalWithTip))),
                     ],
                   ),
                 ],
@@ -212,7 +216,9 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       prefixText: '${Formatters.currencySymbol} ',
-                      prefixStyle: TextStyles.money(context, size: 24),
+                      // Match the 48px input text — the old 24px prefix sat
+                      // visibly off-baseline inside the same field.
+                      prefixStyle: TextStyles.moneyDisplay(context),
                       hintText: '0',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -426,9 +432,12 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
 
   Widget _heroStatItem(String label, String value) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white.withOpacity(0.7),
             fontSize: 10,
@@ -436,12 +445,16 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -455,8 +468,10 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
         borderRadius: BorderRadius.circular(12),
         onTap: onPressed,
         child: Container(
-          width: 36,
-          height: 36,
+          // 44×44 — the +/- people stepper is the primary interaction on
+          // this screen and 36px was under the comfortable touch minimum.
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             color: onPressed != null
                 ? AppColors.primaryIndigo.withOpacity(0.12)

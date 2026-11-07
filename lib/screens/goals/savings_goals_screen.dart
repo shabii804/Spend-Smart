@@ -24,15 +24,23 @@ void _showAddMoneySheet(BuildContext context, String goalId, String goalName) {
   final goal = provider.byId(goalId);
   final wasComplete = goal?.isComplete ?? false;
   final oldPct = goal?.progressPercent ?? 0;
+  // Lives outside StatefulBuilder so it survives rebuilds.
+  var invalid = false;
 
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     builder: (sheetContext) => Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
-      child: Container(
+      // StatefulBuilder + error flag: an invalid amount used to make the
+      // Add Money button respond with total silence — now the field shows
+      // an inline error and an error haptic fires.
+      child: StatefulBuilder(
+        builder: (sheetContext, setSheetState) {
+          return Container(
         padding: const EdgeInsets.all(24),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -50,9 +58,13 @@ void _showAddMoneySheet(BuildContext context, String goalId, String goalName) {
               autofocus: true,
               style: TextStyles.moneyDisplay(context),
               textAlign: TextAlign.center,
+              onChanged: (_) {
+                if (invalid) setSheetState(() => invalid = false);
+              },
               decoration: InputDecoration(
                 prefixText: '${Formatters.currencySymbol} ',
                 hintText: '0',
+                errorText: invalid ? 'Enter an amount above 0' : null,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(color: AppColorsOf.border(context))),
                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16),
@@ -89,7 +101,11 @@ void _showAddMoneySheet(BuildContext context, String goalId, String goalName) {
               icon: Icons.check_rounded,
               onPressed: () {
                 final v = double.tryParse(amountCtrl.text.trim());
-                if (v == null || v <= 0) return;
+                if (v == null || v <= 0) {
+                  Haptics.error();
+                  setSheetState(() => invalid = true); // silent no-op → visible error
+                  return;
+                }
                 provider.addToGoal(goalId, v);
                 final updatedGoal = provider.byId(goalId);
                 final newPct = updatedGoal?.progressPercent ?? 0;
@@ -110,6 +126,9 @@ void _showAddMoneySheet(BuildContext context, String goalId, String goalName) {
             const SizedBox(height: 8),
           ],
         ),
+          ),
+        );
+        },
       ),
     ),
   );
@@ -373,8 +392,15 @@ class _GoalsOverviewCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      Text('${g.name} ',
-                          style: TextStyles.caption(context, weight: FontWeight.w600)),
+                      // Flexible + ellipsis — free-form goal names used to
+                      // push this Row wider than the card (overflow stripes).
+                      Flexible(
+                        child: Text(g.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyles.caption(context, weight: FontWeight.w600)),
+                      ),
+                      const SizedBox(width: 4),
                       Text(Formatters.moneyPlain(g.savedAmount),
                           style: TextStyles.caption(context, weight: FontWeight.w700)
                               .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),

@@ -123,17 +123,26 @@ class _MorphingLoadingButtonState extends State<MorphingLoadingButton>
           constraints: const BoxConstraints(minHeight: 54),
           width: widget.expand ? double.infinity : null,
           decoration: BoxDecoration(
-            gradient: enabled ? AppGradients.primaryButton : LinearGradient(colors: [AppColors.primaryIndigo.withOpacity(0.4), AppColors.primaryPurple.withOpacity(0.4)]),
+            // Disabled = neutral grey gradient (was the enabled gradient at
+            // 40% — users couldn't tell WHY the Save button was inert).
+            gradient: enabled
+                ? AppGradients.primaryButton
+                : LinearGradient(colors: [
+                    AppColorsOf.tertiaryText(context).withOpacity(0.45),
+                    AppColorsOf.tertiaryText(context).withOpacity(0.35),
+                  ]),
             borderRadius: BorderRadius.circular(16),
             boxShadow: enabled ? [BoxShadow(color: AppColors.primaryIndigo.withOpacity(0.32), blurRadius: 16, offset: const Offset(0, 6))] : null,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Stack(alignment: Alignment.center, children: [
-            // Label (fades out when loading)
-            AnimatedOpacity(opacity: widget.loading ? 0.0 : 1.0, duration: Motion.durButtonMorph,
+            // Label (fades out when loading, dims when disabled)
+            AnimatedOpacity(opacity: widget.loading ? 0.0 : (enabled ? 1.0 : 0.7), duration: Motion.durButtonMorph,
               child: AnimatedScale(scale: widget.loading ? 0.7 : 1.0, duration: Motion.durButtonMorph, curve: Motion.easeOut,
                 child: Row(mainAxisSize: widget.expand ? MainAxisSize.max : MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
                   if (widget.icon != null) ...[Icon(widget.icon, color: Colors.white, size: 18), const SizedBox(width: 8)],
+                  // Label dims further when disabled so the grey reads as
+                  // "not tappable yet" at a glance.
                   Text(widget.label, style: TextStyles.body(context).copyWith(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
                 ]))),
             // Spinner (fades in when loading)

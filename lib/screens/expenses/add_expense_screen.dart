@@ -6,6 +6,7 @@ import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/premium_motion.dart';
 import '../../data/sample_data.dart';
 import '../../models/expense.dart';
@@ -35,6 +36,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   DateTime _date = DateTime.now();
   bool _isEdit = false;
   bool _saving = false;
+  bool _saved = false; // set once the expense is written — stops the dirty guard
   int _dateChip = 0; // 0=Today, 1=Yesterday, 2=Pick
 
   static const _quickAdd = [
@@ -134,7 +136,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final d = await showDatePicker(
       context: context,
       initialDate: _date,
-      firstDate: DateTime(2025),
+      firstDate: DateTime(DateTime.now().year - 1),
       lastDate: DateTime.now().add(const Duration(days: 1)),
     );
     // User canceled the date picker — don't change _dateChip, the previous
@@ -151,7 +153,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       if (t != null) {
         _date = DateTime(d.year, d.month, d.day, t.hour, t.minute);
       } else {
-        _date = d;
+        // Time sheet dismissed — keep the previous time-of-day instead of
+        // silently resetting the expense to midnight.
+        _date = DateTime(d.year, d.month, d.day, _date.hour, _date.minute);
       }
     });
   }
@@ -175,12 +179,55 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     });
   }
 
+  /// True when the form holds content the user could lose by leaving.
+  /// Guards the back button / system back gesture with a discard confirm.
+  bool get _isDirty {
+    if (_saved) return false;
+    if (_isEdit) {
+      final e = context.read<ExpenseProvider>().byId(widget.expenseId!);
+      if (e == null) return _hasAmount || _selectedCategoryId != null;
+      return _selectedCategoryId != e.categoryId ||
+          _titleCtrl.text.trim() != e.title ||
+          _noteCtrl.text.trim() != (e.note ?? '') ||
+          double.tryParse(_amountCtrl.text.trim()) != e.amount ||
+          _date.year != e.date.year ||
+          _date.month != e.date.month ||
+          _date.day != e.date.day ||
+          _date.hour != e.date.hour ||
+          _date.minute != e.date.minute;
+    }
+    return _hasAmount ||
+        _selectedCategoryId != null ||
+        _titleCtrl.text.trim().isNotEmpty ||
+        _noteCtrl.text.trim().isNotEmpty;
+  }
+
+  Future<void> _confirmDiscard() async {
+    final leave = await ConfirmDialog.show(
+      context,
+      title: 'Discard changes?',
+      body: _isEdit
+          ? 'Your edits to this expense will be lost.'
+          : 'This expense hasn\u2019t been saved yet.',
+      confirmLabel: 'Discard',
+      danger: true,
+      icon: Icons.delete_sweep_rounded,
+    );
+    if (leave == true && mounted) Navigator.of(context).pop();
+  }
+
   Future<void> _save() async {
     if (!_canSave) return;
     setState(() => _saving = true);
     await Future.delayed(const Duration(milliseconds: 350));
     if (!mounted) return;
-    final amount = double.parse(_amountCtrl.text.trim());
+    // tryParse guards the window where the amount could have been cleared
+    // mid-save (double.parse would crash on an empty string).
+    final amount = double.tryParse(_amountCtrl.text.trim());
+    if (amount == null || amount <= 0) {
+      setState(() => _saving = false);
+      return;
+    }
     final expense = Expense(
       id: _isEdit
           ? (widget.expenseId ?? widget.prefill?.id ?? DateTime.now().millisecondsSinceEpoch.toString())
@@ -199,6 +246,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     } else {
       prov.addExpense(expense);
     }
+    _saved = true; // back guard no longer needed — data is committed
     setState(() => _saving = false);
     if (!mounted) return;
     await showPremiumSuccess(context);
@@ -220,16 +268,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           onPressed: () {
             prov.deleteExpense(expense.id);
             Haptics.selection();
-            if (mounted) {
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Expense removed'),
-                  duration: Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
+            // Use the messenger captured before the pop — this State is
+            // already unmounted when the undo fires, but the messenger
+            // still serves the shell underneath.
+            messenger.clearSnackBars();
+            messenger.showSnackBar(
+              const SnackBar(
+                content: Text('Expense removed'),
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
           },
         ),
       ));
@@ -240,7 +289,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      // Block back (button or system gesture) while there is unsaved form
+      // content and confirm before discarding. After a successful save
+      // _saved flips _isDirty off so the normal pop goes through untouched.
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _confirmDiscard();
+      },
+      child: Scaffold(
       appBar: AppBar(
         // Title removed — saves vertical space so the form fits on screen.
         title: const SizedBox.shrink(),
@@ -253,12 +311,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          // The Scaffold already resizes for the keyboard (default
+          // resizeToAvoidBottomInset) — padding viewInsets here as well
+          // double-compensated and left a blank gap below the Save button.
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: Column(
+          child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 2),
@@ -318,12 +375,29 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           icon: Icons.mic_rounded,
                           label: 'Voice Input',
                           color: AppColors.primaryPurple,
-                          onTap: () {
+                          onTap: () async {
                             Haptics.light();
-                            Navigator.of(context).push(
+                            // Voice screen hands back a prefilled expense —
+                            // same contract as the receipt scanner, so we
+                            // never stack a second AddExpense on top.
+                            final Expense? result =
+                                await Navigator.of(context).push<Expense>(
                               MaterialPageRoute(
                                   builder: (_) => const VoiceEntryScreen()),
                             );
+                            if (result == null) return;
+                            if (!mounted) return;
+                            setState(() {
+                              _amountCtrl.text = result.amount ==
+                                      result.amount.roundToDouble()
+                                  ? result.amount.toStringAsFixed(0)
+                                  : result.amount.toStringAsFixed(2);
+                              _selectedCategoryId = result.categoryId;
+                              _date = result.date;
+                              _noteCtrl.text = result.note ?? '';
+                              _titleCtrl.text = result.title;
+                              _dateChip = _chipForDate(result.date);
+                            });
                           },
                         ),
                       ),
@@ -334,7 +408,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 // ═══ Quick Add (horizontal scroll) ═══
                 if (!_isEdit) ...[
                   SizedBox(
-                    height: 36,
+                    // 44px keeps the quick-add chips above the minimum
+                    // comfortable touch-target size.
+                    height: 44,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _quickAdd.length,
@@ -355,7 +431,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             duration: AppMotion.base,
                             curve: AppMotion.celebrate,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
                                 color: qSel
                                     ? q.$4.withOpacity(0.18)
@@ -474,8 +550,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 const SizedBox(height: 12),
               ],
             ),
-          ),
         ),
+      ),
       ),
     );
   }
@@ -560,6 +636,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         TextField(
           controller: _amountCtrl,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          // Freeze the amount while the save animation runs — editing
+          // during those 350ms could invalidate what is being parsed.
+          readOnly: _saving,
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
           textAlign: TextAlign.center,
           autofocus: widget.prefill == null && widget.expenseId == null,
@@ -631,7 +710,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         child: AnimatedContainer(
           duration: AppMotion.base,
           curve: AppMotion.standard,
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 13),
           decoration: BoxDecoration(
             color: sel ? AppColors.primaryIndigo : AppColorsOf.card(context),
             border: Border.all(
@@ -640,9 +719,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           alignment: Alignment.center,
-          child: Text(label,
-              style: TextStyles.caption(context, weight: FontWeight.w600)
-                  .copyWith(color: sel ? Colors.white : AppColorsOf.secondaryText(context))),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyles.caption(context, weight: FontWeight.w600)
+                    .copyWith(color: sel ? Colors.white : AppColorsOf.secondaryText(context))),
+          ),
         ),
       ),
     );
@@ -650,16 +734,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   // ═══ Category grid — shortened labels, clear selected state ═══
   Widget _categoryGrid() {
-    return GridView.builder(
+    return LayoutBuilder(builder: (context, constraints) {
+      // 4 columns only fits ≥360px — below that (and at large text scale)
+      // the labels overflow, so narrow phones get a roomy 3-column grid.
+      final cols = constraints.maxWidth < 360 ? 3 : 4;
+      return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: cols,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
-        // Taller ratio (0.92 → 0.85) so the icon + label has more
-        // breathing room — previously the items felt squat/cramped.
-        childAspectRatio: 1.0,
+        // Extra vertical headroom so icon circle + label never clip.
+        childAspectRatio: cols == 3 ? 0.95 : 0.88,
       ),
       itemCount: SampleData.categories.length,
       itemBuilder: (ctx, i) {
@@ -706,10 +793,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text(shortName,
-                          style: TextStyles.caption(context, weight: FontWeight.w600),
-                          textAlign: TextAlign.center,
-                          maxLines: 1),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(shortName,
+                            style: TextStyles.caption(context, weight: FontWeight.w600),
+                            textAlign: TextAlign.center,
+                            maxLines: 1),
+                      ),
                     ],
                   ),
                   if (sel)
@@ -739,7 +829,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           ),
         );
       },
-    );
+      );
+    });
   }
 
   Widget _label(BuildContext context, String text) {

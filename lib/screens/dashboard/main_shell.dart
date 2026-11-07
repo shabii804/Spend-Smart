@@ -184,14 +184,14 @@ class _MainShellState extends State<MainShell> {
               statusBarColor: Colors.transparent,
               statusBarIconBrightness: Brightness.light, // Android
               statusBarBrightness: Brightness.dark, // iOS — light icons
-              systemNavigationBarColor: Color(0xFF0B0F1A),
+              systemNavigationBarColor: AppColors.darkBackground,
               systemNavigationBarIconBrightness: Brightness.light,
             )
           : const SystemUiOverlayStyle(
               statusBarColor: Colors.transparent,
               statusBarIconBrightness: Brightness.dark, // Android
               statusBarBrightness: Brightness.light, // iOS — dark icons
-              systemNavigationBarColor: Colors.white,
+              systemNavigationBarColor: AppColors.lightBackground,
               systemNavigationBarIconBrightness: Brightness.dark,
             ),
       child: Scaffold(

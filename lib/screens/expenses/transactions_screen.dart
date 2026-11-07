@@ -167,14 +167,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transactions'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () {
-            if (canPop) {
-              Navigator.of(context).maybePop();
-            }
-          },
-        ),
+        // Transactions is a bottom-nav tab — no back arrow (it was a dead
+        // affordance that did nothing when tapped as a tab).
+        leading: canPop
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => Navigator.of(context).maybePop(),
+              )
+            : null,
         // Trailing: compact item count badge
         actions: [
           Padding(
@@ -220,11 +220,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     const Icon(Icons.trending_down_rounded,
                         size: 14, color: AppColors.danger),
                     const SizedBox(width: 6),
-                    Text(
-                        '${Formatters.money(monthTotal)} this month',
-                        style: TextStyles.caption(context,
-                            weight: FontWeight.w700)),
-                    const Spacer(),
+                    // Flexible — large text scales used to overflow the strip.
+                    Flexible(
+                      child: Text(
+                          '${Formatters.money(monthTotal)} this month',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyles.caption(context,
+                              weight: FontWeight.w700)),
+                    ),
+                    const SizedBox(width: 8),
                     Text(
                       '${grouped.length} ${grouped.length == 1 ? 'day' : 'days'}',
                       style: TextStyles.caption(context).copyWith(
@@ -246,7 +251,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   style: TextStyles.body(context).copyWith(fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Search transactions',
-                    hintStyle: TextStyle(fontSize: 13),
+                    hintStyle: TextStyles.caption(context).copyWith(fontSize: 13),
                     prefixIcon:
                         const Icon(Icons.search_rounded, size: 18),
                     prefixIconConstraints:
@@ -270,9 +275,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            // ═══ FILTER CHIPS (compact, 36px height) ═══
+            // ═══ FILTER CHIPS ═══
             SizedBox(
-              height: 36,
+              // 44px keeps the chips tappable (36px was too small).
+              height: 44,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -289,7 +295,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                          horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         color: sel
                             ? AppColors.primaryIndigo
@@ -303,10 +309,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       ),
                       child: Text(
                         f,
-                        style: TextStyle(
-                          fontFamily: 'PlusJakartaSans',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyles.caption(context, weight: FontWeight.w600)
+                            .copyWith(
                           color: sel
                               ? Colors.white
                               : AppColorsOf.secondaryText(context),
@@ -324,9 +330,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             Expanded(
               child: filtered.isEmpty
                   ? EmptyState(
-                      icon: Icons.search_off_rounded,
-                      title: 'No transactions found',
-                      subtitle: 'Try a different search or filter.',
+                      icon: all.isEmpty
+                          ? Icons.receipt_long_rounded
+                          : Icons.search_off_rounded,
+                      title: all.isEmpty
+                          ? 'No expenses yet'
+                          : 'No transactions found',
+                      subtitle: all.isEmpty
+                          ? 'Tap the + button to record your first expense.'
+                          : 'Try a different search or filter.',
                     )
                   : RefreshIndicator(
                       color: AppColors.primaryIndigo,
@@ -527,14 +539,18 @@ class _ExpandableTransactionTileState
                   ),
                   const SizedBox(width: 8),
                   // Amount (red with - prefix)
-                  Text(
-                    '-${Formatters.money(widget.expense.amount)}',
-                    style: TextStyles.body(context, weight: FontWeight.w700)
-                        .copyWith(
-                      color: AppColors.danger,
-                      fontFeatures: const [
-                        FontFeature.tabularFigures()
-                      ],
+                  Flexible(
+                    child: Text(
+                      '-${Formatters.money(widget.expense.amount)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyles.body(context, weight: FontWeight.w700)
+                          .copyWith(
+                        color: AppColors.danger,
+                        fontFeatures: const [
+                          FontFeature.tabularFigures()
+                        ],
+                      ),
                     ),
                   ),
                   // Expand/collapse chevron
@@ -637,7 +653,8 @@ class _ExpandableTransactionTileState
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        // Taller rows keep Edit/Delete/Details near the 44px tap minimum.
+        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 8),
         decoration: BoxDecoration(
           color: color.withOpacity(0.08),
           border: Border.all(color: color.withOpacity(0.20), width: 1),
@@ -650,12 +667,8 @@ class _ExpandableTransactionTileState
             const SizedBox(width: 4),
             Text(
               label,
-              style: TextStyle(
-                fontFamily: 'PlusJakartaSans',
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: color,
-              ),
+              style: TextStyles.caption(context, weight: FontWeight.w700)
+                  .copyWith(color: color),
             ),
           ],
         ),

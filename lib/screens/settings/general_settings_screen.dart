@@ -77,7 +77,10 @@ class GeneralSettingsScreen extends StatelessWidget {
                   icon: Icons.language_rounded,
                   color: AppColors.catBills,
                   title: AppStrings.languageCurrency,
-                  subtitle: 'English · ${currency.id} ${currency.symbol}',
+                  // Reflect the ACTUAL selected language instead of a
+                  // hardcoded "English" that contradicted the row above.
+                  subtitle:
+                      '${lang.currentLanguage.name} · ${currency.id} ${currency.symbol}',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                         builder: (_) => const CurrencySelectionScreen()),
@@ -126,7 +129,27 @@ class GeneralSettingsScreen extends StatelessWidget {
                   color: AppColors.primaryIndigo,
                   title: 'About SpendSmart',
                   subtitle: 'v1.0.0',
-                  onTap: () {},
+                  // Was a dead onTap — now shows a real about dialog so the
+                  // row isn't a broken affordance.
+                  onTap: () => showAboutDialog(
+                    context: context,
+                    applicationName: 'SpendSmart',
+                    applicationVersion: '1.0.0',
+                    applicationIcon: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryIndigo.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.savings_rounded,
+                          color: AppColors.primaryIndigo, size: 26),
+                    ),
+                    children: const [
+                      Text(
+                          'A smart student budgeting companion — track expenses, income, budgets, goals and friend-money in one place.'),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -90,30 +90,44 @@ class BudgetOverviewScreen extends StatelessWidget {
                           height: 10,
                           color: Colors.white.withOpacity(0.22),
                         ),
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 380),
-                          curve: Curves.easeOutCubic,
-                          height: 10,
-                          width: MediaQuery.sizeOf(context).width *
-                              percent.clamp(0.0, 1.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                        // Fill = fraction of the BAR's width (was screen
+                        // width — budgets ≥ ~75% spent looked fully spent).
+                        LayoutBuilder(builder: (context, bar) {
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 380),
+                            curve: Curves.easeOutCubic,
+                            height: 10,
+                            width: bar.maxWidth * percent.clamp(0.0, 1.0),
+                            decoration: BoxDecoration(
+                              // Red fill shouts "over budget" at a glance.
+                              color: remaining < 0
+                                  ? AppColors.danger
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          );
+                        }),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _HeroStat(
-                          label: AppStrings.spentThisMonth,
-                          value: Formatters.money(spent)),
-                      _HeroStat(
-                          label: AppStrings.remaining,
-                          value: Formatters.money(remaining)),
+                      Expanded(
+                        child: _HeroStat(
+                            label: AppStrings.spentThisMonth,
+                            value: Formatters.money(spent)),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _HeroStat(
+                          label: remaining < 0 ? 'Over budget' : AppStrings.remaining,
+                          value: Formatters.money(remaining.abs()),
+                          valueColor: remaining < 0 ? AppColors.danger : null,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -192,19 +206,29 @@ class BudgetOverviewScreen extends StatelessWidget {
 class _HeroStat extends StatelessWidget {
   final String label;
   final String value;
-  const _HeroStat({required this.label, required this.value});
+  final Color? valueColor;
+  const _HeroStat({required this.label, required this.value, this.valueColor});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyles.label(context)
                 .copyWith(color: Colors.white.withOpacity(0.7))),
         const SizedBox(height: 2),
-        Text(value,
-            style: TextStyles.money(context, size: 16, color: Colors.white)),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(value,
+              maxLines: 1,
+              style: TextStyles.money(context,
+                  size: 16,
+                  color: valueColor ?? Colors.white,)),
+        ),
       ],
     );
   }

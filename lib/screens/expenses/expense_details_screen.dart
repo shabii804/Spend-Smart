@@ -22,11 +22,18 @@ class ExpenseDetailsScreen extends StatelessWidget {
     final expense =
         context.select<ExpenseProvider, Expense?>((p) => p.byId(expenseId));
     if (expense == null) {
-      // Already deleted — pop back
+      // Already deleted — show a tiny placeholder for the frame before the
+      // pop (a blank white flash used to appear here).
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (Navigator.of(context).canPop()) Navigator.of(context).maybePop();
       });
-      return const Scaffold(body: SizedBox.shrink());
+      return Scaffold(
+        body: Center(
+          child: Text('Expense no longer exists',
+              style: TextStyles.body(context,
+                  color: AppColorsOf.secondaryText(context))),
+        ),
+      );
     }
     final cat = SampleData.categoryById(expense.categoryId);
 
@@ -143,13 +150,25 @@ class ExpenseDetailsScreen extends StatelessWidget {
                         icon: Icons.delete_outline_rounded,
                       );
                       if (ok == true && context.mounted) {
-                        context
-                            .read<ExpenseProvider>()
-                            .deleteExpense(expense.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(AppStrings.expenseDeleted)),
-                        );
+                        // Capture both before the pop — the undo action
+                        // fires after this screen is unmounted.
+                        final prov = context.read<ExpenseProvider>();
+                        final messenger = ScaffoldMessenger.of(context);
+                        prov.deleteExpense(expense.id);
+                        // Same UNDO pattern as the transactions list — the
+                        // details delete used to be a plain, unrecoverable
+                        // snackbar while the tile delete had UNDO.
+                        messenger.clearSnackBars();
+                        messenger.showSnackBar(SnackBar(
+                          content: const Text(AppStrings.expenseDeleted),
+                          behavior: SnackBarBehavior.floating,
+                          duration: const Duration(seconds: 6),
+                          action: SnackBarAction(
+                            label: 'UNDO',
+                            textColor: AppColors.primaryIndigo,
+                            onPressed: () => prov.addExpense(expense),
+                          ),
+                        ));
                         if (Navigator.of(context).canPop()) {
                           Navigator.of(context).maybePop();
                         }

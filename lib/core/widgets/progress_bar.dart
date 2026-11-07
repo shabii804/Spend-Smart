@@ -23,27 +23,33 @@ class ProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final clamped = percent.clamp(0.0, 1.0);
-    return ClipRRect(
-      borderRadius: radius ?? BorderRadius.circular(height),
-      child: Stack(
-        children: [
-          Container(
-            height: height,
-            color: trackColor ??
-                AppColors.primaryIndigo.withOpacity(0.12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ClipRRect(
+          borderRadius: radius ?? BorderRadius.circular(height),
+          child: Stack(
+            children: [
+              Container(
+                height: height,
+                color: trackColor ??
+                    AppColors.primaryIndigo.withOpacity(0.12),
+              ),
+              // Fill = fraction of the bar's OWN width. (Was screen width —
+              // any bar narrower than the screen rendered a full fill long
+              // before 100%.)
+              AnimatedContainer(
+                duration: AppConstants.durMed,
+                curve: AppConstants.curveDefault,
+                height: height,
+                width: constraints.maxWidth * clamped,
+                decoration: BoxDecoration(
+                  gradient: gradient ?? AppGradients.progress,
+                ),
+              ),
+            ],
           ),
-          AnimatedContainer(
-            duration: AppConstants.durMed,
-            curve: AppConstants.curveDefault,
-            height: height,
-            width: clamped *
-                (MediaQuery.sizeOf(context).width), // will be clipped below
-            decoration: BoxDecoration(
-              gradient: gradient ?? AppGradients.progress,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

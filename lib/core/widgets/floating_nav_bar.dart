@@ -189,15 +189,21 @@ class _NavSlotState extends State<_NavSlot>
                 child: Icon(widget.icon, size: 20, color: color),
               ),
               const SizedBox(height: 4),
-              // Label
-              Text(
-                widget.label,
-                style: TextStyle(
-                  fontFamily: 'PlusJakartaSans',
-                  color: color,
-                  fontSize: 10.5,
-                  fontWeight:
-                      widget.selected ? FontWeight.w700 : FontWeight.w500,
+              // Label — maxLines + FittedBox so a wrapped label can never
+              // blow past the fixed 64px pill at large text scales.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  widget.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    color: color,
+                    fontSize: 10.5,
+                    fontWeight:
+                        widget.selected ? FontWeight.w700 : FontWeight.w500,
+                  ),
                 ),
               ),
               // Indicator dot (only when selected)

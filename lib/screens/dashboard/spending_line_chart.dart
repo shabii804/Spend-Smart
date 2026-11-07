@@ -77,7 +77,9 @@ class SpendingLineChart extends StatelessWidget {
                           radius: 3,
                           color: AppColors.blue,
                           strokeWidth: 2,
-                          strokeColor: Colors.white,
+                          // White ring disappears on the white light-mode
+                          // card — use the card surface color instead.
+                          strokeColor: AppColorsOf.card(context),
                         );
                       },
                     ),
@@ -102,6 +104,9 @@ class SpendingLineChart extends StatelessWidget {
                 maxY: safeMax,
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
+                    // Invert: surface = text color of the current theme, so
+                    // dark mode gets a light bubble with dark text instead
+                    // of the old unreadable white-on-white.
                     getTooltipColor: (touchedSpot) => AppColorsOf.mainText(context),
                     tooltipRoundedRadius: 8,
                     tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -110,7 +115,9 @@ class SpendingLineChart extends StatelessWidget {
                         return LineTooltipItem(
                           Formatters.moneyPlain(s.y),
                           TextStyle(
-                            color: Colors.white,
+                            // Opposite pole of the same theme pair — always
+                            // max contrast against the bubble above.
+                            color: AppColorsOf.background(context),
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             fontFeatures: const [FontFeature.tabularFigures()],

@@ -73,10 +73,9 @@ class MoreScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('More'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        // More is a bottom-nav tab (root route) — no back arrow (it was a
+        // dead affordance that silently did nothing).
+        automaticallyImplyLeading: false,
       ),
       body: SafeArea(
         bottom: false,

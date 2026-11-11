@@ -406,8 +406,22 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 if (!_isEdit) const SizedBox(height: 8),
 
                 // ═══ Quick Add (horizontal scroll) ═══
+                // ShaderMask fades the trailing edge so the cut-off chip
+                // reads as "scrollable" instead of "broken layout".
                 if (!_isEdit) ...[
-                  SizedBox(
+                  ShaderMask(
+                    shaderCallback: (bounds) => LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Colors.black,
+                        Colors.black,
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.88, 1.0],
+                    ).createShader(bounds),
+                    blendMode: BlendMode.dstIn,
+                    child: SizedBox(
                     // 44px keeps the quick-add chips above the minimum
                     // comfortable touch-target size.
                     height: 44,
@@ -455,6 +469,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         );
                       },
                     ),
+                  ),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -667,7 +682,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               fontFamily: 'PlusJakartaSans',
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: AppColorsOf.tertiaryText(context).withOpacity(0.5),
+              // 0.8 (was 0.5) — the hint was nearly invisible on white, so
+              // the empty field read as broken (just a floating "Rs.").
+              color: AppColorsOf.tertiaryText(context).withOpacity(0.8),
               height: 1.1,
             ),
             border: InputBorder.none,
@@ -735,9 +752,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   // ═══ Category grid — shortened labels, clear selected state ═══
   Widget _categoryGrid() {
     return LayoutBuilder(builder: (context, constraints) {
-      // 4 columns only fits ≥360px — below that (and at large text scale)
-      // the labels overflow, so narrow phones get a roomy 3-column grid.
-      final cols = constraints.maxWidth < 360 ? 3 : 4;
+      // 8 categories: 4 columns gives a balanced 4+4 grid on every standard
+      // phone (the 390px iPhone class has ~322px inner width here). Only very
+      // narrow containers drop to 3 columns — labels shrink via FittedBox
+      // so they never overflow either way.
+      final cols = constraints.maxWidth < 320 ? 3 : 4;
       return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

@@ -329,10 +329,17 @@ class _SpendingAreaChartState extends State<_SpendingAreaChart> {
   @override
   Widget build(BuildContext context) {
     // Build a full-month series (day 1..lastDay) with 0 for missing days.
+    // For the CURRENT month the series stops at today — drawing zero-spending
+    // days up to day 30/31 implied the rest of the month was already spent
+    // at zero, which reads as a broken flat line.
     final anchor = widget.dailyMap.keys.isNotEmpty
         ? _parseAnchorMonth(widget.dailyMap.keys.first)
         : DateTime.now();
-    final lastDay = DateTime(anchor.year, anchor.month + 1, 0).day;
+    final now = DateTime.now();
+    final isCurrentMonth = anchor.year == now.year && anchor.month == now.month;
+    final lastDay = isCurrentMonth
+        ? now.day
+        : DateTime(anchor.year, anchor.month + 1, 0).day;
     final series = List.generate(lastDay, (i) {
       final day = i + 1;
       final key = '${anchor.year}-${anchor.month}-$day';
@@ -441,14 +448,17 @@ class _SpendingAreaChartState extends State<_SpendingAreaChart> {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 38,
+                      // 34 + symbol-less compact labels — "Rs. 3.75K" bled
+                      // into the plot area; the plain form matches the
+                      // dashboard weekly chart exactly.
+                      reservedSize: 34,
                       interval: safeMax / 4,
                       getTitlesWidget: (v, _) {
                         if (v == safeMax) return const SizedBox.shrink();
                         return Padding(
                           padding: const EdgeInsets.only(right: 6),
                           child: Text(
-                            Formatters.moneyCompact(v),
+                            Formatters.moneyCompactPlain(v),
                             style: TextStyles.caption(context).copyWith(fontSize: 10),
                           ),
                         );
@@ -594,6 +604,18 @@ class _DayPoint {
 // ----------------------------------------------------------------
 // Spending Breakdown — donut with % labels on slices + right legend
 // ----------------------------------------------------------------
+
+/// Shortened legend display names — long category names ("Food & Dining",
+/// "Entertainment") clipped inside the 80px legend slot. Short names keep
+/// two items per row clean and readable.
+String _legendName(String name) {
+  const short = {
+    'Food & Dining': 'Food',
+    'Entertainment': 'Fun',
+  };
+  return short[name] ?? name;
+}
+
 class _BreakdownDonut extends StatefulWidget {
   final double total;
   final List<MapEntry<dynamic, double>> items;
@@ -756,11 +778,13 @@ class _BreakdownDonutState extends State<_BreakdownDonut> {
                   ),
                   const SizedBox(width: 6),
                   // Category name — use Flexible with maxLines: 1 + ellipsis
-                  // so long names like "Entertainment" don't push amounts off
+                  // so long names don't push amounts off. Display names are
+                  // shortened so 2 items fit per row without truncation
+                  // ("Food & Dini…" / "Entertainm…" used to clip).
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 80),
                     child: Text(
-                      c.name,
+                      _legendName(c.name),
                       style: TextStyles.caption(context,
                           weight: FontWeight.w600),
                       maxLines: 1,

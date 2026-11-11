@@ -66,7 +66,9 @@ class ProfileScreen extends StatelessWidget {
             ? 'Dark'
             : 'System';
 
-    final currencyLabel = '${currency.id} · ${currency.symbol}';
+    // Code only — the symbol ("Rs.") duplicated the code ("PKR") and read
+    // as a stray third segment: "English · PKR · Rs."
+    final currencyLabel = currency.id;
 
     final notifSummary = [
       if (notifPrefs.budgetAlerts) 'Budget',

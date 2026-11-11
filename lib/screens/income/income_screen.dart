@@ -511,7 +511,12 @@ class _IncomeScreenState extends State<IncomeScreen> {
                 children: [
                   Text(e.source,
                       style: TextStyles.body(context,
-                          weight: FontWeight.w600),),
+                          weight: FontWeight.w600),
+                      // Single line + ellipsis — long sources like
+                      // "Freelance project" wrapped to 2 lines and made the
+                      // row taller than its siblings.
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,),
                   const SizedBox(height: 2),
                   Text(
                     DateFormat('d MMM yyyy').format(e.date),

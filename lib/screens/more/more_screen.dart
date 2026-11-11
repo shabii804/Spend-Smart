@@ -80,7 +80,10 @@ class MoreScreen extends StatelessWidget {
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
+          // Bottom padding 170 (was 120) — the floating + FAB in the nav bar
+          // pokes ~45px above the bar, so 120 left the Log Out button half
+          // hidden underneath it when scrolled to the very end.
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 170),
           children: [
 
           // ─── QUICK ACCESS GROUP — Goals + Profile + Transactions ───

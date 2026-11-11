@@ -212,7 +212,9 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
                     controller: _amountCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     style: TextStyles.moneyDisplay(context),
-                    textAlign: TextAlign.center,
+                    // Left-aligned (was center): center + prefixText pushed the
+                    // digits to the middle of the field with the "Rs." stranded
+                    // far left — read as two disconnected elements.
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       prefixText: '${Formatters.currencySymbol} ',

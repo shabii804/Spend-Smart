@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/widgets/glass_card.dart';
@@ -48,6 +49,13 @@ class NotificationPreferencesScreen extends StatelessWidget {
               value: prefs.goalUpdates,
               onChanged: prefs.setGoalUpdates,
             ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                'Changes are saved automatically.',
+                style: TextStyles.caption(context),
+              ),
+            ),
           ],
         ),
       ),
@@ -74,9 +82,12 @@ class _ToggleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The whole card toggles — tapping only the small Switch was a tiny
+    // target next to a big inviting card, which felt broken.
     return GlassCard(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
+      onTap: () => onChanged(!value),
       child: Row(
         children: [
           Container(
@@ -103,7 +114,10 @@ class _ToggleRow extends StatelessWidget {
           const SizedBox(width: 8),
           Switch(
             value: value,
-            onChanged: onChanged,
+            onChanged: (v) {
+              Haptics.selection();
+              onChanged(v);
+            },
           ),
         ],
       ),

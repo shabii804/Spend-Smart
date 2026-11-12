@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../providers/currency_provider.dart';
@@ -29,7 +30,10 @@ class CurrencySelectionScreen extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20),
-                    onTap: () => cur.setCurrency(o.id),
+                    onTap: () {
+                      Haptics.selection();
+                      cur.setCurrency(o.id);
+                    },
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(14),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/widgets/glass_card.dart';
@@ -33,7 +34,10 @@ class ThemeSettingsScreen extends StatelessWidget {
                     subtitle: AppStrings.lightSubtitle,
                     color: AppColors.catBills,
                     selected: theme.mode == ThemeModeChoice.light,
-                    onTap: () => theme.setMode(ThemeModeChoice.light),
+                    onTap: () {
+                      Haptics.selection();
+                      theme.setMode(ThemeModeChoice.light);
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -44,7 +48,10 @@ class ThemeSettingsScreen extends StatelessWidget {
                     subtitle: AppStrings.darkSubtitle,
                     color: AppColors.primaryIndigo,
                     selected: theme.mode == ThemeModeChoice.dark,
-                    onTap: () => theme.setMode(ThemeModeChoice.dark),
+                    onTap: () {
+                      Haptics.selection();
+                      theme.setMode(ThemeModeChoice.dark);
+                    },
                   ),
                 ),
               ],
@@ -56,7 +63,10 @@ class ThemeSettingsScreen extends StatelessWidget {
               subtitle: AppStrings.systemSubtitle,
               color: AppColors.mint,
               selected: theme.mode == ThemeModeChoice.system,
-              onTap: () => theme.setMode(ThemeModeChoice.system),
+              onTap: () {
+                Haptics.selection();
+                theme.setMode(ThemeModeChoice.system);
+              },
               wide: true,
             ),
             const SizedBox(height: 24),
@@ -159,15 +169,25 @@ class _ThemeCard extends StatelessWidget {
   }
 
   Widget _check() {
-    return Container(
-      width: 22,
-      height: 22,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
+    // Pop-in animation so the confirmation reads as feedback for the tap,
+    // not just a static dot that silently swaps on mode change.
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutBack,
+      builder: (context, v, child) {
+        return Transform.scale(scale: v, child: child);
+      },
+      child: Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: const Icon(Icons.check_rounded, color: Colors.white, size: 14),
       ),
-      alignment: Alignment.center,
-      child: const Icon(Icons.check_rounded, color: Colors.white, size: 14),
     );
   }
 }

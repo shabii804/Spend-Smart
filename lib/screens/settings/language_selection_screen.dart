@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../providers/language_provider.dart';
@@ -30,6 +31,7 @@ class LanguageSelectionScreen extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(20),
                 onTap: () {
+                  Haptics.selection();
                   langProvider.setLanguage(o.id);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

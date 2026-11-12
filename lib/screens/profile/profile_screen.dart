@@ -195,6 +195,77 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 14),
+                      Divider(height: 1, thickness: 1, color: AppColorsOf.divider(context)),
+                      const SizedBox(height: 12),
+                      // ── Monthly income strip ──
+                      // The Income module saves the salary, but the profile
+                      // never displayed it — users set their income and then
+                      // couldn't find it anywhere here.
+                      Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppColors.mint.withOpacity(0.14),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.payments_rounded,
+                                color: AppColors.mint, size: 17),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Monthly Income',
+                                    style: TextStyles.caption(context)),
+                                const SizedBox(height: 1),
+                                Text(
+                                  user.monthlyIncome > 0
+                                      ? '${Formatters.money(user.monthlyIncome)} / month'
+                                      : 'Not set — add it in Income',
+                                  style: TextStyles.body(context,
+                                      weight: FontWeight.w700)
+                                      .copyWith(
+                                    color: user.monthlyIncome > 0
+                                        ? AppColors.mint
+                                        : AppColorsOf.tertiaryText(context),
+                                    fontSize: 13,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (user.occupation.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryIndigo.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  user.occupation,
+                                  style: TextStyles.caption(context,
+                                          weight: FontWeight.w700)
+                                      .copyWith(
+                                          color: AppColors.primaryIndigo,
+                                          fontSize: 11),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),

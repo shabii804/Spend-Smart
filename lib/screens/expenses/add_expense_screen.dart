@@ -310,12 +310,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         // row below the amount card — much more visible and beautiful.
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          // The Scaffold already resizes for the keyboard (default
-          // resizeToAvoidBottomInset) — padding viewInsets here as well
-          // double-compensated and left a blank gap below the Save button.
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-          child: Column(
+        // Tap anywhere outside a field to dismiss the keyboard — on web/phone
+        // there is no back gesture that reliably closes it, so an accidental
+        // focus on the big amount field left the Save button hidden.
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.translucent,
+          child: SingleChildScrollView(
+            // The Scaffold already resizes for the keyboard (default
+            // resizeToAvoidBottomInset) — padding viewInsets here as well
+            // double-compensated and left a blank gap below the Save button.
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 2),
@@ -565,8 +571,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 const SizedBox(height: 12),
               ],
             ),
+          ),
         ),
-      ),
       ),
     );
   }
@@ -640,58 +646,42 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-  // ═══ Amount hero — centered 28px display inside the section card ═══
-  // 28px is the premium sweet spot — prominent enough to be the hero of
-  // the form, but not so large it overwhelms. Better alignment: tight
-  // letter-spacing (-0.6), tabular figures for digit alignment, and a
-  // clean "Rs. " prefix in secondary color.
+  /// Amount hero — centered 28px display inside the section card, with a
+  /// trailing clear button that appears once digits exist (one tap resets
+  /// the field instead of backspacing every digit).
   Widget _amountHero(BuildContext context) {
     return Column(
       children: [
-        TextField(
-          controller: _amountCtrl,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          // Freeze the amount while the save animation runs — editing
-          // during those 350ms could invalidate what is being parsed.
-          readOnly: _saving,
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
-          textAlign: TextAlign.center,
-          autofocus: widget.prefill == null && widget.expenseId == null,
-          textInputAction: TextInputAction.done,
-          style: TextStyle(
-            fontFamily: 'PlusJakartaSans',
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            color: AppColorsOf.mainText(context),
-            height: 1.1,
-            letterSpacing: -0.6,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-          decoration: InputDecoration(
-            prefixText: '${Formatters.currencySymbol} ',
-            prefixStyle: TextStyle(
-              fontFamily: 'PlusJakartaSans',
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: AppColorsOf.secondaryText(context),
-              height: 1.1,
-              letterSpacing: -0.6,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(child: _amountField(context)),
+            // Clear affordance — fades in only when there is something to
+            // clear, so the hero reads as a clean centered number otherwise.
+            AnimatedOpacity(
+              opacity: _amountCtrl.text.isNotEmpty ? 1.0 : 0.0,
+              duration: AppMotion.base,
+              child: AnimatedScale(
+                scale: _amountCtrl.text.isNotEmpty ? 1.0 : 0.6,
+                duration: AppMotion.base,
+                curve: AppMotion.celebrate,
+                child: IconButton(
+                  onPressed: _amountCtrl.text.isEmpty
+                      ? null
+                      : () {
+                          Haptics.light();
+                          _amountCtrl.clear();
+                          FocusScope.of(context).requestFocus();
+                        },
+                  icon: const Icon(Icons.cancel_rounded),
+                  color: AppColorsOf.tertiaryText(context),
+                  iconSize: 20,
+                  tooltip: 'Clear amount',
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
             ),
-            hintText: '0',
-            hintStyle: TextStyle(
-              fontFamily: 'PlusJakartaSans',
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              // 0.8 (was 0.5) — the hint was nearly invisible on white, so
-              // the empty field read as broken (just a floating "Rs.").
-              color: AppColorsOf.tertiaryText(context).withOpacity(0.8),
-              height: 1.1,
-            ),
-            border: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 2),
-          ),
+          ],
         ),
         if (_hasAmount)
           TweenAnimationBuilder<double>(
@@ -709,6 +699,59 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  /// The numeric amount field, extracted so the clear button can sit beside
+  /// it in a Row without breaking the centered hero layout.
+  Widget _amountField(BuildContext context) {
+    return TextField(
+      controller: _amountCtrl,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      // Freeze the amount while the save animation runs — editing
+      // during those 350ms could invalidate what is being parsed.
+      readOnly: _saving,
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+      textAlign: TextAlign.center,
+      autofocus: widget.prefill == null && widget.expenseId == null,
+      // "Next" slides the keyboard focus down to the Note field instead of
+      // just closing — matches the top-to-bottom flow of the form.
+      textInputAction: TextInputAction.next,
+      onSubmitted: (_) => FocusScope.of(context).nextFocus(),
+      style: TextStyle(
+        fontFamily: 'PlusJakartaSans',
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: AppColorsOf.mainText(context),
+        height: 1.1,
+        letterSpacing: -0.6,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+      decoration: InputDecoration(
+        prefixText: '${Formatters.currencySymbol} ',
+        prefixStyle: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          color: AppColorsOf.secondaryText(context),
+          height: 1.1,
+          letterSpacing: -0.6,
+        ),
+        hintText: '0',
+        hintStyle: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          // 0.8 (was 0.5) — the hint was nearly invisible on white, so
+          // the empty field read as broken (just a floating "Rs.").
+          color: AppColorsOf.tertiaryText(context).withOpacity(0.8),
+          height: 1.1,
+        ),
+        border: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(vertical: 2),
+      ),
     );
   }
 

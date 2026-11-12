@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/motion/app_motion.dart';
 import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
@@ -18,11 +19,7 @@ class AddExpenseScreen extends StatefulWidget {
   final Expense? prefill;
   final String? expenseId;
 
-  const AddExpenseScreen({
-    super.key,
-    this.prefill,
-    this.expenseId,
-  });
+  const AddExpenseScreen({super.key, this.prefill, this.expenseId});
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -36,12 +33,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   DateTime _date = DateTime.now();
   bool _isEdit = false;
   bool _saving = false;
-  bool _saved = false; // set once the expense is written — stops the dirty guard
+  bool _saved =
+      false; // set once the expense is written — stops the dirty guard
   int _dateChip = 0; // 0=Today, 1=Yesterday, 2=Pick
 
   static const _quickAdd = [
     ('Canteen', 'food', Icons.restaurant_rounded, AppColors.catFood),
-    ('Transport', 'transport', Icons.directions_bus_rounded, AppColors.catTransport),
+    (
+      'Transport',
+      'transport',
+      Icons.directions_bus_rounded,
+      AppColors.catTransport,
+    ),
     ('Printing', 'others', Icons.print_rounded, AppColors.catOthers),
     ('Shopping', 'shopping', Icons.shopping_bag_rounded, AppColors.catShopping),
   ];
@@ -230,7 +233,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
     final expense = Expense(
       id: _isEdit
-          ? (widget.expenseId ?? widget.prefill?.id ?? DateTime.now().millisecondsSinceEpoch.toString())
+          ? (widget.expenseId ??
+                widget.prefill?.id ??
+                DateTime.now().millisecondsSinceEpoch.toString())
           : 'e${DateTime.now().millisecondsSinceEpoch}',
       title: _titleCtrl.text.trim().isEmpty
           ? SampleData.categoryById(_selectedCategoryId!).name
@@ -258,30 +263,34 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (!_isEdit && mounted) {
       final messenger = ScaffoldMessenger.of(context);
       messenger.clearSnackBars();
-      messenger.showSnackBar(SnackBar(
-        content: Text('Added ${Formatters.money(amount)} to ${SampleData.categoryById(expense.categoryId).name}'),
-        duration: const Duration(seconds: 6),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'UNDO',
-          textColor: AppColors.primaryIndigo,
-          onPressed: () {
-            prov.deleteExpense(expense.id);
-            Haptics.selection();
-            // Use the messenger captured before the pop — this State is
-            // already unmounted when the undo fires, but the messenger
-            // still serves the shell underneath.
-            messenger.clearSnackBars();
-            messenger.showSnackBar(
-              const SnackBar(
-                content: Text('Expense removed'),
-                duration: Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Added ${Formatters.money(amount)} to ${SampleData.categoryById(expense.categoryId).name}',
+          ),
+          duration: const Duration(seconds: 6),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'UNDO',
+            textColor: AppColors.primaryIndigo,
+            onPressed: () {
+              prov.deleteExpense(expense.id);
+              Haptics.selection();
+              // Use the messenger captured before the pop — this State is
+              // already unmounted when the undo fires, but the messenger
+              // still serves the shell underneath.
+              messenger.clearSnackBars();
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Expense removed'),
+                  duration: Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
         ),
-      ));
+      );
     }
 
     if (Navigator.of(context).canPop()) Navigator.of(context).maybePop();
@@ -299,277 +308,344 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         _confirmDiscard();
       },
       child: Scaffold(
-      appBar: AppBar(
-        // Title removed — saves vertical space so the form fits on screen.
-        title: const SizedBox.shrink(),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).maybePop(),
+        appBar: AppBar(
+          // Title removed — saves vertical space so the form fits on screen.
+          title: const SizedBox.shrink(),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          // Scan + Voice buttons moved OUT of the AppBar and into a prominent
+          // row below the amount card — much more visible and beautiful.
         ),
-        // Scan + Voice buttons moved OUT of the AppBar and into a prominent
-        // row below the amount card — much more visible and beautiful.
-      ),
-      body: SafeArea(
-        // Tap anywhere outside a field to dismiss the keyboard — on web/phone
-        // there is no back gesture that reliably closes it, so an accidental
-        // focus on the big amount field left the Save button hidden.
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          behavior: HitTestBehavior.translucent,
-          child: SingleChildScrollView(
-            // The Scaffold already resizes for the keyboard (default
-            // resizeToAvoidBottomInset) — padding viewInsets here as well
-            // double-compensated and left a blank gap below the Save button.
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 2),
+        body: SafeArea(
+          // Tap anywhere outside a field to dismiss the keyboard — on web/phone
+          // there is no back gesture that reliably closes it, so an accidental
+          // focus on the big amount field left the Save button hidden.
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            behavior: HitTestBehavior.translucent,
+            child: SingleChildScrollView(
+              // The Scaffold already resizes for the keyboard (default
+              // resizeToAvoidBottomInset) — padding viewInsets here as well
+              // double-compensated and left a blank gap below the Save button.
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 2),
 
-                // ═══ AMOUNT HERO CARD ═══
-                _sectionCard(
-                  context,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _label(context, 'Amount'),
-                      const SizedBox(height: 2),
-                      _amountHero(context),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // ═══ SCAN + VOICE ACTION ROW ═══
-                // Two prominent side-by-side buttons — beautiful placement
-                // where the user can easily see and tap them. Replaces the
-                // AppBar icons which were hard to find.
-                if (!_isEdit)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _actionButton(
-                          icon: Icons.document_scanner_rounded,
-                          label: 'Scan Receipt',
-                          color: AppColors.mint,
-                          onTap: () async {
-                            Haptics.light();
-                            final Expense? result =
-                                await Navigator.of(context).push<Expense>(
-                              MaterialPageRoute(
-                                builder: (_) => const ReceiptScannerScreen(),
-                              ),
-                            );
-                            if (result == null) return;
-                            if (!mounted) return;
-                            setState(() {
-                              _amountCtrl.text = result.amount ==
-                                      result.amount.roundToDouble()
-                                  ? result.amount.toStringAsFixed(0)
-                                  : result.amount.toStringAsFixed(2);
-                              _selectedCategoryId = result.categoryId;
-                              _date = result.date;
-                              _noteCtrl.text = result.note ?? '';
-                              _dateChip = _chipForDate(result.date);
-                            });
-                          },
+                  // ═══ MODE BADGE ═══
+                  // The AppBar title is intentionally empty (vertical space),
+                  // but edit mode needs context — otherwise the screen reads
+                  // as "add another expense" and users re-create duplicates.
+                  if (_isEdit)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 6, bottom: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _actionButton(
-                          icon: Icons.mic_rounded,
-                          label: 'Voice Input',
-                          color: AppColors.primaryPurple,
-                          onTap: () async {
-                            Haptics.light();
-                            // Voice screen hands back a prefilled expense —
-                            // same contract as the receipt scanner, so we
-                            // never stack a second AddExpense on top.
-                            final Expense? result =
-                                await Navigator.of(context).push<Expense>(
-                              MaterialPageRoute(
-                                  builder: (_) => const VoiceEntryScreen()),
-                            );
-                            if (result == null) return;
-                            if (!mounted) return;
-                            setState(() {
-                              _amountCtrl.text = result.amount ==
-                                      result.amount.roundToDouble()
-                                  ? result.amount.toStringAsFixed(0)
-                                  : result.amount.toStringAsFixed(2);
-                              _selectedCategoryId = result.categoryId;
-                              _date = result.date;
-                              _noteCtrl.text = result.note ?? '';
-                              _titleCtrl.text = result.title;
-                              _dateChip = _chipForDate(result.date);
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                if (!_isEdit) const SizedBox(height: 8),
-
-                // ═══ Quick Add (horizontal scroll) ═══
-                // ShaderMask fades the trailing edge so the cut-off chip
-                // reads as "scrollable" instead of "broken layout".
-                if (!_isEdit) ...[
-                  ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Colors.black,
-                        Colors.black,
-                        Colors.transparent,
-                      ],
-                      stops: const [0.0, 0.88, 1.0],
-                    ).createShader(bounds),
-                    blendMode: BlendMode.dstIn,
-                    child: SizedBox(
-                    // 44px keeps the quick-add chips above the minimum
-                    // comfortable touch-target size.
-                    height: 44,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _quickAdd.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (_, i) {
-                        final q = _quickAdd[i];
-                        final qSel = _selectedCategoryId == q.$2;
-                        return GestureDetector(
-                          onTap: () {
-                            Haptics.selection();
-                            setState(() {
-                              _selectedCategoryId = q.$2;
-                              if (_titleCtrl.text.isEmpty) _titleCtrl.text = q.$1;
-                            });
-                          },
-                          child: AnimatedScale(
-                            scale: qSel ? 1.06 : 1.0,
-                            duration: AppMotion.base,
-                            curve: AppMotion.celebrate,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: qSel
-                                    ? q.$4.withOpacity(0.18)
-                                    : AppColorsOf.card(context),
-                                border: Border.all(
-                                  color: qSel ? q.$4 : AppColorsOf.border(context),
-                                  width: qSel ? 1.6 : 1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(q.$3, size: 14, color: q.$4),
-                                  const SizedBox(width: 6),
-                                  Text(q.$1,
-                                      style: TextStyles.caption(context, weight: FontWeight.w700)),
-                                ],
-                              ),
-                            ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryPurple.withOpacity(0.12),
+                          border: Border.all(
+                            color: AppColors.primaryPurple.withOpacity(0.3),
                           ),
-                        );
-                      },
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.edit_rounded,
+                              size: 13,
+                              color: AppColors.primaryPurple,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Editing expense',
+                              style: TextStyles.caption(
+                                context,
+                                weight: FontWeight.w700,
+                              ).copyWith(color: AppColors.primaryPurple),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+
+                  // ═══ AMOUNT HERO CARD ═══
+                  _sectionCard(
+                    context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _label(context, 'Amount'),
+                        const SizedBox(height: 2),
+                        _amountHero(context),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
-                ],
 
-                // ═══ CATEGORY + DATE CARD (grouped — both relate to
-                // "what kind of expense" and "when") ═══
-                _sectionCard(
-                  context,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _label(context, 'Category'),
-                      const SizedBox(height: 6),
-                      _categoryGrid(),
-                      const SizedBox(height: 12),
-                      // Subtle divider between category and date sections
-                      Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: AppColorsOf.divider(context),
-                      ),
-                      const SizedBox(height: 12),
-                      _label(context, 'Date'),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Expanded(child: _dateChipBtn(0, 'Today')),
-                          const SizedBox(width: 8),
-                          Expanded(child: _dateChipBtn(1, 'Yesterday')),
-                          const SizedBox(width: 8),
-                          Expanded(child: _dateChipBtn(2, 'Pick date')),
-                        ],
-                      ),
-                      if (_dateChip == 2) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          Formatters.dateTime(_date),
-                          style: TextStyles.caption(context)
-                              .copyWith(color: AppColorsOf.secondaryText(context)),
+                  // ═══ SCAN + VOICE ACTION ROW ═══
+                  // Two prominent side-by-side buttons — beautiful placement
+                  // where the user can easily see and tap them. Replaces the
+                  // AppBar icons which were hard to find.
+                  if (!_isEdit)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _actionButton(
+                            icon: Icons.document_scanner_rounded,
+                            label: 'Scan Receipt',
+                            color: AppColors.mint,
+                            onTap: () async {
+                              Haptics.light();
+                              final Expense? result =
+                                  await Navigator.of(context).push<Expense>(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const ReceiptScannerScreen(),
+                                    ),
+                                  );
+                              if (result == null) return;
+                              if (!mounted) return;
+                              setState(() {
+                                _amountCtrl.text =
+                                    result.amount ==
+                                        result.amount.roundToDouble()
+                                    ? result.amount.toStringAsFixed(0)
+                                    : result.amount.toStringAsFixed(2);
+                                _selectedCategoryId = result.categoryId;
+                                _date = result.date;
+                                _noteCtrl.text = result.note ?? '';
+                                _dateChip = _chipForDate(result.date);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _actionButton(
+                            icon: Icons.mic_rounded,
+                            label: 'Voice Input',
+                            color: AppColors.primaryPurple,
+                            onTap: () async {
+                              Haptics.light();
+                              // Voice screen hands back a prefilled expense —
+                              // same contract as the receipt scanner, so we
+                              // never stack a second AddExpense on top.
+                              final Expense? result =
+                                  await Navigator.of(context).push<Expense>(
+                                    MaterialPageRoute(
+                                      builder: (_) => const VoiceEntryScreen(),
+                                    ),
+                                  );
+                              if (result == null) return;
+                              if (!mounted) return;
+                              setState(() {
+                                _amountCtrl.text =
+                                    result.amount ==
+                                        result.amount.roundToDouble()
+                                    ? result.amount.toStringAsFixed(0)
+                                    : result.amount.toStringAsFixed(2);
+                                _selectedCategoryId = result.categoryId;
+                                _date = result.date;
+                                _noteCtrl.text = result.note ?? '';
+                                _titleCtrl.text = result.title;
+                                _dateChip = _chipForDate(result.date);
+                              });
+                            },
+                          ),
                         ),
                       ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
+                    ),
+                  if (!_isEdit) const SizedBox(height: 8),
 
-                // ═══ NOTE CARD (only Note — Title field removed per user request) ═══
-                _sectionCard(
-                  context,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _label(context, 'Note (optional)'),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: _noteCtrl,
-                        maxLines: 2,
-                        maxLength: 80,
-                        style: TextStyles.body(context),
-                        textInputAction: TextInputAction.done,
-                        decoration: InputDecoration(
-                          hintText: 'What was this expense for?',
-                          counterText: '',
-                          prefixIcon: const Icon(Icons.notes_rounded, size: 18),
+                  // ═══ Quick Add (horizontal scroll) ═══
+                  // ShaderMask fades the trailing edge so the cut-off chip
+                  // reads as "scrollable" instead of "broken layout".
+                  if (!_isEdit) ...[
+                    ShaderMask(
+                      shaderCallback: (bounds) => LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          Colors.black,
+                          Colors.black,
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.88, 1.0],
+                      ).createShader(bounds),
+                      blendMode: BlendMode.dstIn,
+                      child: SizedBox(
+                        // 44px keeps the quick-add chips above the minimum
+                        // comfortable touch-target size.
+                        height: 44,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _quickAdd.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final q = _quickAdd[i];
+                            final qSel = _selectedCategoryId == q.$2;
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () {
+                                  Haptics.selection();
+                                  setState(() {
+                                    _selectedCategoryId = q.$2;
+                                    if (_titleCtrl.text.isEmpty)
+                                      _titleCtrl.text = q.$1;
+                                  });
+                                },
+                                child: AnimatedScale(
+                                  scale: qSel ? 1.06 : 1.0,
+                                  duration: AppMotion.base,
+                                  curve: AppMotion.celebrate,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: qSel
+                                          ? q.$4.withOpacity(0.18)
+                                          : AppColorsOf.card(context),
+                                      border: Border.all(
+                                        color: qSel
+                                            ? q.$4
+                                            : AppColorsOf.border(context),
+                                        width: qSel ? 1.6 : 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(q.$3, size: 14, color: q.$4),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          q.$1,
+                                          style: TextStyles.caption(
+                                            context,
+                                            weight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
 
-                // ═══ Save button ═══
-                // Disabled until BOTH amount > 0 AND a category is selected.
-                // Hint text below explains what's missing when disabled.
-                MorphingLoadingButton(
-                  label: _isEdit ? 'Save Changes' : 'Save Expense',
-                  icon: _isEdit ? Icons.save_rounded : Icons.check_circle_rounded,
-                  loading: _saving,
-                  onPressed: _canSave ? _save : null,
-                ),
-                if (!_canSave && !_saving)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Text(
-                      _hasAmount
-                          ? 'Pick a category to enable Save'
-                          : 'Enter an amount to enable Save',
-                      textAlign: TextAlign.center,
-                      style: TextStyles.caption(context)
-                          .copyWith(color: AppColorsOf.tertiaryText(context)),
+                  // ═══ CATEGORY + DATE CARD (grouped — both relate to
+                  // "what kind of expense" and "when") ═══
+                  _sectionCard(
+                    context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _label(context, 'Category'),
+                        const SizedBox(height: 6),
+                        _categoryGrid(),
+                        const SizedBox(height: 12),
+                        // Subtle divider between category and date sections
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: AppColorsOf.divider(context),
+                        ),
+                        const SizedBox(height: 12),
+                        _label(context, 'Date'),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Expanded(child: _dateChipBtn(0, 'Today')),
+                            const SizedBox(width: 8),
+                            Expanded(child: _dateChipBtn(1, 'Yesterday')),
+                            const SizedBox(width: 8),
+                            Expanded(child: _dateChipBtn(2, 'Pick date')),
+                          ],
+                        ),
+                        if (_dateChip == 2) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            Formatters.dateTime(_date),
+                            style: TextStyles.caption(context).copyWith(
+                              color: AppColorsOf.secondaryText(context),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                const SizedBox(height: 12),
-              ],
+                  const SizedBox(height: 8),
+
+                  // ═══ NOTE CARD (only Note — Title field removed per user request) ═══
+                  _sectionCard(
+                    context,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _label(context, 'Note (optional)'),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: _noteCtrl,
+                          maxLines: 2,
+                          maxLength: 80,
+                          style: TextStyles.body(context),
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            hintText: 'What was this expense for?',
+                            counterText: '',
+                            prefixIcon: const Icon(
+                              Icons.notes_rounded,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // ═══ Save button ═══
+                  // Disabled until BOTH amount > 0 AND a category is selected.
+                  // Hint text below explains what's missing when disabled.
+                  MorphingLoadingButton(
+                    label: _isEdit ? 'Save Changes' : 'Save Expense',
+                    icon: _isEdit
+                        ? Icons.save_rounded
+                        : Icons.check_circle_rounded,
+                    loading: _saving,
+                    onPressed: _canSave ? _save : null,
+                  ),
+                  if (!_canSave && !_saving)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        _hasAmount
+                            ? 'Pick a category to enable Save'
+                            : 'Enter an amount to enable Save',
+                        textAlign: TextAlign.center,
+                        style: TextStyles.caption(context)
+                            .copyWith(color: AppColorsOf.tertiaryText(context)),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
           ),
         ),
@@ -695,7 +771,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             child: Text(
               _formattedAmount(),
               style: TextStyles.caption(context, weight: FontWeight.w700)
-                  .copyWith(color: AppColorsOf.secondaryText(context), fontSize: 13),
+                  .copyWith(
+                    color: AppColorsOf.secondaryText(context),
+                    fontSize: 13,
+                  ),
             ),
           ),
       ],
@@ -711,7 +790,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       // Freeze the amount while the save animation runs — editing
       // during those 350ms could invalidate what is being parsed.
       readOnly: _saving,
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+      ],
       textAlign: TextAlign.center,
       autofocus: widget.prefill == null && widget.expenseId == null,
       // "Next" slides the keyboard focus down to the Note field instead of
@@ -758,34 +839,46 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   // ═══ Date chip button ═══
   Widget _dateChipBtn(int chip, String label) {
     final sel = _dateChip == chip;
-    return GestureDetector(
-      onTap: () {
-        Haptics.selection();
-        _selectDateChip(chip);
-      },
-      child: AnimatedScale(
-        scale: sel ? 1.04 : 1.0,
-        duration: AppMotion.base,
-        curve: AppMotion.celebrate,
-        child: AnimatedContainer(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Haptics.selection();
+          _selectDateChip(chip);
+        },
+        child: AnimatedScale(
+          scale: sel ? 1.04 : 1.0,
           duration: AppMotion.base,
-          curve: AppMotion.standard,
-          padding: const EdgeInsets.symmetric(vertical: 13),
-          decoration: BoxDecoration(
-            color: sel ? AppColors.primaryIndigo : AppColorsOf.card(context),
-            border: Border.all(
-              color: sel ? AppColors.primaryIndigo : AppColorsOf.border(context),
+          curve: AppMotion.celebrate,
+          child: AnimatedContainer(
+            duration: AppMotion.base,
+            curve: AppMotion.standard,
+            padding: const EdgeInsets.symmetric(vertical: 13),
+            decoration: BoxDecoration(
+              color: sel ? AppColors.primaryIndigo : AppColorsOf.card(context),
+              border: Border.all(
+                color: sel
+                    ? AppColors.primaryIndigo
+                    : AppColorsOf.border(context),
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          alignment: Alignment.center,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(label,
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyles.caption(context, weight: FontWeight.w600)
-                    .copyWith(color: sel ? Colors.white : AppColorsOf.secondaryText(context))),
+                    .copyWith(
+                      color: sel
+                          ? Colors.white
+                          : AppColorsOf.secondaryText(context),
+                    ),
+              ),
+            ),
           ),
         ),
       ),
@@ -794,105 +887,125 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   // ═══ Category grid — shortened labels, clear selected state ═══
   Widget _categoryGrid() {
-    return LayoutBuilder(builder: (context, constraints) {
-      // 8 categories: 4 columns gives a balanced 4+4 grid on every standard
-      // phone (the 390px iPhone class has ~322px inner width here). Only very
-      // narrow containers drop to 3 columns — labels shrink via FittedBox
-      // so they never overflow either way.
-      final cols = constraints.maxWidth < 320 ? 3 : 4;
-      return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: cols,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        // Extra vertical headroom so icon circle + label never clip.
-        childAspectRatio: cols == 3 ? 0.95 : 0.88,
-      ),
-      itemCount: SampleData.categories.length,
-      itemBuilder: (ctx, i) {
-        final c = SampleData.categories[i];
-        final sel = _selectedCategoryId == c.id;
-        final shortName = _shortLabels[c.id] ?? c.name;
-        return GestureDetector(
-          onTap: () {
-            Haptics.selection();
-            setState(() => _selectedCategoryId = c.id);
-          },
-          child: AnimatedScale(
-            scale: sel ? 1.06 : 1.0,
-            duration: AppMotion.effective(ctx, AppMotion.base),
-            curve: AppMotion.effectiveCurve(ctx, AppMotion.celebrate),
-            child: AnimatedContainer(
-              duration: AppMotion.base,
-              curve: AppMotion.standard,
-              decoration: BoxDecoration(
-                color: sel ? c.color.withOpacity(0.18) : AppColorsOf.card(context),
-                border: Border.all(
-                  color: sel ? c.color : AppColorsOf.border(context),
-                  width: sel ? 1.6 : 1,
-                ),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Stack(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedScale(
-                        scale: sel ? 1.12 : 1.0,
-                        duration: AppMotion.base,
-                        curve: AppMotion.celebrate,
-                        child: Container(
-                          width: 36, height: 36,
-                          decoration: BoxDecoration(
-                            color: c.color.withOpacity(0.16),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Icon(c.icon, color: c.color, size: 18),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(shortName,
-                            style: TextStyles.caption(context, weight: FontWeight.w600),
-                            textAlign: TextAlign.center,
-                            maxLines: 1),
-                      ),
-                    ],
-                  ),
-                  if (sel)
-                    Positioned(
-                      top: 6, right: 6,
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.0, end: 1.0),
-                        duration: AppMotion.base,
-                        curve: AppMotion.celebrate,
-                        builder: (context, v, child) {
-                          return Transform.scale(scale: v, child: child);
-                        },
-                        child: Container(
-                          width: 18, height: 18,
-                          decoration: BoxDecoration(
-                            color: c.color,
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: const Icon(Icons.check_rounded, color: Colors.white, size: 12),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 8 categories: 4 columns gives a balanced 4+4 grid on every standard
+        // phone (the 390px iPhone class has ~322px inner width here). Only very
+        // narrow containers drop to 3 columns — labels shrink via FittedBox
+        // so they never overflow either way.
+        final cols = constraints.maxWidth < 320 ? 3 : 4;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            // Extra vertical headroom so icon circle + label never clip.
+            childAspectRatio: cols == 3 ? 0.95 : 0.88,
           ),
+          itemCount: SampleData.categories.length,
+          itemBuilder: (ctx, i) {
+            final c = SampleData.categories[i];
+            final sel = _selectedCategoryId == c.id;
+            final shortName = _shortLabels[c.id] ?? c.name;
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () {
+                  Haptics.selection();
+                  setState(() => _selectedCategoryId = c.id);
+                },
+                child: AnimatedScale(
+                  scale: sel ? 1.06 : 1.0,
+                  duration: AppMotion.effective(ctx, AppMotion.base),
+                  curve: AppMotion.effectiveCurve(ctx, AppMotion.celebrate),
+                  child: AnimatedContainer(
+                    duration: AppMotion.base,
+                    curve: AppMotion.standard,
+                    decoration: BoxDecoration(
+                      color: sel
+                          ? c.color.withOpacity(0.18)
+                          : AppColorsOf.card(context),
+                      border: Border.all(
+                        color: sel ? c.color : AppColorsOf.border(context),
+                        width: sel ? 1.6 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Stack(
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedScale(
+                              scale: sel ? 1.12 : 1.0,
+                              duration: AppMotion.base,
+                              curve: AppMotion.celebrate,
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: c.color.withOpacity(0.16),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(c.icon, color: c.color, size: 18),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                shortName,
+                                style: TextStyles.caption(
+                                  context,
+                                  weight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (sel)
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0.0, end: 1.0),
+                              duration: AppMotion.base,
+                              curve: AppMotion.celebrate,
+                              builder: (context, v, child) {
+                                return Transform.scale(scale: v, child: child);
+                              },
+                              child: Container(
+                                width: 18,
+                                height: 18,
+                                decoration: BoxDecoration(
+                                  color: c.color,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                  color: Colors.white,
+                                  size: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
-      );
-    });
+    );
   }
 
   Widget _label(BuildContext context, String text) {

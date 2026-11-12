@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/motion/haptics.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/widgets/glass_card.dart';
@@ -24,12 +25,24 @@ class GeneralSettingsScreen extends StatelessWidget {
     final currency = context.watch<CurrencyProvider>();
     final notifPrefs = context.watch<NotifPrefsProvider>();
     final lang = context.watch<LanguageProvider>();
+    final user = context.watch<UserProvider>();
 
     final themeLabel = theme.mode == ThemeModeChoice.light
         ? 'Light'
         : theme.mode == ThemeModeChoice.dark
             ? 'Dark'
             : 'System';
+
+    // Security subtitle reflects the REAL state instead of a static label —
+    // the row is the fastest place to see what is actually protecting the
+    // app right now.
+    final securityStates = [
+      if (user.user.biometricsEnabled) 'Biometrics',
+      if (user.user.appLockEnabled) 'App Lock',
+    ];
+    final securitySubtitle = securityStates.isEmpty
+        ? 'No protection enabled'
+        : 'On: ${securityStates.join(" · ")}';
 
     final notifSummary = [
       if (notifPrefs.budgetAlerts) 'Budget',
@@ -57,7 +70,7 @@ class GeneralSettingsScreen extends StatelessWidget {
                   icon: Icons.lock_outline_rounded,
                   color: AppColors.mint,
                   title: AppStrings.securityPrivacy,
-                  subtitle: 'Biometrics & App Lock',
+                  subtitle: securitySubtitle,
                   onTap: () {
                     showSecurityDialog(context, context.read<UserProvider>());
                   },
@@ -77,10 +90,10 @@ class GeneralSettingsScreen extends StatelessWidget {
                   icon: Icons.language_rounded,
                   color: AppColors.catBills,
                   title: AppStrings.languageCurrency,
-                  // Reflect the ACTUAL selected language instead of a
-                  // hardcoded "English" that contradicted the row above.
-                  subtitle:
-                      '${lang.currentLanguage.name} · ${currency.id} ${currency.symbol}',
+                  // Currency only — the language is already shown by the
+                  // "App Language" row right above, so repeating it here
+                  // made the page look duplicated.
+                  subtitle: '${currency.id} · ${currency.symbol}',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                         builder: (_) => const CurrencySelectionScreen()),
@@ -129,8 +142,8 @@ class GeneralSettingsScreen extends StatelessWidget {
                   color: AppColors.primaryIndigo,
                   title: 'About SpendSmart',
                   subtitle: 'v1.0.0',
-                  // Was a dead onTap — now shows a real about dialog so the
-                  // row isn't a broken affordance.
+                  // Shows a real about dialog so the row isn't a broken
+                  // affordance.
                   onTap: () => showAboutDialog(
                     context: context,
                     applicationName: 'SpendSmart',
@@ -152,6 +165,16 @@ class GeneralSettingsScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 24),
+            // Version footer — quiet sign-off so the page doesn't end on an
+            // abrupt last group.
+            Center(
+              child: Text(
+                'SpendSmart v1.0.0 · Track smart, save smarter',
+                style: TextStyles.caption(context)
+                    .copyWith(color: AppColorsOf.tertiaryText(context)),
+              ),
             ),
           ],
         ),
@@ -210,7 +233,12 @@ class _SettingsItem extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: onTap == null
+            ? null
+            : () {
+                Haptics.selection();
+                onTap!();
+              },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -247,8 +275,13 @@ class _SettingsItem extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.chevron_right_rounded,
-                  color: AppColorsOf.tertiaryText(context), size: 20),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: onTap == null
+                    ? AppColorsOf.tertiaryText(context).withOpacity(0.4)
+                    : AppColorsOf.tertiaryText(context),
+                size: 20,
+              ),
             ],
           ),
         ),

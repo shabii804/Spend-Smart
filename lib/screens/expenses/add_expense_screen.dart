@@ -309,8 +309,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          // Title removed — saves vertical space so the form fits on screen.
-          title: const SizedBox.shrink(),
+          // Same header pattern as every other pushed screen: back arrow +
+          // screen title. Edit mode swaps the label so the user always knows
+          // whether they are creating or editing.
+          title: Text(_isEdit ? 'Edit Expense' : 'Add Expense'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
             onPressed: () => Navigator.of(context).maybePop(),
@@ -333,48 +335,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 2),
-
-                  // ═══ MODE BADGE ═══
-                  // The AppBar title is intentionally empty (vertical space),
-                  // but edit mode needs context — otherwise the screen reads
-                  // as "add another expense" and users re-create duplicates.
-                  if (_isEdit)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.only(top: 6, bottom: 2),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryPurple.withOpacity(0.12),
-                          border: Border.all(
-                            color: AppColors.primaryPurple.withOpacity(0.3),
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.edit_rounded,
-                              size: 13,
-                              color: AppColors.primaryPurple,
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Editing expense',
-                              style: TextStyles.caption(
-                                context,
-                                weight: FontWeight.w700,
-                              ).copyWith(color: AppColors.primaryPurple),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                  const SizedBox(height: 4),
 
                   // ═══ AMOUNT HERO CARD ═══
                   _sectionCard(

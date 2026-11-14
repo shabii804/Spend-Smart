@@ -2,6 +2,8 @@
 
 A premium student expense-tracking Flutter app — **frontend only**. All data is local sample data managed with Provider. Built as a Mobile Application Development university project.
 
+**Live demo:** [shabii804.github.io/Spend-Smart](https://shabii804.github.io/Spend-Smart/) — deployed automatically to GitHub Pages on every push to `main`.
+
 > Preview-ready. The whole repository can be downloaded as a ZIP, opened in any IDE with Flutter installed, and run with `flutter pub get && flutter run`.
 
 ---
@@ -9,20 +11,24 @@ A premium student expense-tracking Flutter app — **frontend only**. All data i
 ## Features
 
 - **Onboarding + Auth (5 screens)** — splash, 3-page onboarding, login, register, forgot password. All local; no real auth.
-- **Dashboard** — greeting row, monthly budget hero card with animated progress, 4 quick-action tiles, 7-day spending line chart, top categories, recent transactions.
+- **Dashboard** — greeting row, monthly budget hero card with animated progress, quick-action tiles (Scan, Voice, Insights, Goals, Income, Lend), 7-day spending chart, top categories, recent transactions.
+- **Income Manager (2 tabs)** — Job Income planner that calibrates the monthly budget from a fixed salary, plus Other Earnings for ad-hoc income entries.
+- **Lend & Borrow** — friend-to-friend money ledger: gave / took / net summary, outstanding vs settled tabs, settle + delete actions, add-entry sheet.
+- **SplitSmart Bill** — split bills & tips with friends, shareable bill summary.
 - **Expenses (6 screens)** — add expense, simulated voice entry, transactions list with search + filter chips, expense details, edit, category selection grid.
 - **Budgets (2 screens)** — overview with per-category mini bars, edit budget.
 - **Analytics** — Daily / Weekly / Monthly segmented filter, donut chart, monthly bar chart, average daily spend, highest spending day.
 - **Goals (4 screens)** — savings goals list, create, details with hero animation + completion state, add money with quick chips.
 - **Smart Advice** — 3–4 suggestion cards derived from real provider data (top category, transport tip, pacing, savings boost).
 - **Notifications** — list with type icons, tap-to-read, Mark All Read.
-- **Profile + Settings (6 screens)** — profile, edit profile, general settings, notification toggles, currency selection, theme settings.
+- **Profile + Settings (6 screens)** — profile with spending/savings stats, edit profile, general settings, notification toggles, currency selection, theme settings.
+- **Responsive web layout** — on desktop the whole app is framed in a centered phone-width column; phones use the full viewport.
 - **Floating bottom nav** with central gradient FAB. IndexedStack preserves tab state.
 - **Light + Dark themes** with full styling; theme persists across restarts.
 - **Currency switching** (PKR / USD / EUR / GBP) — display-only formatting change.
 - **Charts read from providers** — add/edit/delete expense instantly updates dashboard, transactions, analytics, and budget progress.
 
-Total: **30+ screens** following the spec exactly.
+Total: **35+ screens** following the spec exactly.
 
 ---
 

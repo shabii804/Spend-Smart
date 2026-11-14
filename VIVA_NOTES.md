@@ -9,6 +9,7 @@ Quick reference for the project viva. Everything here reflects the actual code i
 - **What:** A premium student expense-tracking Flutter app (Mobile Application Development university project).
 - **Scope:** Frontend only — all data is local sample data managed with Provider. No backend, no real authentication.
 - **Platforms:** Web (primary, deployed to GitHub Pages) and Android.
+- **Live demo:** https://shabii804.github.io/Spend-Smart/ — auto-deploys on every push to `main` via GitHub Actions.
 
 ---
 
@@ -35,10 +36,10 @@ Quick reference for the project viva. Everything here reflects the actual code i
   - `utils/` — formatters, validators.
   - `widgets/` — reusable components (buttons, glass card, floating nav bar, stat card…).
   - `motion/` — animation system (entrances, haptics, app logo).
-- `models/` — plain data classes: Expense, Category, Budget, Goal, AppNotification, UserProfile.
+- `models/` — plain data classes: Expense, Category, Budget, Goal, AppNotification, UserProfile, IncomeEntry, LedgerEntry.
 - `data/sample_data.dart` — **single source of truth for all demo data**.
-- `providers/` — `ChangeNotifier` state: expense, budget, goal, theme, currency, notification, notification prefs, user.
-- `screens/` — one folder per feature: splash, onboarding, auth, dashboard, expenses, budgets, analytics, goals, advice, notifications, profile, settings.
+- `providers/` — `ChangeNotifier` state: expense, budget, goal, theme, currency, notification, notification prefs, user, income, lend/borrow.
+- `screens/` — one folder per feature: splash, onboarding, auth, dashboard, expenses, budgets, analytics, goals, income, lend_borrow, split_bill, advice, notifications, profile, settings.
 
 ---
 
@@ -83,8 +84,20 @@ A: `ThemeProvider` writes the chosen ThemeMode to SharedPreferences on change an
 **Q: What are the app's limitations?** (good to admit honestly)
 A: No backend, no real auth, sample data resets on reinstall, currency switching is display-only.
 
+**Q: How does the Income Manager work?**
+A: Two tabs — Job Income stores a fixed monthly salary plus occupation and can auto-calibrate the monthly budget from it (IncomeProvider); Other Earnings lists ad-hoc income entries.
+
+**Q: How is Lend & Borrow implemented?**
+A: A LedgerEntry model (person, amount, direction gave/took, date, settled flag) stored via LendBorrowProvider with SharedPreferences persistence — outstanding vs settled tabs, settle and delete actions.
+
+**Q: What happens if I leave the Add Expense screen with unsaved data?**
+A: A PopScope blocks the pop when the form is dirty and shows a confirm-discard dialog; saving clears the dirty flag so navigation goes through normally.
+
+**Q: How does the app look on a desktop browser?**
+A: MaterialApp.builder clamps the app to a centered phone-width column with side borders on wide screens; phones use the natural full-width layout.
+
 ---
 
 ## 7. Screen Count
 
-**30+ screens** across: splash, onboarding (3 pages), auth (3), dashboard, expenses (6), budgets (2), analytics, goals (4), advice, notifications, profile (2), settings (4).
+**35+ screens** across: splash, onboarding (3 pages), auth (3), dashboard, expenses (6), budgets (2), analytics, goals (4), income, lend & borrow, split bill, advice, notifications, profile (2), settings (4).
